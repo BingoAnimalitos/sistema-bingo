@@ -26,7 +26,7 @@
             font-family: 'Courier New', Courier, monospace;
         }
         h2 { font-size: 16px; color: #2c3e50; margin-bottom: 5px; text-transform: uppercase; }
-        .ticket-info { font-size: 11px; text-align: left; margin: 10px 0; line-height: 1.4; border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 8px 0; }
+        .ticket-info { font-size: 11px; text-align: left; margin: 10px 0; line-height: 1.4; border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 8px 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         
         .tabla-carton { width: 100%; border-collapse: collapse; margin: 8px 0; table-layout: fixed; }
         .tabla-carton td { border: 1.5px solid #000; height: 26px; text-align: center; font-size: 9px; font-weight: bold; padding: 0; }
@@ -39,7 +39,7 @@
         .badge-no-ganado { background-color: #e74c3c; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold; display: inline-block; font-size: 10px; }
         .badge-pendiente { background-color: #f39c12; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold; display: inline-block; font-size: 10px; }
 
-        .ticket-footer { font-size: 8.5px; font-weight: bold; margin-top: 10px; text-align: center; line-height: 1.3; }
+        .ticket-footer { font-size: 8.5px; font-weight: bold; margin-top: 10px; text-align: center; line-height: 1.3; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         #mensajeCarga { font-size: 13px; color: #555; padding: 20px; font-family: 'Segoe UI', sans-serif; }
     </style>
 </head>
@@ -67,8 +67,8 @@
         const API_URL = "https://script.google.com/macros/s/AKfycbzbbGiq4txDkhac4hp0h27Cy35NPeff91n1UrtSaZF7j0Bmdq2WMKi54QISa5bZjUoS/exec";
 
         window.onload = async function() {
-            const params = new URLSearchParams(window.location.search);
-            const ticketId = params.get('ticket') || params.get('id');
+            const urlParams = new URLSearchParams(window.location.search);
+            const ticketId = urlParams.get('ticket') || urlParams.get('id');
 
             if (!ticketId) {
                 document.getElementById("mensajeCarga").innerHTML = "❌ No se ha especificado ningún ticket en el enlace.";
@@ -104,7 +104,6 @@
             let sorteoT = ticket.sorteo || ticket.Sorteo || ticket.SORTEO || 'Sorteo Activo';
             let vendedorT = ticket.vendedor || ticket.Vendedor || ticket.VENDEDOR || 'Sistema';
             let estadoT = ticket.estado || ticket.Estado || ticket.ESTADO || 'Pendiente';
-            let modalidadT = ticket.modalidad || ticket.Modalidad || ticket.MODALIDAD || 'En juego';
 
             let claseBadge = "badge-pendiente";
             let estadoUpper = estadoT.toUpperCase();
@@ -119,7 +118,7 @@
                 <div><strong>ESTADO:</strong> <span class="${claseBadge}">${estadoT}</span></div>
             `;
 
-            // Procesar los números del cartón (puede venir como string separado por comas o array JSON)
+            // Procesar los números del cartón
             let numsArray = ticket.numeros || ticket.Numeros || ticket.NUMEROS || ticket.carton || [];
             if (typeof numsArray === 'string') {
                 try {
@@ -140,7 +139,6 @@
                 let animalNum = numLimpio.split(" ")[0].trim();
                 let animalNom = numLimpio.replace(animalNum, "").trim().toLowerCase();
 
-                // Validar si el animalito salió en el sorteo actual para resaltarlo en azul o verde ganador
                 let salio = animalesSorteo.some(a => {
                     let aStr = a.toString().toLowerCase().trim();
                     let aPartes = aStr.split(" ");
@@ -154,9 +152,9 @@
                 });
 
                 if (estadoUpper.includes("GANADOR")) {
-                    claseCelda = "celda-premiada"; // Verde si el ticket ganó
+                    claseCelda = "celda-premiada"; 
                 } else if (salio) {
-                    claseCelda = "celda-marcada-sorteo"; // Azul si salió en el bolillero
+                    claseCelda = "celda-marcada-sorteo"; 
                 }
 
                 tablaHtml += `<td class="${claseCelda}">${numLimpio}</td>`;
