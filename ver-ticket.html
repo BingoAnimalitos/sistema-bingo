@@ -9,56 +9,70 @@
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             background-color: #f1f5f9; 
-            padding: 20px; 
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220' viewBox='0 0 220 220'%3E%3Ctext x='-20' y='110' transform='rotate(-35 -20 110)' fill='%230f172a' fill-opacity='0.045' font-size='15' font-family='sans-serif' font-weight='bold'%3EBingo Animalitos%3C/text%3E%3Ctext x='90' y='40' transform='rotate(-35 90 40)' fill='%230f172a' fill-opacity='0.045' font-size='15' font-family='sans-serif' font-weight='bold'%3EBingo Animalitos%3C/text%3E%3Ctext x='90' y='180' transform='rotate(-35 90 180)' fill='%230f172a' fill-opacity='0.045' font-size='15' font-family='sans-serif' font-weight='bold'%3EBingo Animalitos%3C/text%3E%3C/svg%3E");
+            padding: 15px; 
+            color: #333;
         }
+        .contenedor { max-width: 500px; margin: 0 auto; }
         .card { 
-            background: #fff; 
-            max-width: 380px; 
-            width: 100%;
+            background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(5px);
             padding: 20px; 
             border-radius: 12px; 
             box-shadow: 0 4px 20px rgba(0,0,0,0.08); 
+            margin-bottom: 15px;
             text-align: center;
-            font-family: 'Courier New', Courier, monospace;
         }
-        h2 { font-size: 16px; color: #2c3e50; margin-bottom: 5px; text-transform: uppercase; }
-        .ticket-info { font-size: 11px; text-align: left; margin: 10px 0; line-height: 1.4; border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 8px 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        h2 { color: #2c3e50; margin-bottom: 10px; font-size: 20px; }
+        .subtitel { font-size: 13px; color: #666; margin-bottom: 15px; }
         
-        .tabla-carton { width: 100%; border-collapse: collapse; margin: 8px 0; table-layout: fixed; }
-        .tabla-carton td { border: 1.5px solid #000; height: 26px; text-align: center; font-size: 9px; font-weight: bold; padding: 0; }
+        .ticket-box {
+            background: #fff;
+            border: 2px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            text-align: left;
+            font-family: 'Courier New', Courier, monospace;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .ticket-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #ccc; padding-bottom: 8px; margin-bottom: 10px; font-size: 13px; font-weight: bold; }
         
-        /* Estilos de estados y aciertos idénticos al panel */
-        .celda-premiada { background-color: #2ecc71 !important; color: white !important; border: 2px solid #27ae60 !important; }
+        .tabla-carton-publico { width: 100%; border-collapse: collapse; margin: 10px 0; table-layout: fixed; }
+        .tabla-carton-publico td { 
+            border: 1.5px solid #333; 
+            height: 36px; 
+            vertical-align: middle; 
+            text-align: center; 
+            font-size: 11px; 
+            font-weight: bold; 
+            background: #fafafa;
+        }
+        
+        /* Clases de aciertos y estados */
         .celda-marcada-sorteo { background-color: #3498db !important; color: white !important; border: 2px solid #2980b9 !important; }
+        .celda-premiada { background-color: #2ecc71 !important; color: white !important; border: 2px solid #27ae60 !important; }
+        
+        .badge-estado { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; display: inline-block; }
+        .badge-ganador { background: #27ae60; color: white; }
+        .badge-pendiente { background: #f39c12; color: white; }
 
-        .badge-ganador { background-color: #27ae60; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold; display: inline-block; font-size: 10px; }
-        .badge-no-ganado { background-color: #e74c3c; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold; display: inline-block; font-size: 10px; }
-        .badge-pendiente { background-color: #f39c12; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold; display: inline-block; font-size: 10px; }
-
-        .ticket-footer { font-size: 8.5px; font-weight: bold; margin-top: 10px; text-align: center; line-height: 1.3; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        #mensajeCarga { font-size: 13px; color: #555; padding: 20px; font-family: 'Segoe UI', sans-serif; }
+        .banner-estado-general {
+            background: #2c3e50; color: white; padding: 12px; border-radius: 8px; font-weight: bold; margin-bottom: 15px; font-size: 14px;
+        }
+        
+        #mensajeCarga { font-size: 14px; color: #555; padding: 20px; }
     </style>
 </head>
 <body>
 
-    <div class="card" id="cardContenedor">
-        <div id="mensajeCarga">🔍 Consultando ticket en el sistema...</div>
-        <div id="contenidoTicketPublico" style="display: none;">
-            <h2>Bingo Animalitos</h2>
-            <div style="font-size: 10px; font-weight: bold;">Lotto Activo y La Granjita</div>
-            
-            <div class="ticket-info" id="detallesInfoTicket"></div>
-            
-            <div id="contenedorTablasCartones"></div>
-
-            <div class="ticket-footer">
-                Revise sus tickets.<br>
-                Si hay 2 o más ganadores al mismo tiempo, el pote acumulado se reparte por igual.<br>
-                ¡Mucha Suerte! 🍀
+    <div class="contenedor">
+        <div class="card">
+            <h2>🎟️ Estado del Ticket</h2>
+            <div class="subtitel">Bingo Animalitos - Consulta en Línea</div>
+            <div id="bannerGeneral" class="banner-estado-general">Cargando información del ticket...</div>
+            <div id="contenedorTickets">
+                <div id="mensajeCarga">Buscando registros en el sistema...</div>
             </div>
         </div>
     </div>
@@ -67,101 +81,95 @@
         const API_URL = "https://script.google.com/macros/s/AKfycbzbbGiq4txDkhac4hp0h27Cy35NPeff91n1UrtSaZF7j0Bmdq2WMKi54QISa5bZjUoS/exec";
 
         window.onload = async function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const ticketId = urlParams.get('ticket') || urlParams.get('id');
+            const params = new URLSearchParams(window.location.search);
+            const ticketsParam = params.get('tickets') || params.get('ticket');
 
-            if (!ticketId) {
-                document.getElementById("mensajeCarga").innerHTML = "❌ No se ha especificado ningún ticket en el enlace.";
+            if (!ticketsParam) {
+                document.getElementById('bannerGeneral').style.background = '#e74c3c';
+                document.getElementById('bannerGeneral').innerText = '❌ Error: No se especificó ningún ticket en el enlace.';
+                document.getElementById('mensajeCarga').innerHTML = 'Verifique el enlace que le envió su vendedor.';
                 return;
             }
 
+            let idsArray = ticketsParam.split(',').map(s => s.trim()).filter(Boolean);
+            await consultarEstadoTickets(idsArray);
+        };
+
+        async function consultarEstadoTickets(idsArray) {
             try {
-                // Consulta al backend para obtener los datos del ticket y el estado actual del sorteo
                 const response = await fetch(API_URL, {
                     method: "POST",
                     headers: { "Content-Type": "text/plain;charset=utf-8" },
-                    body: JSON.stringify({ accion: "consultarTicketPublico", idTicket: ticketId })
+                    body: JSON.stringify({ accion: "consultarTicketsPublico", tickets: idsArray })
                 });
-
                 const data = await response.json();
 
-                if (data.exito && data.ticket) {
-                    renderizarTicketPublico(data.ticket, data.animalesSorteo || []);
+                if (data && data.exito && data.tickets && data.tickets.length > 0) {
+                    renderizarResultadoPublico(data.tickets, data.animalesSorteo || []);
                 } else {
-                    document.getElementById("mensajeCarga").innerHTML = "⚠️ No se encontró información para el ticket: <strong>" + ticketId + "</strong>";
+                    document.getElementById('bannerGeneral').style.background = '#e74c3c';
+                    document.getElementById('bannerGeneral').innerText = '❌ Tickets no encontrados';
+                    document.getElementById('mensajeCarga').innerHTML = 'Los tickets consultados no existen o expiraron.';
                 }
             } catch (error) {
-                document.getElementById("mensajeCarga").innerHTML = "❌ Error de conexión al consultar el ticket.";
+                console.error(error);
+                document.getElementById('bannerGeneral').style.background = '#e74c3c';
+                document.getElementById('bannerGeneral').innerText = '⚠️ Error de conexión';
+                document.getElementById('mensajeCarga').innerHTML = 'No se pudo conectar con el servidor de lotería.';
             }
-        };
+        }
 
-        function renderizarTicketPublico(ticket, animalesSorteo) {
-            document.getElementById("mensajeCarga").style.display = "none";
-            document.getElementById("contenidoTicketPublico").style.display = "block";
+        function renderizarResultadoPublico(tickets, animalesSorteo) {
+            const banner = document.getElementById('bannerGeneral');
+            const contenedor = document.getElementById('contenedorTickets');
+            contenedor.innerHTML = "";
 
-            let idT = ticket.idTicket || ticket.IdTicket || ticket.IDTICKET || ticket.ticket || 'N/D';
-            let fechaT = ticket.fecha || ticket.Fecha || ticket.FECHA || 'N/D';
-            let sorteoT = ticket.sorteo || ticket.Sorteo || ticket.SORTEO || 'Sorteo Activo';
-            let vendedorT = ticket.vendedor || ticket.Vendedor || ticket.VENDEDOR || 'Sistema';
-            let estadoT = ticket.estado || ticket.Estado || ticket.ESTADO || 'Pendiente';
+            let hayGanadores = tickets.some(t => (t.estado || '').toUpperCase().includes('GANADOR'));
 
-            let claseBadge = "badge-pendiente";
-            let estadoUpper = estadoT.toUpperCase();
-            if (estadoUpper.includes("GANADOR")) claseBadge = "badge-ganador";
-            else if (estadoUpper.includes("NO") || estadoUpper.includes("PERDIÓ")) claseBadge = "badge-no-ganado";
-
-            document.getElementById("detallesInfoTicket").innerHTML = `
-                <div><strong>TICKET:</strong> ${idT}</div>
-                <div><strong>FECHA:</strong> ${fechaT}</div>
-                <div><strong>SORTEO:</strong> ${sorteoT}</div>
-                <div><strong>VENDEDOR:</strong> ${vendedorT}</div>
-                <div><strong>ESTADO:</strong> <span class="${claseBadge}">${estadoT}</span></div>
-            `;
-
-            // Procesar los números del cartón
-            let numsArray = ticket.numeros || ticket.Numeros || ticket.NUMEROS || ticket.carton || [];
-            if (typeof numsArray === 'string') {
-                try {
-                    numsArray = numsArray.trim().startsWith('[') ? JSON.parse(numsArray) : numsArray.split(',').map(s => s.trim());
-                } catch(e) {
-                    numsArray = numsArray.split(',').map(s => s.trim());
-                }
+            if (hayGanadores) {
+                banner.style.background = 'linear-gradient(135deg, #f1c40f, #e67e22)';
+                banner.style.color = '#78281f';
+                banner.innerHTML = '🎉 ¡FELICIDADES! ¡TIENES TICKET(S) GANADOR(ES)! 🎉';
+            } else {
+                banner.style.background = '#27ae60';
+                banner.innerHTML = '🎲 Sorteo Activo - ¡Mucha Suerte!';
             }
 
-            let tablaHtml = '<table class="tabla-carton"><tr>';
-            numsArray.forEach((num, index) => {
-                if (index > 0 && index % 4 === 0) {
-                    tablaHtml += '</tr><tr>';
-                }
-                let numLimpio = num ? num.toString().replace(/\s+/g, ' ').trim() : '';
-                let claseCelda = "";
+            tickets.forEach(t => {
+                let nums = t.numeros || [];
+                if (typeof nums === 'string') nums = nums.split(',');
 
-                let animalNum = numLimpio.split(" ")[0].trim();
-                let animalNom = numLimpio.replace(animalNum, "").trim().toLowerCase();
+                let estadoLower = (t.estado || 'Pendiente').toLowerCase();
+                let claseBadge = estadoLower.includes('ganador') ? 'badge-ganador' : 'badge-pendiente';
 
-                let salio = animalesSorteo.some(a => {
-                    let aStr = a.toString().toLowerCase().trim();
-                    let aPartes = aStr.split(" ");
-                    let aNum = aPartes[0].trim();
-                    let aNom = aPartes.slice(1).join(" ").trim();
+                let tCols = '<table class="tabla-carton-publico"><tr>';
+                nums.forEach((n, idx) => {
+                    if (idx > 0 && idx % 4 === 0) tCols += '</tr><tr>';
+                    
+                    let nLim = n.trim().toLowerCase();
+                    let estaMarcao = animalesSorteo.some(an => {
+                        let anStr = an.toString().trim().toLowerCase();
+                        return anStr === nLim || anStr.includes(nLim) || nLim.includes(anStr);
+                    });
 
-                    return aStr === numLimpio.toLowerCase() || 
-                           aStr === animalNum.toLowerCase() || 
-                           (animalNom !== "" && aStr.includes(animalNom)) ||
-                           (animalNom !== "" && aNom.includes(animalNum));
+                    let claseCelda = estaMarcao ? 'celda-marcada-sorteo' : '';
+                    if (estadoLower.includes('ganador')) claseCelda = 'celda-premiada';
+
+                    tCols += `<td class="${claseCelda}">${n}</td>`;
                 });
+                tCols += '</tr></table>';
 
-                if (estadoUpper.includes("GANADOR")) {
-                    claseCelda = "celda-premiada"; 
-                } else if (salio) {
-                    claseCelda = "celda-marcada-sorteo"; 
-                }
-
-                tablaHtml += `<td class="${claseCelda}">${numLimpio}</td>`;
+                contenedor.innerHTML += `
+                    <div class="ticket-box">
+                        <div class="ticket-header">
+                            <span>🎟️ ${t.idTicket || t.ticket}</span>
+                            <span class="badge-estado ${claseBadge}">${t.estado || 'Pendiente'}</span>
+                        </div>
+                        <div style="font-size: 11px; color: #555; margin-bottom: 5px;">📅 ${t.fecha || 'S/F'} | Vendedor: ${t.vendedor || 'Sistema'}</div>
+                        ${tCols}
+                    </div>
+                `;
             });
-            tablaHtml += '</tr></table>';
-
-            document.getElementById("contenedorTablasCartones").innerHTML = tablaHtml;
         }
     </script>
 </body>
