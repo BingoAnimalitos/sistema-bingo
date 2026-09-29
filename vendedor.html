@@ -1205,7 +1205,6 @@
             
             const urlTicketLimpiaModal = `https://bingoanimalitos.github.io/sistema-bingo/ver-ticket.html?ticket=${idTicketReal}`;
             
-            // Botón de WhatsApp interactivo con copiado al portapapeles y apertura de chat
             const btnWADesdeModal = document.getElementById("btnModalCompartirWA");
             if (btnWADesdeModal) {
                 btnWADesdeModal.onclick = function() {
@@ -1328,14 +1327,8 @@
                     sincronizarParametrosAdmin();
                     cargarEstadisticas();
 
-                    // Abrir directamente el modal del último ticket generado para enviar por WhatsApp o Imprimir en tickera
-                    const ticketsGenerados = data.tickets || [];
-                    if (ticketsGenerados.length > 0) {
-                        const primerId = ticketsGenerados[0].idTicket || ticketsGenerados[0].IdTicket || ticketsGenerados[0].IDTICKET || ticketsGenerados[0].ticket || ticketsGenerados[0].Ticket || '';
-                        if (primerId) {
-                            verTicketEnModal(primerId);
-                        }
-                    }
+                    // Generar e imprimir de inmediato con los datos devueltos por el servidor
+                    generarTicketsImpresion(data);
 
                     setTimeout(() => { mensaje.innerText = ""; }, 3000);
                 } else {
@@ -1429,6 +1422,14 @@
                 </div>
             `;
             
+            // Abrir modal con el primer ticket generado para mostrar opciones adicionales
+            if (tickets.length > 0) {
+                const primerId = tickets[0].idTicket || tickets[0].IdTicket || tickets[0].IDTICKET || tickets[0].ticket || tickets[0].Ticket || '';
+                if (primerId) {
+                    verTicketEnModal(primerId);
+                }
+            }
+
             setTimeout(() => {
                 window.print();
             }, 300);
@@ -1440,7 +1441,7 @@
                 alert("No se encontraron los tickets de esta tanda para reimprimir.");
                 return;
             }
-            const t0 = ticketsMismaTundo[0] || ticketsMismaTanda[0] || {};
+            const t0 = ticketsMismaTanda[0] || {};
             generarTicketsImpresion({ tickets: ticketsMismaTanda, sorteoActual: t0.sorteo || t0.Sorteo || t0.SORTEO || t0.referencia });
         }
     </script>
