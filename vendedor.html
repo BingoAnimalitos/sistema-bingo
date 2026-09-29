@@ -82,13 +82,14 @@
         
         .btn-accion { padding: 5px 8px; font-size: 11px; margin: 2px; width: auto; display: inline-block; border-radius: 4px; text-decoration: none; border: none; cursor: pointer; }
         .btn-wa { background: #25D366; color: white; font-weight: bold; }
+        .btn-reimprimir { background: #2980b9; color: white; font-weight: bold; }
         .ticket-link { color: #2980b9; font-weight: bold; cursor: pointer; text-decoration: underline; }
         .badge-ganador { background-color: #27ae60; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold; display: inline-block; }
         .badge-pendiente { background-color: #f39c12; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold; display: inline-block; }
 
         .acordeon-sorteo { background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 8px; overflow: hidden; }
         .acordeon-sorteo summary { background: #2c3e50; color: white; padding: 10px 12px; font-weight: bold; cursor: pointer; font-size: 13px; user-select: none; }
-        .acordeon-contenido { padding: 8px; max-height: 200px; overflow-y: auto; background: #fdfdfd; }
+        .acordeon-contenido { padding: 8px; max-height: 220px; overflow-y: auto; background: #fdfdfd; }
 
         .btn-grupo-historial { display: flex; gap: 5px; margin-bottom: 10px; }
         .btn-historial-filtro { flex: 1; padding: 6px; font-size: 12px; background: #e0e0e0; color: #333; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 0; width: auto; }
@@ -123,8 +124,6 @@
 
         .tabla-modal-carton { width: 100%; border-collapse: collapse; margin: 10px 0; table-layout: fixed; }
         .tabla-modal-carton td { border: 1.5px solid #000; height: 25px; vertical-align: middle; text-align: center; font-size: 11px; font-weight: bold; }
-        .celda-premiada { background-color: #2ecc71 !important; color: white !important; border: 2px solid #27ae60 !important; }
-        .celda-marcada-sorteo { background-color: #3498db !important; color: white !important; border: 2px solid #2980b9 !important; }
 
         #area-impresion { display: none; }
 
@@ -289,7 +288,7 @@
               <span style="font-weight: bold; color: #333; font-size: 14px;">Filtrar:</span>
               <input type="text" id="buscadorTicket" placeholder="Ej. TK-704430..." onkeyup="filtrarTicketsTabla()" style="padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px; width: 65%; font-size: 13px;">
             </div>
-            <div style="max-height: 280px; overflow-y: auto;" id="contenedorAcordeonesTickets">
+            <div style="max-height: 340px; overflow-y: auto;" id="contenedorAcordeonesTickets">
                 <div style="text-align: center; color: #94a3b8; font-size: 13px; padding: 15px;">Cargando tickets...</div>
             </div>
             <button class="tab-btn" style="width: 100%; margin-top: 15px; background: #2c3e50; color: white; padding: 10px;" onclick="cargarEstadisticas()">Actualizar Lista</button>
@@ -607,10 +606,8 @@
                 let idsTanda = lista.map(t => t.idTicket || t.ticket);
                 let urlBaseWeb = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
                 
-                // 🔥 AQUÍ ESTÁ EL CAMBIO CLAVE: AGRUPAMOS TODOS LOS TICKETS EN UN SOLO ENLACE CON COMA
                 let linkConsultaTanda = `${urlBaseWeb}ver-ticket.html?tickets=${idsTanda.join(',')}`;
-
-                const mensajeWs = encodeURIComponent(`🎰 *BINGO ANIMALITOS* 🎰\n¡Tus cartones han sido generados!\n\n🎟️ *Tickets:* ${idsTanda.join(', ')}\n\nConsulta y sigue tus resultados en tiempo real aquí:\n👉 ${linkConsultaTanda}\n\n¡Mucha Suerte! 🍀`);
+                let mensajeWs = encodeURIComponent(`🎰 *BINGO ANIMALITOS* 🎰\n¡Tus cartones han sido generados!\n\n🎟️ *Tickets:* ${idsTanda.join(', ')}\n\nConsulta y sigue tus resultados en tiempo real aquí:\n👉 ${linkConsultaTanda}\n\n¡Mucha Suerte! 🍀`);
 
                 let filas = lista.map(t => `
                     <tr>
@@ -624,8 +621,9 @@
                     <details class="acordeon-sorteo" ${idx===0?'open':''}>
                         <summary>🎟️ Tanda ${fecha} (${lista.length} cartones)</summary>
                         <div class="acordeon-contenido">
-                            <div style="margin-bottom: 8px; text-align: right;">
-                                <a href="https://wa.me/?text=${mensajeWs}" target="_blank" class="btn-accion btn-wa" style="padding: 4px 8px; font-size: 11px;">💬 Enviar Tanda por WhatsApp</a>
+                            <div style="margin-bottom: 8px; display: flex; gap: 5px; justify-content: flex-end; flex-wrap: wrap;">
+                                <a href="https://wa.me/?text=${mensajeWs}" target="_blank" class="btn-accion btn-wa">💬 WhatsApp</a>
+                                <button onclick='reimprimirTanda("${fecha}")' class="btn-accion btn-reimprimir">🖨️ Reimprimir Tanda</button>
                             </div>
                             <table class="tabla-tickets">
                                 <thead><tr><th>Ticket</th><th>Fecha</th><th>Estado</th></tr></thead>
@@ -635,6 +633,29 @@
                     </details>
                 `;
             }).join("");
+        }
+
+        function reimprimirTanda(fechaTanda) {
+            let listaTicketsTanda = cacheTicketsGlobal.filter(t => (t.fecha || '').trim().startsWith(fechaTanda));
+            if(listaTicketsTanda.length === 0) {
+                alert("No se encontraron tickets para esta tanda.");
+                return;
+            }
+            
+            const area = document.getElementById("area-impresion");
+            area.innerHTML = "";
+            listaTicketsTanda.forEach((t) => {
+                let nums = t.numeros || [];
+                if (typeof nums === 'string') nums = nums.split(',');
+                let tCols = '<table class="tabla-carton"><tr>';
+                nums.forEach((n, idx) => {
+                    if (idx > 0 && idx % 4 === 0) tCols += '</tr><tr>';
+                    tCols += `<td>${n}</td>`;
+                });
+                tCols += '</tr></table>';
+                area.innerHTML += `<div class="ticket-item"><div class="ticket-title">BINGO ANIMALITOS (REIMPRESIÓN)</div><div class="ticket-info">Ticket: ${t.idTicket || t.ticket}<br>Fecha: ${t.fecha}</div>${tCols}</div>`;
+            });
+            setTimeout(() => window.print(), 300);
         }
 
         function filtrarTicketsTabla() {
