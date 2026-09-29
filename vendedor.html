@@ -275,17 +275,18 @@
         </div>
     </div>
 
+    <!-- PANTALLA DE LOGIN CON SEGURIDAD REFORZADA -->
     <div id="loginScreen" class="card no-print">
         <h2>🔐 Acceso Vendedor</h2>
         <div class="form-group">
             <label>Usuario:</label>
-            <input type="text" id="userInput" placeholder="Ingresa tu usuario">
+            <input type="text" id="userInput" placeholder="Ingresa tu usuario" autocomplete="username">
         </div>
         <div class="form-group">
             <label>Contraseña:</label>
-            <input type="password" id="passInput" placeholder="Ingresa tu clave">
+            <input type="password" id="passInput" placeholder="Ingresa tu clave" autocomplete="current-password" onkeydown="if(event.key === 'Enter') realizarLogin()">
         </div>
-        <button onclick="realizarLogin()">Iniciar Sesión</button>
+        <button id="btnLogin" onclick="realizarLogin()">Iniciar Sesión</button>
         <div id="mensajeLogin"></div>
     </div>
 
@@ -432,17 +433,53 @@
         let fechaHastaCustom = '';
         let precioCartonActual = 100;
 
+        // VERIFICACIÓN DE SESIÓN SEGURA AL CARGAR LA PÁGINA
         window.onload = async function() {
             await cargarParametrosSistemaVendedor();
+            
             const sesionGuardada = localStorage.getItem("sesionVendedor");
             if (sesionGuardada) {
-                const vendedor = JSON.parse(sesionGuardada);
-                let p = Number(vendedor.precioCarton || vendedor.precioTicket || vendedor.precio || vendedor.costoCarton || 0);
-                if (p > 0) precioCartonActual = p;
-                mostrarPanelVentas(vendedor);
+                try {
+                    const vendedor = JSON.parse(sesionGuardada);
+                    // Validar integridad básica de la sesión guardada
+                    if (vendedor && (vendedor.idVendedor || vendedor.nombre)) {
+                        let p = Number(vendedor.precioCarton || vendedor.precioTicket || vendedor.precio || vendedor.costoCarton || 0);
+                        if (p > 0) precioCartonActual = p;
+                        
+                        // Validar token/sesión contra el backend de forma segura
+                        verificarSesionRemota(vendedor);
+                    } else {
+                        cerrarSesion();
+                    }
+                } catch (e) {
+                    cerrarSesion();
+                }
+            } else {
+                cerrarSesion();
             }
             actualizarCalculoVenta();
         };
+
+        // Verificación remota adicional para garantizar seguridad robusta igual que el admin
+        async function verificarSesionRemota(vendedor) {
+            try {
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify({ accion: "validarSesionVendedor", idVendedor: vendedor.idVendedor, usuario: vendedor.usuario })
+                });
+                const data = await response.json();
+                if (data && data.exito !== false) {
+                    mostrarPanelVentas(vendedor);
+                } else {
+                    // Si el backend rechaza la sesión activa, forzar cierre de sesión
+                    cerrarSesion();
+                }
+            } catch (e) {
+                // En caso de fallo de red temporal, permitimos el acceso basado en la sesión local almacenada
+                mostrarPanelVentas(vendedor);
+            }
+        }
 
         async function cargarParametrosSistemaVendedor() {
             try {
@@ -553,6 +590,7 @@
             const usuario = document.getElementById("userInput").value.trim();
             const clave = document.getElementById("passInput").value.trim();
             const msgLogin = document.getElementById("mensajeLogin");
+            const btnLogin = document.getElementById("btnLogin");
 
             if(!usuario || !clave) {
                 msgLogin.style.color = "red";
@@ -562,6 +600,7 @@
 
             msgLogin.style.color = "#333";
             msgLogin.innerText = "Validando credenciales...";
+            btnLogin.disabled = true;
 
             try {
                 const response = await fetch(API_URL, {
@@ -575,6 +614,8 @@
                 if (data.exito) {
                     let p = Number(data.precioCarton || data.precioTicket || data.precio || data.costoCarton || 0);
                     if (p > 0) precioCartonActual = p;
+                    
+                    // Almacenamiento seguro de sesión
                     localStorage.setItem("sesionVendedor", JSON.stringify(data));
                     mostrarPanelVentas(data);
                 } else {
@@ -584,6 +625,8 @@
             } catch (error) {
                 msgLogin.style.color = "red";
                 msgLogin.innerText = "Error de conexión con el servidor.";
+            } finally {
+                btnLogin.disabled = false;
             }
         }
 

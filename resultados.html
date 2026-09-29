@@ -6,7 +6,7 @@
     <title>Resultados y Probabilidades - Bingo Animalitos</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background-color: #0b0f19; color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; font-size: 0.95rem; }
+        body { background-color: #0b0f19; color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; font-size: 0.95rem; user-select: none; -webkit-user-select: none; }
         
         .navbar-custom { background: #1e293b; border: 1px solid #334155; padding: 15px 25px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
         .nav-left, .nav-center, .nav-right { flex: 1; display: flex; align-items: center; }
@@ -148,6 +148,7 @@
             <div style="display: flex; gap: 10px; align-items: center; margin-top: 5px;">
                 <span class="badge-live-tag">🔴 EN VIVO</span>
                 <span id="sorteo-global-actual" class="sorteo-global-badge">Sorteo: #01</span>
+                <span style="font-size: 0.75rem; background: #1e40af; padding: 3px 8px; border-radius: 6px; color: #fff; font-weight: bold;">PÚBLICO / TV</span>
             </div>
         </div>
 
@@ -228,6 +229,15 @@
 
     <!-- Scripts -->
     <script>
+        // CAPA DE SEGURIDAD DE INTERFAZ (Deshabilitar clic derecho e inspección básica)
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.addEventListener('keydown', e => {
+            if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) || (e.ctrlKey && e.key === 'U')) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
         const URL_API = "https://script.google.com/macros/s/AKfycbzbbGiq4txDkhac4hp0h27Cy35NPeff91n1UrtSaZF7j0Bmdq2WMKi54QISa5bZjUoS/exec"; 
         const INTERVALO_REFRESCO = 5000; 
 
@@ -346,7 +356,6 @@
                     const emojiL = obtenerEmojiAnimal(animalLottoFinal);
                     const emojiG = obtenerEmojiAnimal(animalGranjitaFinal);
 
-                    // AQUÍ SÍ SE MANTIENE EL VERDE EN EL POPUP COMO LO PEDISTE
                     screenLotto.innerHTML = `<span style="color: #22c55e; font-weight: bold;">${emojiL} ${animalLottoFinal}</span>`;
                     screenGranjita.innerHTML = `<span style="color: #22c55e; font-weight: bold;">${emojiG} ${animalGranjitaFinal}</span>`;
 
@@ -501,7 +510,6 @@
                                 horarioParaAnimar = {
                                     horario: h,
                                     lotto: animalLotto,
-                                    granjiita: animalGranjita,
                                     granjita: animalGranjita,
                                     clave: claveHorarioActual
                                 };

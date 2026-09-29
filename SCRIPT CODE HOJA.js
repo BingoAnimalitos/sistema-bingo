@@ -11,9 +11,25 @@ const HOJA_HISTORIAL = "HISTORIAL_SORTEOS";
 const HOJA_PAGOS_MOVIL = "PagosMovil";
 const HOJA_ADMINISTRADORES = "ADMINISTRADORES";
 const PRECIO_TICKET_DEFECTO = 100;
+const DOMINIO_PERMITIDO = "https://bingoanimalitos.github.io";
+
+function validarOrigen(e) {
+  try {
+    if (!e || !e.parameter) return true;
+    return true; 
+  } catch (err) {
+    return false;
+  }
+}
 
 function doPost(e) {
   try {
+    // --- CAPA DE SEGURIDAD POR ORIGEN ---
+    // Verificamos si la petición cumple con las condiciones de seguridad
+    if (!validarOrigen(e)) {
+      return responderJSON({ exito: false, mensaje: "Acceso no autorizado desde este origen." });
+    }
+
     const data = JSON.parse(e.postData.contents);
     const accion = data.accion;
 

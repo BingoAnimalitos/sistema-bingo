@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Administración - Bingo Animalitos</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #12181b; color: #f5f6fa; padding: 20px; }
         .container { max-width: 1150px; margin: 0 auto; }
         
@@ -15,7 +15,7 @@
         .login-card h2 { color: #00d2d3; margin-bottom: 20px; font-size: 20px; }
         .login-card .form-grupo { margin-bottom: 15px; text-align: left; }
         .login-card label { display: block; margin-bottom: 5px; font-size: 13px; color: #a4b0be; }
-        .login-card input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #324553; background: #22303c; color: white; font-size: 14px; outline: none; }
+        .login-card input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #324553; background: #22303c; color: white; font-size: 14px; outline: none; -webkit-user-select: text; user-select: text; }
         .login-card input:focus { border-color: #00d2d3; }
         .btn-login { width: 100%; padding: 12px; background: #0097e6; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; transition: background 0.2s; margin-top: 10px; }
         .btn-login:hover { background: #0081c2; }
@@ -47,7 +47,7 @@
         
         .selector-loteria-container { background: #1b262c; padding: 20px; border-radius: 12px; margin-bottom: 25px; display: flex; gap: 25px; align-items: center; justify-content: center; flex-wrap: wrap; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
         .selector-loteria-container label { font-weight: bold; font-size: 14px; color: #00d2d3; }
-        .selector-loteria-container select { padding: 10px 16px; border-radius: 8px; border: 1px solid #324553; background: #22303c; color: white; font-size: 14px; outline: none; transition: border-color 0.2s; }
+        .selector-loteria-container select { padding: 10px 16px; border-radius: 8px; border: 1px solid #324553; background: #22303c; color: white; font-size: 14px; outline: none; transition: border-color 0.2s; cursor: pointer; }
         .selector-loteria-container select:focus { border-color: #00d2d3; }
 
         .grid-animalitos { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; margin-bottom: 25px; }
@@ -69,8 +69,8 @@
         .btn-success-sm { background: #27ae60; color: white; padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; font-size: 12px; transition: background 0.2s; }
         .btn-success-sm:hover { background: #219150; }
 
-        input[type="number"], input[type="text"], input[type="password"], input[type="date"] { padding: 10px 14px; border-radius: 8px; border: 1px solid #324553; font-size: 14px; background: #22303c; color: white; width: 100%; outline: none; transition: border-color 0.2s; }
-        input[type="number"]:focus, input[type="text"]:focus, input[type="password"]:focus, input[type="date"]:focus { border-color: #00d2d3; }
+        input[type="number"], input[type="text"], input[type="password"], input[type="date"], select { padding: 10px 14px; border-radius: 8px; border: 1px solid #324553; font-size: 14px; background: #22303c; color: white; width: 100%; outline: none; transition: border-color 0.2s; -webkit-user-select: text; user-select: text; }
+        input[type="number"]:focus, input[type="text"]:focus, input[type="password"]:focus, input[type="date"]:focus, select:focus { border-color: #00d2d3; }
         input[type="number"].input-pote { width: 110px; }
 
         .banner-ganadores { display: none; background: #f1c40f; color: #1e272e; padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 25px; font-size: 17px; font-weight: bold; box-shadow: 0 4px 15px rgba(241,196,15,0.3); }
@@ -117,7 +117,7 @@
         .ticket-link:hover { color: #1b4f72; }
 
         #modalTicket { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; justify-content: center; align-items: center; }
-        .modal-contenido { background: white; width: 340px; padding: 20px; border-radius: 10px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.3); font-family: 'Courier New', Courier, monospace; color: #2f3640; }
+        .modal-contenido { background: white; width: 340px; padding: 20px; border-radius: 10px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.3); font-family: 'Courier New', Courier, monospace; color: #2f3640; -webkit-user-select: text; user-select: text; }
         .tabla-modal-jugada { width: 100%; border-collapse: collapse; margin: 10px 0; table-layout: fixed; }
         .tabla-modal-jugada td { border: 1.5px solid #000; height: 25px; vertical-align: middle; text-align: center; font-size: 11px; font-weight: bold; background: #fff; color: #2f3640; }
 
@@ -529,6 +529,28 @@
 </div>
 
 <script>
+    // --- CONTRAMEDIDAS DE PROTECCIÓN DE CÓDIGO (ANTI-INSPECCIÓN) ---
+    document.addEventListener('contextmenu', event => event.preventDefault());
+    
+    document.addEventListener('keydown', event => {
+        if (event.keyCode === 123 || 
+            (event.ctrlKey && event.shiftKey && (event.keyCode === 73 || event.keyCode === 74 || event.keyCode === 67)) || 
+            (event.ctrlKey && event.keyCode === 85)) {
+            event.preventDefault();
+            return false;
+        }
+    });
+
+    setInterval(() => {
+        const t0 = performance.now();
+        debugger;
+        const t1 = performance.now();
+        if (t1 - t0 > 100) {
+            document.body.innerHTML = "<h2 style='text-align:center;margin-top:20vh;color:#e74c3c;'>Acceso no autorizado detectado.</h2>";
+        }
+    }, 1500);
+
+    // --- LÓGICA DE LA APLICACIÓN ---
     const API_URL = "https://script.google.com/macros/s/AKfycbzbbGiq4txDkhac4hp0h27Cy35NPeff91n1UrtSaZF7j0Bmdq2WMKi54QISa5bZjUoS/exec";
     
     const listaAnimalitos = [
@@ -554,7 +576,6 @@
     
     let openAccordions = new Set();
 
-    // FUNCIÓN DE LOGIN DE ADMINISTRADOR
     async function verificarLoginAdmin() {
         const usuarioInput = document.getElementById('adminUser').value.trim();
         const passInput = document.getElementById('adminPass').value.trim();
@@ -593,7 +614,6 @@
         }
     }
 
-    // Verificar si ya estaba logueado en la sesión
     window.addEventListener('DOMContentLoaded', () => {
         if (sessionStorage.getItem('adminLogueado') === 'true') {
             document.getElementById('loginOverlay').style.display = 'none';
