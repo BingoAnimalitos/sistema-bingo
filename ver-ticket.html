@@ -3,127 +3,167 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bingo Animalitos Online - Ticket</title>
+    <title>Consulta de Ticket - Bingo Animalitos</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f1f5f9; margin: 0; padding: 20px; text-align: center; 
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #f1f5f9; 
+            padding: 20px; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
         }
-        .card-container { background: #fff; max-width: 400px; margin: auto; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
-        h2 { color: #2c3e50; font-size: 18px; margin-bottom: 15px; }
-        .info { margin-bottom: 15px; font-size: 13px; color: #555; text-align: left; background: #f8f9fa; padding: 10px; border-radius: 6px; border: 1px solid #e1e8ed; line-height: 1.5; }
-        .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 15px; }
-        .cell { background: #f8f9fa; border: 1px solid #cbd5e1; padding: 12px 4px; font-size: 11px; font-weight: bold; border-radius: 6px; color: #333; }
-        .cell.marked { background: #3498db !important; color: white !important; border-color: #2980b9 !important; }
-        .cell.winner { background: #2ecc71 !important; color: white !important; border-color: #27ae60 !important; }
-        .btn-tv {
-            display: block;
-            margin-top: 15px;
-            background-color: #e74c3c;
-            color: white;
-            text-decoration: none;
-            padding: 10px;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: bold;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            transition: background 0.2s;
+        .card { 
+            background: #fff; 
+            max-width: 380px; 
+            width: 100%;
+            padding: 20px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08); 
+            text-align: center;
+            font-family: 'Courier New', Courier, monospace;
         }
-        .btn-tv:hover {
-            background-color: #c0392b;
-        }
+        h2 { font-size: 16px; color: #2c3e50; margin-bottom: 5px; text-transform: uppercase; }
+        .ticket-info { font-size: 11px; text-align: left; margin: 10px 0; line-height: 1.4; border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 8px 0; }
+        
+        .tabla-carton { width: 100%; border-collapse: collapse; margin: 8px 0; table-layout: fixed; }
+        .tabla-carton td { border: 1.5px solid #000; height: 26px; text-align: center; font-size: 9px; font-weight: bold; padding: 0; }
+        
+        /* Estilos de estados y aciertos idénticos al panel */
+        .celda-premiada { background-color: #2ecc71 !important; color: white !important; border: 2px solid #27ae60 !important; }
+        .celda-marcada-sorteo { background-color: #3498db !important; color: white !important; border: 2px solid #2980b9 !important; }
+
+        .badge-ganador { background-color: #27ae60; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold; display: inline-block; font-size: 10px; }
+        .badge-no-ganado { background-color: #e74c3c; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold; display: inline-block; font-size: 10px; }
+        .badge-pendiente { background-color: #f39c12; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold; display: inline-block; font-size: 10px; }
+
+        .ticket-footer { font-size: 8.5px; font-weight: bold; margin-top: 10px; text-align: center; line-height: 1.3; }
+        #mensajeCarga { font-size: 13px; color: #555; padding: 20px; font-family: 'Segoe UI', sans-serif; }
     </style>
 </head>
-<body oncontextmenu="return false;">
+<body>
 
-    <div class="card-container">
-        <h2>🦁 Bingo Animalitos Online 🎰</h2>
-        <div class="info" id="ticket-info">
-            Cargando detalles del ticket...
-        </div>
-        
-        <div class="grid" id="animal-grid">
-            <!-- Los animalitos se cargaran dinamicamente aqui sin datos quemados -->
-            <div class="cell" style="grid-column: span 4; background: #fff; border: none; color: #666;">Cargando jugada...</div>
-        </div>
+    <div class="card" id="cardContenedor">
+        <div id="mensajeCarga">🔍 Consultando ticket en el sistema...</div>
+        <div id="contenidoTicketPublico" style="display: none;">
+            <h2>Bingo Animalitos</h2>
+            <div style="font-size: 10px; font-weight: bold;">Lotto Activo y La Granjita</div>
+            
+            <div class="ticket-info" id="detallesInfoTicket"></div>
+            
+            <div id="contenedorTablasCartones"></div>
 
-        <!-- Enlace de Resultados TV -->
-        <a href="https://bingoanimalitos.github.io/sistema-bingo/resultados.html" target="_blank" class="btn-tv">
-            📺 Ver Resultados en Vivo (TV)
-        </a>
+            <div class="ticket-footer">
+                Revise sus tickets.<br>
+                Si hay 2 o más ganadores al mismo tiempo, el pote acumulado se reparte por igual.<br>
+                ¡Mucha Suerte! 🍀
+            </div>
+        </div>
     </div>
 
     <script>
-        // --- CAPAS DE SEGURIDAD ---
-        document.addEventListener('contextmenu', event => event.preventDefault());
-        document.addEventListener('keydown', function (event) {
-            if (event.keyCode === 123) { event.preventDefault(); return false; }
-            if (event.ctrlKey && event.shiftKey && (event.keyCode === 73 || event.keyCode === 74 || event.keyCode === 67)) { event.preventDefault(); return false; }
-            if (event.ctrlKey && event.keyCode === 85) { event.preventDefault(); return false; }
-            if (event.ctrlKey && event.keyCode === 83) { event.preventDefault(); return false; }
-        });
+        const API_URL = "https://script.google.com/macros/s/AKfycbzbbGiq4txDkhac4hp0h27Cy35NPeff91n1UrtSaZF7j0Bmdq2WMKi54QISa5bZjUoS/exec";
 
-        // --- LOGICA DINÁMICA DEL TICKET ---
-        const urlParams = new URLSearchParams(window.location.search);
-        const ticketId = urlParams.get('ticket') || urlParams.get('id') || 'No especificado';
-        const cedulaJugador = urlParams.get('cedula') || 'No especificada';
+        window.onload = async function() {
+            const params = new URLSearchParams(window.location.search);
+            const ticketId = params.get('ticket') || params.get('id');
 
-        // Mostrar la info principal en el encabezado del ticket
-        document.getElementById('ticket-info').innerHTML = `
-            <strong>ID Ticket:</strong> ${ticketId}<br>
-            <strong>Cédula Pagomóvil:</strong> ${cedulaJugador}<br>
-            <strong>Estado:</strong> <span style="color: green; font-weight: bold;">Conectado en vivo 🟢</span>
-        `;
-
-        const gridElement = document.getElementById('animal-grid');
-
-        function renderizarCarton(listaAnimales) {
-            gridElement.innerHTML = '';
-            if (!listaAnimales || listaAnimales.length === 0) {
-                gridElement.innerHTML = '<div class="cell" style="grid-column: span 4;">No hay animalitos registrados para este ticket.</div>';
+            if (!ticketId) {
+                document.getElementById("mensajeCarga").innerHTML = "❌ No se ha especificado ningún ticket en el enlace.";
                 return;
             }
-            
-            listaAnimales.forEach(animal => {
-                const div = document.createElement('div');
-                div.className = 'cell';
-                div.innerText = animal;
-                gridElement.appendChild(div);
-            });
-        }
 
-        // OPCIÓN A: Si pasas los animalitos directamente por la URL separados por coma (ej: ?ticket=TK-225648&cedula=123456&animales=24%20Iguana,12%20Caballo...)
-        const animalesParam = urlParams.get('animales');
-        if (animalesParam) {
-            const animalesArray = animalesParam.split(',').map(item => decodeURIComponent(item.trim()));
-            renderizarCarton(animalesArray);
-        } else {
-            // OPCIÓN B: Si prefieres consultarlo directamente a tu Google Apps Script backend usando el ticketId
-            // Reemplaza 'TU_URL_DE_APPS_SCRIPT' con tu Web App desplegada si usas consulta por API:
-            /*
-            fetch(`TU_URL_DE_APPS_SCRIPT?action=obtenerTicket&id=${ticketId}`)
-                .then(response => response.json())
-                .then(data => {
-                    if(data.success) {
-                        document.getElementById('ticket-info').innerHTML = `
-                            <strong>ID Ticket:</strong> ${data.ticketId}<br>
-                            <strong>Cédula Pagomóvil:</strong> ${data.cedula || 'No especificada'}<br>
-                            <strong>Estado:</strong> <span style="color: green; font-weight: bold;">Conectado en vivo 🟢</span>
-                        `;
-                        renderizarCarton(data.animales);
-                    } else {
-                        gridElement.innerHTML = '<div class="cell" style="grid-column: span 4; color: red;">Ticket no encontrado.</div>';
-                    }
-                })
-                .catch(err => {
-                    gridElement.innerHTML = '<div class="cell" style="grid-column: span 4; color: red;">Error al conectar con el servidor.</div>';
+            try {
+                // Consulta al backend para obtener los datos del ticket y el estado actual del sorteo
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify({ accion: "consultarTicketPublico", idTicket: ticketId })
                 });
-            */
-            
-            // Mensaje temporal si no se pasaron por URL ni se configuró el fetch aún
-            gridElement.innerHTML = '<div class="cell" style="grid-column: span 4; color: #555;">Esperando datos de la jugada...</div>';
+
+                const data = await response.json();
+
+                if (data.exito && data.ticket) {
+                    renderizarTicketPublico(data.ticket, data.animalesSorteo || []);
+                } else {
+                    document.getElementById("mensajeCarga").innerHTML = "⚠️ No se encontró información para el ticket: <strong>" + ticketId + "</strong>";
+                }
+            } catch (error) {
+                document.getElementById("mensajeCarga").innerHTML = "❌ Error de conexión al consultar el ticket.";
+            }
+        };
+
+        function renderizarTicketPublico(ticket, animalesSorteo) {
+            document.getElementById("mensajeCarga").style.display = "none";
+            document.getElementById("contenidoTicketPublico").style.display = "block";
+
+            let idT = ticket.idTicket || ticket.IdTicket || ticket.IDTICKET || ticket.ticket || 'N/D';
+            let fechaT = ticket.fecha || ticket.Fecha || ticket.FECHA || 'N/D';
+            let sorteoT = ticket.sorteo || ticket.Sorteo || ticket.SORTEO || 'Sorteo Activo';
+            let vendedorT = ticket.vendedor || ticket.Vendedor || ticket.VENDEDOR || 'Sistema';
+            let estadoT = ticket.estado || ticket.Estado || ticket.ESTADO || 'Pendiente';
+            let modalidadT = ticket.modalidad || ticket.Modalidad || ticket.MODALIDAD || 'En juego';
+
+            let claseBadge = "badge-pendiente";
+            let estadoUpper = estadoT.toUpperCase();
+            if (estadoUpper.includes("GANADOR")) claseBadge = "badge-ganador";
+            else if (estadoUpper.includes("NO") || estadoUpper.includes("PERDIÓ")) claseBadge = "badge-no-ganado";
+
+            document.getElementById("detallesInfoTicket").innerHTML = `
+                <div><strong>TICKET:</strong> ${idT}</div>
+                <div><strong>FECHA:</strong> ${fechaT}</div>
+                <div><strong>SORTEO:</strong> ${sorteoT}</div>
+                <div><strong>VENDEDOR:</strong> ${vendedorT}</div>
+                <div><strong>ESTADO:</strong> <span class="${claseBadge}">${estadoT}</span></div>
+            `;
+
+            // Procesar los números del cartón (puede venir como string separado por comas o array JSON)
+            let numsArray = ticket.numeros || ticket.Numeros || ticket.NUMEROS || ticket.carton || [];
+            if (typeof numsArray === 'string') {
+                try {
+                    numsArray = numsArray.trim().startsWith('[') ? JSON.parse(numsArray) : numsArray.split(',').map(s => s.trim());
+                } catch(e) {
+                    numsArray = numsArray.split(',').map(s => s.trim());
+                }
+            }
+
+            let tablaHtml = '<table class="tabla-carton"><tr>';
+            numsArray.forEach((num, index) => {
+                if (index > 0 && index % 4 === 0) {
+                    tablaHtml += '</tr><tr>';
+                }
+                let numLimpio = num ? num.toString().replace(/\s+/g, ' ').trim() : '';
+                let claseCelda = "";
+
+                let animalNum = numLimpio.split(" ")[0].trim();
+                let animalNom = numLimpio.replace(animalNum, "").trim().toLowerCase();
+
+                // Validar si el animalito salió en el sorteo actual para resaltarlo en azul o verde ganador
+                let salio = animalesSorteo.some(a => {
+                    let aStr = a.toString().toLowerCase().trim();
+                    let aPartes = aStr.split(" ");
+                    let aNum = aPartes[0].trim();
+                    let aNom = aPartes.slice(1).join(" ").trim();
+
+                    return aStr === numLimpio.toLowerCase() || 
+                           aStr === animalNum.toLowerCase() || 
+                           (animalNom !== "" && aStr.includes(animalNom)) ||
+                           (animalNom !== "" && aNom.includes(animalNum));
+                });
+
+                if (estadoUpper.includes("GANADOR")) {
+                    claseCelda = "celda-premiada"; // Verde si el ticket ganó
+                } else if (salio) {
+                    claseCelda = "celda-marcada-sorteo"; // Azul si salió en el bolillero
+                }
+
+                tablaHtml += `<td class="${claseCelda}">${numLimpio}</td>`;
+            });
+            tablaHtml += '</tr></table>';
+
+            document.getElementById("contenedorTablasCartones").innerHTML = tablaHtml;
         }
     </script>
 </body>
