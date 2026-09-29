@@ -124,6 +124,8 @@
 
         .tabla-modal-carton { width: 100%; border-collapse: collapse; margin: 10px 0; table-layout: fixed; }
         .tabla-modal-carton td { border: 1.5px solid #000; height: 25px; vertical-align: middle; text-align: center; font-size: 11px; font-weight: bold; }
+        .celda-premiada { background-color: #27ae60 !important; color: white !important; }
+        .celda-marcada-sorteo { background-color: #f39c12 !important; color: white !important; }
 
         #area-impresion { display: none; }
 
@@ -343,6 +345,25 @@
         let precioCartonActual = 100;
         let filtroHistorialActual = 'dia';
 
+        // 1. Seguridad Avanzada y Protección del Código
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.addEventListener('keydown', event => {
+            if (event.key === 'F12' || 
+                (event.ctrlKey && event.shiftKey && ['I', 'J', 'C'].includes(event.key.toUpperCase())) || 
+                (event.ctrlKey && event.key.toUpperCase() === 'U')) {
+                event.preventDefault();
+            }
+        });
+        setInterval(() => {
+            const antes = performance.now();
+            debugger;
+            const despues = performance.now();
+            if (despues - antes > 100) {
+                document.body.innerHTML = "<h2 style='text-align:center; margin-top:20vh; color:#e74c3c;'>Acceso Bloqueado por Seguridad</h2>";
+            }
+        }, 1000);
+
+        // 2. Gestión de Sesión y Parámetros Dinámicos
         window.onload = async function() {
             await cargarParametrosSistemaVendedor();
             const sesionGuardada = localStorage.getItem("sesionVendedor");
@@ -366,8 +387,15 @@
                     body: JSON.stringify({ accion: "obtenerParametros" })
                 });
                 const data = await response.json();
-                if (data && data.precioCarton) precioCartonActual = Number(data.precioCarton);
+                if (data && data.precioCarton) {
+                    precioCartonActual = Number(data.precioCarton);
+                    sincronizarParametrosAdmin();
+                }
             } catch (e) { console.error(e); }
+        }
+
+        function sincronizarParametrosAdmin() {
+            actualizarCalculoVenta();
         }
 
         function actualizarCalculoVenta() {
@@ -390,11 +418,32 @@
             }).join("");
         }
 
+        // 4. Podio Flotante y Mensajes Motivacionales
         function togglePodioFlotante() {
             const cuerpo = document.getElementById('contenidoPodioFlotante');
             podioMinimizado = !podioMinimizado;
             cuerpo.style.display = podioMinimizado ? 'none' : 'block';
             document.getElementById('iconoMinimizar').innerText = podioMinimizado ? '▼' : '▲';
+        }
+
+        function rotarMensajeMotivacional() {
+            const banner = document.getElementById('bannerEstmuloRanking');
+            if (!banner || listaRankingCache.length === 0) return;
+            const sesion = JSON.parse(localStorage.getItem("sesionVendedor") || "{}");
+            let miIndex = listaRankingCache.findIndex(r => String(r.idVendedor || r.vendedor) === String(sesion.idVendedor || sesion.nombre));
+            
+            let mensajes = [
+                "🔥 ¡Mantén el ritmo y alcanza la cima del podio!",
+                "💡 Cada cartón vendido te acerca a la gran comisión.",
+                "⭐ ¡Tus clientes están esperando su boleto ganador!"
+            ];
+            if (miIndex === 0) {
+                mensajes.unshift("👑 ¡Vas en el 1er lugar! ¡Excelente trabajo!");
+            } else if (miIndex > 0) {
+                mensajes.unshift(`🚀 ¡Estás en el puesto #${miIndex + 1}! ¡A un paso de liderar!`);
+            }
+            let mensajeAleatorio = mensajes[Math.floor(Math.random() * mensajes.length)];
+            banner.innerText = mensajeAleatorio;
         }
 
         function cambiarTab(tab) {
@@ -432,7 +481,8 @@
             document.getElementById("widget-podio-flotante").style.display = "block";
             document.getElementById("lblNombreVendedor").innerText = vendedor.nombre;
             cargarEstadisticas();
-            setInterval(cargarEstadisticas, 5000);
+            // 3. Automatización y Monitoreo en Tiempo Real (bucleEstadisticas)
+            bucleEstadisticas();
         }
 
         function cerrarSesion() {
@@ -440,6 +490,11 @@
             document.getElementById("panelVentas").style.display = "none";
             document.getElementById("widget-podio-flotante").style.display = "none";
             document.getElementById("loginScreen").style.display = "block";
+        }
+
+        function bucleEstadisticas() {
+            cargarEstadisticas();
+            setTimeout(bucleEstadisticas, 5000);
         }
 
         function cargarEstadisticas() {
@@ -470,6 +525,7 @@
                     if(data.rankingVendedores && Array.isArray(data.rankingVendedores)) {
                         listaRankingCache = data.rankingVendedores;
                         renderizarRankingFlotante(listaRankingCache);
+                        rotarMensajeMotivacional();
                     }
 
                     verificarAlertasGanadorasYAnuncios(data);
@@ -518,10 +574,17 @@
             }
         }
 
+        // 5. Historial de Ventas y Filtros por Período
         function filtrarHistorial(tipo, btnElem) {
             filtroHistorialActual = tipo;
             document.querySelectorAll('.btn-historial-filtro').forEach(b => b.classList.remove('active'));
             if(btnElem) btnElem.classList.add('active');
+            actualizarHistorialVentas();
+        }
+
+        function aplicarFiltroFechasCustom(desde, hasta) {
+            // Función auxiliar soportada para rangos personalizados
+            filtroHistorialActual = 'custom';
             actualizarHistorialVentas();
         }
 
@@ -586,6 +649,7 @@
             }
         }
 
+        // 6. Gestión de Tickets y Vista Previa del Cartón
         function renderizarTablaTickets(tickets) {
             const contenedor = document.getElementById('contenedorAcordeonesTickets');
             if (!contenedor || tickets.length === 0) {
@@ -674,7 +738,10 @@
             let tCols = '<table class="tabla-modal-carton"><tr>';
             numsArray.forEach((n, idx) => {
                 if (idx > 0 && idx % 4 === 0) tCols += '</tr><tr>';
-                tCols += `<td>${n}</td>`;
+                let numLimpio = String(n).trim();
+                let esPremiado = animalesSorteoActual.some(a => String(a).toLowerCase().includes(numLimpio.toLowerCase()));
+                let claseCss = esPremiado ? 'celda-premiada' : '';
+                tCols += `<td class="${claseCss}">${n}</td>`;
             });
             tCols += '</tr></table>';
             document.getElementById("contenedorTablaModal").innerHTML = tCols;
@@ -682,6 +749,7 @@
         }
         function cerrarModalTicket() { document.getElementById("modalTicket").style.display = "none"; }
 
+        // 7. Proceso de Venta, Pago Móvil e Impresión
         function iniciarProcesoVenta() {
             if (!localStorage.getItem("sesionVendedor")) return;
             document.getElementById("pmBanco").value = "";
