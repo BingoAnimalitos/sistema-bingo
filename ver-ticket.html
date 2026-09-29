@@ -6,7 +6,6 @@
     <title>Bingo Animalitos Online - Ticket</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f1f5f9; margin: 0; padding: 20px; text-align: center; 
-            /* Capa de seguridad CSS: Evita la selección de texto y el arrastre */
             -webkit-user-select: none;
             -moz-user-select: none;
             -ms-user-select: none;
@@ -46,7 +45,8 @@
         </div>
         
         <div class="grid" id="animal-grid">
-            <!-- El cartón se genera dinámicamente -->
+            <!-- Los animalitos se cargaran dinamicamente aqui sin datos quemados -->
+            <div class="cell" style="grid-column: span 4; background: #fff; border: none; color: #666;">Cargando jugada...</div>
         </div>
 
         <!-- Enlace de Resultados TV -->
@@ -56,64 +56,75 @@
     </div>
 
     <script>
-        // --- CAPAS DE SEGURIDAD JAVASCRIPT ---
-
-        // 1. Bloquear Clic Derecho
+        // --- CAPAS DE SEGURIDAD ---
         document.addEventListener('contextmenu', event => event.preventDefault());
-
-        // 2. Bloquear combinaciones de teclas para Inspeccionar y Ver Código Fuente
         document.addEventListener('keydown', function (event) {
-            // F12
-            if (event.keyCode === 123) {
-                event.preventDefault();
-                return false;
-            }
-            // Ctrl+Shift+I (Inspeccionar) o Ctrl+Shift+J (Consola) o Ctrl+Shift+C (Elemento)
-            if (event.ctrlKey && event.shiftKey && (event.keyCode === 73 || event.keyCode === 74 || event.keyCode === 67)) {
-                event.preventDefault();
-                return false;
-            }
-            // Ctrl+U (Ver código fuente)
-            if (event.ctrlKey && event.keyCode === 85) {
-                event.preventDefault();
-                return false;
-            }
-            // Ctrl+S (Guardar página)
-            if (event.ctrlKey && event.keyCode === 83) {
-                event.preventDefault();
-                return false;
-            }
+            if (event.keyCode === 123) { event.preventDefault(); return false; }
+            if (event.ctrlKey && event.shiftKey && (event.keyCode === 73 || event.keyCode === 74 || event.keyCode === 67)) { event.preventDefault(); return false; }
+            if (event.ctrlKey && event.keyCode === 85) { event.preventDefault(); return false; }
+            if (event.ctrlKey && event.keyCode === 83) { event.preventDefault(); return false; }
         });
 
-        // --- LÓGICA DEL TICKET ---
-
+        // --- LOGICA DINÁMICA DEL TICKET ---
         const urlParams = new URLSearchParams(window.location.search);
-        const ticketId = urlParams.get('ticket') || urlParams.get('id');
+        const ticketId = urlParams.get('ticket') || urlParams.get('id') || 'No especificado';
         const cedulaJugador = urlParams.get('cedula') || 'No especificada';
 
+        // Mostrar la info principal en el encabezado del ticket
         document.getElementById('ticket-info').innerHTML = `
-            <strong>ID Ticket:</strong> ${ticketId || 'No especificado'}<br>
+            <strong>ID Ticket:</strong> ${ticketId}<br>
             <strong>Cédula Pagomóvil:</strong> ${cedulaJugador}<br>
             <strong>Estado:</strong> <span style="color: green; font-weight: bold;">Conectado en vivo 🟢</span>
         `;
 
-        const cartonEjemplo = ["0 Delfín", "10 Tigre", "11 Gato", "23 Cebra", "5 León", "13 Mono", "16 Oso", "6 Rana", "9 Águila", "27 Perro", "21 Gallo", "31 Lapa", "28 Zamuro", "22 Camello", "20 Cochino", "34 Venado"];
         const gridElement = document.getElementById('animal-grid');
 
-        function renderizarCarton(animalesMarcados = []) {
+        function renderizarCarton(listaAnimales) {
             gridElement.innerHTML = '';
-            cartonEjemplo.forEach(animal => {
+            if (!listaAnimales || listaAnimales.length === 0) {
+                gridElement.innerHTML = '<div class="cell" style="grid-column: span 4;">No hay animalitos registrados para este ticket.</div>';
+                return;
+            }
+            
+            listaAnimales.forEach(animal => {
                 const div = document.createElement('div');
                 div.className = 'cell';
-                if (animalesMarcados.includes(animal)) {
-                    div.classList.add('marked');
-                }
                 div.innerText = animal;
                 gridElement.appendChild(div);
             });
         }
 
-        renderizarCarton();
+        // OPCIÓN A: Si pasas los animalitos directamente por la URL separados por coma (ej: ?ticket=TK-225648&cedula=123456&animales=24%20Iguana,12%20Caballo...)
+        const animalesParam = urlParams.get('animales');
+        if (animalesParam) {
+            const animalesArray = animalesParam.split(',').map(item => decodeURIComponent(item.trim()));
+            renderizarCarton(animalesArray);
+        } else {
+            // OPCIÓN B: Si prefieres consultarlo directamente a tu Google Apps Script backend usando el ticketId
+            // Reemplaza 'TU_URL_DE_APPS_SCRIPT' con tu Web App desplegada si usas consulta por API:
+            /*
+            fetch(`TU_URL_DE_APPS_SCRIPT?action=obtenerTicket&id=${ticketId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if(data.success) {
+                        document.getElementById('ticket-info').innerHTML = `
+                            <strong>ID Ticket:</strong> ${data.ticketId}<br>
+                            <strong>Cédula Pagomóvil:</strong> ${data.cedula || 'No especificada'}<br>
+                            <strong>Estado:</strong> <span style="color: green; font-weight: bold;">Conectado en vivo 🟢</span>
+                        `;
+                        renderizarCarton(data.animales);
+                    } else {
+                        gridElement.innerHTML = '<div class="cell" style="grid-column: span 4; color: red;">Ticket no encontrado.</div>';
+                    }
+                })
+                .catch(err => {
+                    gridElement.innerHTML = '<div class="cell" style="grid-column: span 4; color: red;">Error al conectar con el servidor.</div>';
+                });
+            */
+            
+            // Mensaje temporal si no se pasaron por URL ni se configuró el fetch aún
+            gridElement.innerHTML = '<div class="cell" style="grid-column: span 4; color: #555;">Esperando datos de la jugada...</div>';
+        }
     </script>
 </body>
 </html>
