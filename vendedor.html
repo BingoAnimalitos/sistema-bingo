@@ -230,8 +230,9 @@
                 <div id="detalleModalTicket" style="font-size: 12px; text-align: left; margin-bottom: 10px; line-height: 1.4;"></div>
                 <div id="contenedorTablaModal"></div>
             </div>
-            <div>
-                <button onclick="cerrarModalTicket()" style="background: #e74c3c; padding: 10px 20px; font-size: 14px; width: auto; margin-top: 0; font-weight: bold; border-radius: 6px;">Cerrar</button>
+            <div style="display: flex; gap: 8px;">
+                <button id="btnModalCompartirWA" style="background: #25D366; padding: 10px 15px; font-size: 14px; width: auto; margin-top: 0; font-weight: bold; border-radius: 6px;">💬 WhatsApp</button>
+                <button onclick="cerrarModalTicket()" style="background: #e74c3c; padding: 10px 15px; font-size: 14px; width: auto; margin-top: 0; font-weight: bold; border-radius: 6px;">Cerrar</button>
             </div>
         </div>
     </div>
@@ -331,6 +332,12 @@
             
             <div id="infoPrecioUnitario" style="font-size: 13px; color: #555; margin-bottom: 12px; font-weight: bold; text-align: center; background: #f8f9fa; padding: 8px; border-radius: 6px; border: 1px solid #e1e8ed;">
                 Precio Unitario: <span id="lblPrecioUnitario" style="color: #2c3e50;">Bs. 100.00</span> | Total a Pagar: <span id="lblTotalPagar" style="color: #27ae60;">Bs. 100.00</span>
+            </div>
+
+            <!-- BLOQUE DEL TICKET RECIÉN CREADO -->
+            <div id="bloqueUltimoTicket" style="display: none; background: #fff; border: 1px dashed #27ae60; padding: 12px; border-radius: 8px; margin-bottom: 15px; text-align: center; font-family: 'Courier New', Courier, monospace;">
+                <div style="font-weight: bold; color: #27ae60; margin-bottom: 5px; font-size: 13px;">🎟️ Último Ticket Generado</div>
+                <div id="contenidoUltimoTicket" style="font-size: 11px; text-align: left; line-height: 1.3;"></div>
             </div>
 
             <input type="hidden" id="loteria-select" value="Lotto Activo y La Granjita">
@@ -1085,12 +1092,12 @@
 
                 let filasHtml = ticketsDelSorteo.map(t => {
                     const idT = t.idTicket || t.IdTicket || t.IDTICKET || t.ticket || t.Ticket || '';
-                    const numsRaw = t.numeros || t.Numeros || t.NUMEROS || '';
                     const fechaT = t.fecha || t.Fecha || t.FECHA || '';
                     const estadoT = t.estado || t.Estado || t.ESTADO || 'Pendiente';
-                    const numerosStr = Array.isArray(numsRaw) ? numsRaw.join(", ") : numsRaw;
-
-                    const mensajeWs = encodeURIComponent(`🎰 *BINGO ANIMALITOS* 🎰\nTicket: ${idT}\nSorteo: ${sorteoNombre}\nFecha: ${fechaT}\nLotería: ${t.loteria || 'Lotto Activo y La Granjita'}\nNúmeros:\n${numerosStr}\n¡Mucha Suerte! 🍀`);
+                    
+                    // URL limpia del ticket con su identificador correspondiente
+                    const urlTicketLimpia = `https://bingoanimalitos.github.io/sistema-bingo/ver-ticket.html?ticket=${idT}`;
+                    const mensajeWs = encodeURIComponent(`🎰 *BINGO ANIMALITOS* 🎰\nRevisa tu ticket aquí:\n${urlTicketLimpia}\n¡Mucha Suerte! 🍀`);
                     
                     let estadoUpper = estadoT.toUpperCase();
                     let claseBadge = "badge-pendiente";
@@ -1283,6 +1290,17 @@
                 <strong>Estado:</strong> ${estadoTicket}
             `;
             document.getElementById("contenedorTablaModal").innerHTML = tablaHtml;
+            
+            // Configurar el botón de WhatsApp dentro del modal con la URL limpia y el ID
+            const urlTicketLimpiaModal = `https://bingoanimalitos.github.io/sistema-bingo/ver-ticket.html?ticket=${idTicketReal}`;
+            const textoWsModal = encodeURIComponent(`🎰 *BINGO ANIMALITOS* 🎰\nRevisa tu ticket aquí:\n${urlTicketLimpiaModal}\n¡Mucha Suerte! 🍀`);
+            const btnWADesdeModal = document.getElementById("btnModalCompartirWA");
+            if (btnWADesdeModal) {
+                btnWADesdeModal.onclick = function() {
+                    window.open(`https://wa.me/?text=${textoWsModal}`, '_blank');
+                };
+            }
+
             document.getElementById("modalTicket").style.display = "flex";
         }
 
@@ -1372,6 +1390,21 @@
                         document.getElementById('pote-flotante').innerText = `🏆 Pote: Bs. ${data.poteActual}`;
                     }
                     
+                    // MOSTRAR EN EL NUEVO BLOQUE DE TICKET EN PANTALLA
+                    const ticketsGenerados = data.tickets || [];
+                    if (ticketsGenerados.length > 0) {
+                        const bloqueTicket = document.getElementById("bloqueUltimoTicket");
+                        const contenidoTicket = document.getElementById("contenidoUltimoTicket");
+                        if (bloqueTicket && contenidoTicket) {
+                            let t1 = ticketsGenerados[0];
+                            let tId = t1.idTicket || t1.IdTicket || t1.IDTICKET || t1.ticket || t1.Ticket || '';
+                            let nums = t1.numeros || t1.Numeros || t1.NUMEROS || '';
+                            let numsTexto = Array.isArray(nums) ? nums.join(', ') : nums;
+                            contenidoTicket.innerHTML = `<strong>ID:</strong> ${tId}<br><strong>Cartones:</strong> ${ticketsGenerados.length}<br><strong>Números:</strong> ${numsTexto}`;
+                            bloqueTicket.style.display = "block";
+                        }
+                    }
+
                     sincronizarParametrosAdmin();
                     cargarEstadisticas();
                     generarTicketsImpresion(data);
