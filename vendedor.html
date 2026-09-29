@@ -409,10 +409,8 @@
 
     <script>
         // CAPAS DE SEGURIDAD AVANZADAS INTEGRADAS
-        // 1. Bloqueo de Clic Derecho
         document.addEventListener('contextmenu', event => event.preventDefault());
 
-        // 2. Bloqueo de Atajos de Teclado (F12, Ctrl+Shift+I/J/C, Ctrl+U)
         document.addEventListener('keydown', event => {
             if (
                 event.key === 'F12' || 
@@ -425,7 +423,6 @@
             }
         });
 
-        // 3. Trampa de Depuración (Debugger Trap) con control de rendimiento
         setInterval(() => {
             const t0 = performance.now();
             debugger;
@@ -468,10 +465,20 @@
             if (sesionGuardada) {
                 try {
                     const vendedor = JSON.parse(sesionGuardada);
-                    if (vendedor && (vendedor.idVendedor || vendedor.nombre)) {
+                    // Normalizar campos para asegurar que siempre existan propiedades válidas
+                    const idValido = vendedor.idVendedor || vendedor.id || vendedor.usuario || vendedor.nombre;
+                    const nombreValido = vendedor.nombre || vendedor.vendedor || vendedor.usuario;
+
+                    if (vendedor && idValido && nombreValido) {
                         let p = Number(vendedor.precioCarton || vendedor.precioTicket || vendedor.precio || vendedor.costoCarton || 0);
                         if (p > 0) precioCartonActual = p;
-                        verificarSesionRemota(vendedor);
+                        
+                        // Cargar panel directamente si hay sesión local válida (evitando cierres falsos por cortes de red)
+                        mostrarPanelVentas({
+                            idVendedor: idValido,
+                            nombre: nombreValido,
+                            comision: vendedor.comision || 18
+                        });
                     } else {
                         cerrarSesion();
                     }
@@ -484,24 +491,6 @@
             actualizarCalculoVenta();
         };
 
-        async function verificarSesionRemota(vendedor) {
-            try {
-                const response = await fetch(API_URL, {
-                    method: "POST",
-                    headers: { "Content-Type": "text/plain;charset=utf-8" },
-                    body: JSON.stringify({ accion: "validarSesionVendedor", idVendedor: vendedor.idVendedor, usuario: vendedor.usuario })
-                });
-                const data = await response.json();
-                if (data && data.exito !== false) {
-                    mostrarPanelVentas(vendedor);
-                } else {
-                    cerrarSesion();
-                }
-            } catch (e) {
-                mostrarPanelVentas(vendedor);
-            }
-        }
-
         async function cargarParametrosSistemaVendedor() {
             try {
                 const response = await fetch(API_URL, {
@@ -510,7 +499,7 @@
                     body: JSON.stringify({ accion: "obtenerParametros" })
                 });
                 const data = await response.json();
-                if (data.exito && (data.precioCarton || data.precioTicket || data.precio || data.costoCarton)) {
+                if (data && (data.precioCarton || data.precioTicket || data.precio || data.costoCarton)) {
                     let p = Number(data.precioCarton || data.precioTicket || data.precio || data.costoCarton);
                     if (p > 0) precioCartonActual = p;
                 }
@@ -632,12 +621,20 @@
 
                 const data = await response.json();
 
-                if (data.exito) {
+                if (data && (data.exito === true || data.exito === "true" || data.idVendedor || data.nombre)) {
                     let p = Number(data.precioCarton || data.precioTicket || data.precio || data.costoCarton || 0);
                     if (p > 0) precioCartonActual = p;
                     
-                    localStorage.setItem("sesionVendedor", JSON.stringify(data));
-                    mostrarPanelVentas(data);
+                    // Asegurar estandarización del objeto de sesión
+                    const datosSesion = {
+                        idVendedor: data.idVendedor || data.id || usuario,
+                        nombre: data.nombre || data.vendedor || usuario,
+                        comision: data.comision || 18,
+                        precioCarton: precioCartonActual
+                    };
+
+                    localStorage.setItem("sesionVendedor", JSON.stringify(datosSesion));
+                    mostrarPanelVentas(datosSesion);
                 } else {
                     msgLogin.style.color = "red";
                     msgLogin.innerText = data.mensaje || "Credenciales incorrectas";
@@ -665,7 +662,7 @@
             document.getElementById("loginScreen").style.display = "none";
             document.getElementById("panelVentas").style.display = "block";
             document.getElementById("widget-podio-flotante").style.display = "block";
-            document.getElementById("lblNombreVendedor").innerText = vendedor.nombre;
+            document.getElementById("lblNombreVendedor").innerText = vendedor.nombre || "Vendedor";
             if(vendedor.comision) {
                 document.getElementById("txt-porc-comision").innerText = vendedor.comision;
             }
@@ -694,7 +691,7 @@
             const sesionGuardada = localStorage.getItem("sesionVendedor");
             if (!sesionGuardada) return Promise.resolve();
             const vendedorData = JSON.parse(sesionGuardada);
-            const nombreVendedorActual = vendedorData.nombre.trim().toLowerCase();
+            const nombreVendedorActual = (vendedorData.nombre || "").trim().toLowerCase();
 
             return fetch(API_URL, {
                 method: "POST",
@@ -703,7 +700,7 @@
             })
             .then(res => res.json())
             .then(data => {
-                if(data.exito) {
+                if(data && data.exito !== false) {
                     let p = Number(data.precioCarton || data.precioTicket || data.precio || data.costoCarton || data.precioCartonActual || 0);
                     if (p > 0) precioCartonActual = p;
                     actualizarCalculoVenta();
@@ -1014,7 +1011,7 @@
             let nombreVendedorActual = "";
             if (sesionGuardada) {
                 try {
-                    nombreVendedorActual = JSON.parse(sesionGuardada).nombre.trim().toLowerCase();
+                    nombreVendedorActual = (JSON.parse(sesionGuardada).nombre || "").trim().toLowerCase();
                 } catch(e) {}
             }
 
@@ -1085,12 +1082,14 @@
 
                 let filasHtml = ticketsDelSorteo.map(t => {
                     const idT = t.idTicket || t.IdTicket || t.IDTICKET || t.ticket || t.Ticket || '';
-                    const numsRaw = t.numeros || t.Numeros || t.NUMEROS || '';
                     const fechaT = t.fecha || t.Fecha || t.FECHA || '';
                     const estadoT = t.estado || t.Estado || t.ESTADO || 'Pendiente';
-                    const numerosStr = Array.isArray(numsRaw) ? numsRaw.join(", ") : numsRaw;
 
-                    const mensajeWs = encodeURIComponent(`🎰 *BINGO ANIMALITOS* 🎰\nTicket: ${idT}\nSorteo: ${sorteoNombre}\nFecha: ${fechaT}\nLotería: ${t.loteria || 'Lotto Activo y La Granjita'}\nNúmeros:\n${numerosStr}\n¡Mucha Suerte! 🍀`);
+                    // URL base dinámica apuntando a ver-ticket.html
+                    let urlBaseWeb = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
+                    let linkConsultaTicket = `${urlBaseWeb}ver-ticket.html?ticket=${idT}`;
+
+                    const mensajeWs = encodeURIComponent(`🎰 *BINGO ANIMALITOS* 🎰\n¡Hola! Tu ticket ha sido generado con éxito.\n\n🎟️ *Ticket:* ${idT}\n🎲 *Sorteo:* ${sorteoNombre}\n📅 *Fecha:* ${fechaT}\n\nPuedes ver tu cartón interactivo y seguir los resultados en tiempo real ingresando al siguiente enlace:\n👉 ${linkConsultaTicket}\n\n¡Mucha Suerte! 🍀`);
                     
                     let estadoUpper = estadoT.toUpperCase();
                     let claseBadge = "badge-pendiente";
@@ -1202,7 +1201,7 @@
                         return aStr === numLimpioStr.toLowerCase() || 
                                aStr === numNum.toLowerCase() || 
                                (nomNom !== "" && aStr.includes(nomNom)) ||
-                               (nomNom !== "" && aNom.includes(nomNom));
+                               (nomNom !== "" && aNom.includes(nomNum));
                     });
                 };
 
