@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticket de Bingo en Vivo</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f1f5f9; margin: 0; padding: 20px; text-align: center; }
+        .card-container { background: #fff; max-width: 400px; margin: auto; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+        h2 { color: #2c3e50; font-size: 18px; margin-bottom: 15px; }
+        .info { margin-bottom: 15px; font-size: 13px; color: #555; text-align: left; background: #f8f9fa; padding: 10px; border-radius: 6px; border: 1px solid #e1e8ed; line-height: 1.4; }
+        .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 15px; }
+        .cell { background: #f8f9fa; border: 1px solid #cbd5e1; padding: 12px 4px; font-size: 11px; font-weight: bold; border-radius: 6px; color: #333; }
+        .cell.marked { background: #3498db !important; color: white !important; border-color: #2980b9 !important; }
+        .cell.winner { background: #2ecc71 !important; color: white !important; border-color: #27ae60 !important; }
+    </style>
+</head>
+<body>
+
+    <div class="card-container">
+        <h2>🎟️ Vista Interactiva del Ticket</h2>
+        <div class="info" id="ticket-info">
+            Cargando detalles del ticket...
+        </div>
+        
+        <div class="grid" id="animal-grid">
+            <!-- El cartón se genera dinámicamente -->
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const ticketId = urlParams.get('id');
+
+        // Aquí puedes enlazar tu API_URL principal para consultar los datos reales del ticket e histórico del sorteo
+        document.getElementById('ticket-info').innerHTML = `
+            <strong>ID Ticket:</strong> ${ticketId || 'No especificado'}<br>
+            <strong>Estado:</strong> <span style="color: green; font-weight: bold;">Conectado en vivo 🟢</span>
+        `;
+
+        // Ejemplo de renderizado de prueba de la estructura del cartón
+        const cartonEjemplo = ["0 Delfín", "10 Tigre", "11 Gato", "23 Cebra", "5 León", "13 Mono", "16 Oso", "6 Rana", "9 Águila", "27 Perro", "21 Gallo", "31 Lapa", "28 Zamuro", "22 Camello", "20 Cochino", "34 Venado"];
+        const gridElement = document.getElementById('animal-grid');
+
+        function renderizarCarton(animalesMarcados = []) {
+            gridElement.innerHTML = '';
+            cartonEjemplo.forEach(animal => {
+                const div = document.createElement('div');
+                div.className = 'cell';
+                if (animalesMarcados.includes(animal)) {
+                    div.classList.add('marked');
+                }
+                div.innerText = animal;
+                gridElement.appendChild(div);
+            });
+        }
+
+        renderizarCarton();
+    </script>
+</body>
+</html>
