@@ -1,0 +1,1424 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Ventas - Bingo Animalitos</title>
+    <!-- Librería html2canvas para la conversión del ticket en imagen -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #f1f5f9; 
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220' viewBox='0 0 220 220'%3E%3Ctext x='-20' y='110' transform='rotate(-35 -20 110)' fill='%230f172a' fill-opacity='0.045' font-size='15' font-family='sans-serif' font-weight='bold'%3EBingo Animalitos%3C/text%3E%3Ctext x='90' y='40' transform='rotate(-35 90 40)' fill='%230f172a' fill-opacity='0.045' font-size='15' font-family='sans-serif' font-weight='bold'%3EBingo Animalitos%3C/text%3E%3Ctext x='90' y='180' transform='rotate(-35 90 180)' fill='%230f172a' fill-opacity='0.045' font-size='15' font-family='sans-serif' font-weight='bold'%3EBingo Animalitos%3C/text%3E%3C/svg%3E");
+            padding: 20px; 
+        }
+        
+        .card { 
+            background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(5px);
+            max-width: 480px; 
+            margin: 0 auto; 
+            padding: 25px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08); 
+            position: relative; 
+        }
+        h2 { text-align: center; color: #333; margin-bottom: 15px; }
+        
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; color: #555; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; background: rgba(255, 255, 255, 0.9); }
+        
+        button { width: 100%; padding: 12px; background-color: #27ae60; color: white; font-weight: bold; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; margin-top: 10px; }
+        button:hover { background-color: #219150; }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+        #mensaje, #mensajeLogin { margin-top: 10px; text-align: center; font-weight: bold; font-size: 14px; }
+
+        .user-bar { background: #2c3e50; color: white; padding: 10px 15px; border-radius: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
+        .btn-salir { background: #e74c3c; border: none; color: white; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; width: auto; margin-top: 0; }
+        .btn-salir:hover { background: #c0392b; }
+
+        .tabs { display: flex; gap: 5px; margin-bottom: 20px; flex-wrap: wrap; }
+        .tab-btn { flex: 1; min-width: 70px; padding: 8px 4px; border: none; background: #e0e0e0; cursor: pointer; font-weight: bold; border-radius: 5px; color: #333; margin-top: 0; font-size: 12px; }
+        .tab-btn.active { background: #2c3e50; color: white; }
+        .seccion-tab { display: none; }
+        .seccion-tab.active { display: block; }
+
+        .card-ventas { background: #fafafa; border: 1px solid #e1e8ed; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 15px; }
+        .card-ventas h3 { margin: 5px 0; color: #27ae60; }
+        .card-ventas h4 { margin: 5px 0; color: #e74c3c; }
+
+        .grid-visual-animalitos { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(85px, 1fr)); 
+            gap: 8px; 
+            margin-top: 8px; 
+            margin-bottom: 10px; 
+            max-height: 320px; 
+            overflow-y: auto; 
+            padding: 8px; 
+            background: #fff; 
+            border: 1px solid #cbd5e1; 
+            border-radius: 8px; 
+        }
+        .btn-animal-visual { 
+            background: #f8f9fa; 
+            color: #333; 
+            border: 1px solid #e9ecef; 
+            padding: 8px 4px; 
+            border-radius: 8px; 
+            text-align: center; 
+            transition: all 0.2s ease;
+        }
+        .btn-animal-visual span { display: block; font-size: 13px; font-weight: bold; color: #007bff; margin-bottom: 2px; }
+        .btn-animal-visual strong { display: block; font-size: 11px; color: #495057; }
+        .btn-animal-visual.salio { background: #27ae60 !important; border-color: #219150 !important; }
+        .btn-animal-visual.salio span, .btn-animal-visual.salio strong { color: white !important; }
+
+        .tabla-tickets { width: 100%; border-collapse: collapse; margin-top: 5px; }
+        .tabla-tickets, .tabla-tickets th, .tabla-tickets td { border: 1px solid #ddd; }
+        .tabla-tickets th, .tabla-tickets td { padding: 8px 6px; text-align: center; font-size: 12px; }
+        .tabla-tickets th { background: #2c3e50; color: white; }
+        .fila-lider { background-color: #fef9e7 !important; font-weight: bold; color: #b7950b; }
+        
+        .btn-accion { padding: 5px 8px; font-size: 11px; margin: 2px; width: auto; display: inline-block; border-radius: 4px; text-decoration: none; border: none; cursor: pointer; }
+        .btn-print { background: #2980b9; color: white; }
+        .btn-wa { background: #25D366; color: white; font-weight: bold; }
+
+        .ticket-link { color: #2980b9; font-weight: bold; cursor: pointer; text-decoration: underline; }
+        .badge-ganador { background-color: #27ae60; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold; display: inline-block; }
+        .badge-no-ganado { background-color: #e74c3c; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold; display: inline-block; }
+        .badge-pendiente { background-color: #f39c12; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold; display: inline-block; }
+
+        .acordeon-sorteo { background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 8px; overflow: hidden; }
+        .acordeon-sorteo summary { background: #2c3e50; color: white; padding: 10px 12px; font-weight: bold; cursor: pointer; font-size: 13px; user-select: none; }
+        .acordeon-contenido { padding: 8px; max-height: 200px; overflow-y: auto; background: #fdfdfd; }
+
+        .btn-grupo-historial { display: flex; gap: 5px; margin-bottom: 10px; }
+        .btn-historial-filtro { flex: 1; padding: 6px; font-size: 12px; background: #e0e0e0; color: #333; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 0; width: auto; }
+        .btn-historial-filtro.active { background: #2980b9; color: white; }
+
+        @keyframes parpadeoAlerta {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(241, 196, 15, 0.7); }
+            50% { transform: scale(1.02); box-shadow: 0 0 15px 5px rgba(231, 76, 60, 0.8); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(241, 196, 15, 0); }
+        }
+
+        .alerta-ganador-animada { background: linear-gradient(135deg, #f1c40f, #e67e22); border: 2px solid #d35400; color: #78281f; padding: 12px; border-radius: 8px; text-align: center; font-weight: bold; margin-bottom: 15px; animation: parpadeoAlerta 1.5s infinite; display: none; }
+        .alerta-informativa-sorteo { background: linear-gradient(135deg, #3498db, #2980b9); border: 2px solid #1b4f72; color: #fff; padding: 12px; border-radius: 8px; text-align: center; font-weight: bold; margin-bottom: 15px; display: none; font-size: 13px; }
+
+        /* PODIO FLOTANTE OPTIMIZADO */
+        #widget-podio-flotante { 
+            position: fixed; 
+            top: 20px; 
+            left: 20px; 
+            background: white; 
+            border-radius: 12px; 
+            box-shadow: 0 5px 20px rgba(0,0,0,0.25); 
+            width: 300px; 
+            z-index: 1000; 
+            overflow: visible; 
+            border: 2px solid #f39c12; 
+            font-size: 12px; 
+            transition: all 0.3s ease; 
+        }
+        .podio-header { background: linear-gradient(135deg, #f39c12, #d35400); color: white; padding: 10px 12px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .podio-body { padding: 10px; height: auto; max-height: none; overflow-y: visible; background: #fff; }
+
+        #pote-flotante { position: fixed; top: 20px; right: 20px; background: linear-gradient(135deg, #f39c12, #d35400); color: white; padding: 10px 20px; border-radius: 30px; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 1000; font-size: 1.1rem; }
+
+        #modalTicket { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; justify-content: center; align-items: center; }
+        .modal-contenedor-principal { display: flex; flex-direction: column; align-items: center; max-width: 90%; }
+        .modal-contenido { background: white; width: 340px; padding: 20px; border-radius: 10px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.3); font-family: 'Courier New', Courier, monospace; margin-bottom: 10px; }
+        
+        #modalPagoMovil { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 3000; justify-content: center; align-items: center; }
+        .modal-pagomovil-contenido { background: white; width: 360px; max-width: 90%; padding: 25px; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.3); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: left; }
+        .modal-pagomovil-contenido h3 { text-align: center; color: #2c3e50; margin-bottom: 15px; font-size: 16px; }
+
+        .tabla-modal-carton { width: 100%; border-collapse: collapse; margin: 10px 0; table-layout: fixed; }
+        .tabla-modal-carton td { border: 1.5px solid #000; height: 25px; vertical-align: middle; text-align: center; font-size: 11px; font-weight: bold; }
+        
+        .celda-premiada { background-color: #2ecc71 !important; color: white !important; border: 2px solid #27ae60 !important; }
+        .celda-marcada-sorteo { background-color: #3498db !important; color: white !important; border: 2px solid #2980b9 !important; }
+
+        #area-impresion { display: none; }
+
+        /* REGLAS RESPONSIVAS MÓVILES */
+        @media (max-width: 768px) {
+            body { padding: 4px; }
+            .card { padding: 12px; max-width: 100%; }
+            #widget-podio-flotante { 
+                position: relative !important;
+                top: auto !important;
+                left: auto !important;
+                right: auto !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                margin-bottom: 15px !important;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+            }
+            #pote-flotante { 
+                position: fixed !important;
+                top: auto !important; 
+                bottom: 10px !important; 
+                right: 10px !important; 
+                font-size: 0.85rem !important; 
+                padding: 5px 12px; 
+                box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            }
+            .grid-visual-animalitos { grid-template-columns: repeat(auto-fill, minmax(65px, 1fr)); max-height: 240px; }
+            .tabla-tickets th, .tabla-tickets td { padding: 6px 4px; font-size: 11px; }
+        }
+
+        @media print {
+            @page { size: 58mm auto; margin: 0mm; }
+            body { background: white; padding: 0; margin: 0; }
+            .no-print, #pote-flotante, #widget-podio-flotante, #modalTicket, #modalPagoMovil { display: none !important; }
+            
+            #area-impresion {
+                display: block !important;
+                width: 46mm;
+                margin-left: -0.131mm;
+                padding-top: 2mm;
+                font-family: 'Courier New', Courier, monospace;
+                color: #000;
+                text-align: center;
+            }
+            .ticket-item { width: 100%; margin-bottom: 10px; page-break-after: always; }
+            .ticket-title { font-size: 13px; font-weight: 900; text-transform: uppercase; }
+            .ticket-info { font-size: 10px; font-weight: bold; text-align: left; margin: 5px 0; line-height: 1.3; }
+            .tabla-carton { width: 95.5%; border-collapse: collapse; margin: 3px 0; table-layout: fixed; }
+            .tabla-carton td { border: 1.5px solid #000; height: 22px; text-align: center; font-size: 8px; font-weight: bold; padding: 0; }
+            .ticket-footer { font-size: 8px; font-weight: bold; margin-top: 5px; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="pote-flotante" class="no-print">🏆 Pote: Bs. 0</div>
+
+    <div id="widget-podio-flotante" class="no-print" style="display: none;">
+        <div class="podio-header" onclick="togglePodioFlotante()">
+            <span>🏆 Podio en Vivo</span>
+            <span id="iconoMinimizar" style="font-size: 14px;">▲</span>
+        </div>
+        <div id="contenidoPodioFlotante" class="podio-body">
+            <div id="bannerEstmuloRanking" style="font-size: 10.5px; text-align: center; color: #d35400; background: #fef9e7; border: 1px dashed #f39c12; padding: 5px; border-radius: 6px; font-weight: bold; margin-bottom: 8px;"></div>
+            <table class="tabla-tickets" style="margin-top: 0;">
+                <thead>
+                    <tr>
+                        <th>Pos</th>
+                        <th>Vendedor</th>
+                        <th>Tick</th>
+                        <th>Bs</th>
+                    </tr>
+                </thead>
+                <tbody id="cuerpoTablaRankingFlotante">
+                    <tr><td colspan="4" style="text-align: center; color: #94a3b8; font-size: 11px;">Cargando...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- MODAL VISTA PREVIA -->
+    <div id="modalTicket" class="no-print">
+        <div class="modal-contenedor-principal">
+            <div class="modal-contenido" id="capturaTicketContainer">
+                <h3 style="margin-bottom: 5px; font-size: 15px; color: #2c3e50;">🔍 VISTA PREVIA TICKET</h3>
+                <div id="detalleModalTicket" style="font-size: 12px; text-align: left; margin-bottom: 10px; line-height: 1.4;"></div>
+                <div id="contenedorTablaModal"></div>
+            </div>
+            <div>
+                <button onclick="cerrarModalTicket()" style="background: #e74c3c; padding: 10px 20px; font-size: 14px; width: auto; margin-top: 0; font-weight: bold; border-radius: 6px;">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalPagoMovil" class="no-print">
+        <div class="modal-pagomovil-contenido">
+            <h3>📱 Datos de Pago Móvil</h3>
+            <p style="font-size: 12px; color: #666; margin-bottom: 12px; text-align: center;">Ingrese los datos del cliente para validar el pago.</p>
+            
+            <div class="form-group" style="margin-bottom: 10px;">
+                <label style="font-size: 12px;">Banco Orig / Destino:</label>
+                <select id="pmBanco" style="padding: 8px; font-size: 14px;">
+                    <option value="">Seleccione Banco</option>
+                    <option value="0102 - Banco de Venezuela">0102 - Banco de Venezuela</option>
+                    <option value="0108 - Banco Provincial">0108 - Banco Provincial</option>
+                    <option value="0134 - Banesco">0134 - Banesco</option>
+                    <option value="0105 - Banco Mercantil">0105 - Banco Mercantil</option>
+                    <option value="0191 - BNC">0191 - BNC</option>
+                    <option value="0115 - Banco Exterior">0115 - Banco Exterior</option>
+                    <option value="0128 - Banco Caroní">0128 - Banco Caroní</option>
+                    <option value="0151 - Fondo Común">0151 - Fondo Común</option>
+                    <option value="0163 - Banco Tesoro">0163 - Banco Tesoro</option>
+                    <option value="0175 - Bicentenario">0175 - Bicentenario</option>
+                    <option value="0177 - Banplus">0177 - Banplus</option>
+                    <option value="0104 - Venezolano de Crédito">0104 - Venezolano de Crédito</option>
+                </select>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 10px;">
+                <label style="font-size: 12px;">Cédula:</label>
+                <input type="text" id="pmCedula" placeholder="Ej. V-12345678" style="padding: 8px; font-size: 14px;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label style="font-size: 12px;">Teléfono:</label>
+                <input type="text" id="pmTelefono" placeholder="Ej. 04121234567" style="padding: 8px; font-size: 14px;">
+            </div>
+
+            <button onclick="confirmarPagoMovilEImprimir()" style="background: #27ae60; margin-top: 0; padding: 10px;">Continuar con la Impresión</button>
+            <button onclick="cancelarPagoMovil()" style="background: #e74c3c; margin-top: 5px; padding: 8px;">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="loginScreen" class="card no-print">
+        <h2>🔐 Acceso Vendedor</h2>
+        <div class="form-group">
+            <label>Usuario:</label>
+            <input type="text" id="userInput" placeholder="Ingresa tu usuario">
+        </div>
+        <div class="form-group">
+            <label>Contraseña:</label>
+            <input type="password" id="passInput" placeholder="Ingresa tu clave">
+        </div>
+        <button onclick="realizarLogin()">Iniciar Sesión</button>
+        <div id="mensajeLogin"></div>
+    </div>
+
+    <div id="panelVentas" class="card no-print" style="display: none;">
+        <div class="user-bar">
+            <span>👤 <strong id="lblNombreVendedor"></strong></span>
+            <button class="btn-salir" onclick="cerrarSesion()">Cerrar Sesión</button>
+        </div>
+
+        <div id="alertaGanadorPanel" class="alerta-ganador-animada">
+            <h3 style="margin-bottom: 4px;">🎉 ¡TICKET(S) GANADOR(ES) PROPIO(S)! 🎉</h3>
+            <p id="textoDetalleGanador" style="font-size: 12px; margin-top: 4px;"></p>
+        </div>
+
+        <div id="alertaInformativaSorteo" class="alerta-informativa-sorteo">
+            <h4 style="margin-bottom: 4px; font-size: 14px;">📢 AVISO DE SORTEO</h4>
+            <p id="textoInformativoSorteo" style="font-size: 12px;"></p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="cambiarTab('ventas')">Ventas</button>
+            <button class="tab-btn" onclick="cambiarTab('visual')">Visual Sorteo</button>
+            <button class="tab-btn" onclick="cambiarTab('tickets')">Mis Tickets</button>
+            <button class="tab-btn" onclick="cambiarTab('historial')">Historial</button>
+        </div>
+
+        <div id="seccion-ventas" class="seccion-tab active">
+            <div class="card-ventas">
+                <div id="lblSorteoActualVentas" style="font-size: 15px; font-weight: 800; color: #2c3e50; margin-bottom: 8px;">🎲 Sorteo Actual: Cargando...</div>
+                <span>VENTAS TOTALES</span>
+                <h3 id="total-vendido">Bs. 0.00</h3>
+                <p style="font-size: 13px; color: #555; margin-top: 5px;">Comisión (<span id="txt-porc-comision">18</span>%): <strong id="monto-comision" style="color: #27ae60;">Bs. 0.00</strong></p>
+                <hr style="border: 0; border-top: 1px dashed #ccc; margin: 8px 0;">
+                <span style="font-size: 12px; font-weight: bold;">NETO A ENTREGAR:</span>
+                <h4 id="neto-entregar">Bs. 0.00</h4>
+            </div>
+
+            <div class="form-group">
+                <label>Cantidad de Cartones:</label>
+                <input type="number" id="cantidadCartones" value="1" min="1" max="50" oninput="actualizarCalculoVenta()">
+            </div>
+            
+            <div id="infoPrecioUnitario" style="font-size: 13px; color: #555; margin-bottom: 12px; font-weight: bold; text-align: center; background: #f8f9fa; padding: 8px; border-radius: 6px; border: 1px solid #e1e8ed;">
+                Precio Unitario: <span id="lblPrecioUnitario" style="color: #2c3e50;">Bs. 100.00</span> | Total a Pagar: <span id="lblTotalPagar" style="color: #27ae60;">Bs. 100.00</span>
+            </div>
+
+            <input type="hidden" id="loteria-select" value="Lotto Activo y La Granjita">
+
+            <button onclick="iniciarProcesoVenta()" id="btnVender">Generar e Imprimir</button>
+            <div id="mensaje"></div>
+        </div>
+
+        <div id="seccion-visual" class="seccion-tab">
+            <div class="form-group" style="margin-bottom: 0;">
+                <label style="font-size: 13px; color: #2c3e50; margin-bottom: 8px;">🎯 Visual del Sorteo (Animalitos):</label>
+                <div id="gridVisualAnimalitos" class="grid-visual-animalitos">
+                    <div style="grid-column: span 4; text-align: center; color: #94a3b8; font-size: 11px; padding: 8px;">Esperando sorteo...</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="seccion-tickets" class="seccion-tab">
+            <h3 style="margin-bottom: 10px; font-size: 16px; color: #333;">Tickets Emitidos</h3>
+            <div style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-weight: bold; color: #333; font-size: 14px;">Filtrar:</span>
+              <input type="text" id="buscadorTicket" placeholder="Ej. TK-704430..." onkeyup="filtrarTicketsTabla()" style="padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px; width: 65%; font-size: 13px;">
+            </div>
+            <div style="max-height: 280px; overflow-y: auto;" id="contenedorAcordeonesTickets">
+                <div style="text-align: center; color: #94a3b8; font-size: 13px; padding: 15px;">Cargando tickets...</div>
+            </div>
+            <button class="tab-btn" style="width: 100%; margin-top: 15px; background: #2c3e50; color: white; padding: 10px;" onclick="cargarEstadisticas()">Actualizar Lista</button>
+        </div>
+
+        <div id="seccion-historial" class="seccion-tab">
+            <h3 style="margin-bottom: 10px; font-size: 16px; color: #333;">📊 Historial de Ventas</h3>
+            <div class="btn-grupo-historial">
+                <button class="btn-historial-filtro active" onclick="filtrarHistorial('dia', this)">Del Día</button>
+                <button class="btn-historial-filtro" onclick="filtrarHistorial('semana', this)">De la Semana</button>
+                <button class="btn-historial-filtro" onclick="filtrarHistorial('mes', this)">Del Mes</button>
+            </div>
+            <div style="display: flex; gap: 8px; margin-bottom: 12px; align-items: center;">
+                <div style="flex: 1;">
+                    <label style="font-size: 11px; color: #555; margin-bottom: 3px;">Desde:</label>
+                    <input type="date" id="filtroFechaDesde" style="padding: 6px; font-size: 12px;" onchange="aplicarFiltroFechasCustom()">
+                </div>
+                <div style="flex: 1;">
+                    <label style="font-size: 11px; color: #555; margin-bottom: 3px;">Hasta:</label>
+                    <input type="date" id="filtroFechaHasta" style="padding: 6px; font-size: 12px;" onchange="aplicarFiltroFechasCustom()">
+                </div>
+            </div>
+
+            <div style="background: #f8f9fa; border: 1px solid #e1e8ed; padding: 10px; border-radius: 8px; margin-bottom: 12px; text-align: center;">
+                <div style="display: flex; justify-content: space-around; font-size: 12px;">
+                    <div><span style="color: #666; display: block;">Total Vendido</span><strong id="historialTotalVendido" style="color: #27ae60; font-size: 14px;">Bs. 0.00</strong></div>
+                    <div><span style="color: #666; display: block;">Tickets</span><strong id="historialTotalTickets" style="color: #2c3e50; font-size: 14px;">0</strong></div>
+                    <div><span style="color: #666; display: block;">Comisión</span><strong id="historialTotalComision" style="color: #2980b9; font-size: 14px;">Bs. 0.00</strong></div>
+                </div>
+            </div>
+
+            <div style="font-size: 13px; font-weight: bold; color: #2c3e50; margin-bottom: 5px;">Desglose por Sorteo:</div>
+            <div style="max-height: 180px; overflow-y: auto;">
+                <table class="tabla-tickets">
+                    <thead>
+                        <tr>
+                            <th>Sorteo</th>
+                            <th>Tickets</th>
+                            <th>Total (Bs)</th>
+                            <th>Comisión</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cuerpoResumenSorteo">
+                        <tr><td colspan="4" style="text-align: center; color: #94a3b8; font-size: 13px;">Cargando historial...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="area-impresion"></div>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbzbbGiq4txDkhac4hp0h27Cy35NPeff91n1UrtSaZF7j0Bmdq2WMKi54QISa5bZjUoS/exec";
+        
+        const listaAnimalitosGlobal = [
+            "0 Delfin", "00 Ballena", "1 Carnero", "2 Toro", "3 Ciempies", "4 Alacran",
+            "5 Leon", "6 Rana", "7 Perico", "8 Raton", "9 Aguila", "10 Tigre",
+            "11 Gato", "12 Caballo", "13 Mono", "14 Paloma", "15 Zorro", "16 Oso",
+            "17 Pavo", "18 Burro", "19 Chivo", "20 Cochino", "21 Gallo", "22 Camello",
+            "23 Cebra", "24 Iguana", "25 Gallina", "26 Vaca", "27 Perro", "28 Zamuro",
+            "29 Elefante", "30 Caiman", "31 Lapa", "32 Ardilla", "33 Pescado", "34 Venado",
+            "35 Jirafa", "36 Culebra"
+        ];
+
+        let cacheTicketsGlobal = [];
+        let cacheTodosLosTicketsDelSorteo = [];
+        let animalesSorteoActual = [];
+        let podioMinimizado = false;
+        let listaRankingCache = [];
+        let indiceMensajeActual = 0;
+        let intervaloRotacionMensajes = null;
+        let temporizadorEstadisticas = null;
+        let filtroHistorialActual = 'dia';
+        let fechaDesdeCustom = '';
+        let fechaHastaCustom = '';
+        let precioCartonActual = 100;
+
+        window.onload = async function() {
+            await cargarParametrosSistemaVendedor();
+            const sesionGuardada = localStorage.getItem("sesionVendedor");
+            if (sesionGuardada) {
+                const vendedor = JSON.parse(sesionGuardada);
+                let p = Number(vendedor.precioCarton || vendedor.precioTicket || vendedor.precio || vendedor.costoCarton || 0);
+                if (p > 0) precioCartonActual = p;
+                mostrarPanelVentas(vendedor);
+            }
+            actualizarCalculoVenta();
+        };
+
+        async function cargarParametrosSistemaVendedor() {
+            try {
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify({ accion: "obtenerParametros" })
+                });
+                const data = await response.json();
+                if (data.exito && (data.precioCarton || data.precioTicket || data.precio || data.costoCarton)) {
+                    let p = Number(data.precioCarton || data.precioTicket || data.precio || data.costoCarton);
+                    if (p > 0) precioCartonActual = p;
+                }
+            } catch (e) {
+                console.error("Error al cargar parámetros iniciales:", e);
+            }
+        }
+
+        async function sincronizarParametrosAdmin() {
+            try {
+                await fetch(API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify({ accion: "obtenerParametros" })
+                });
+            } catch (e) {
+                console.error("Error en sincronización:", e);
+            }
+        }
+
+        function actualizarCalculoVenta() {
+            const inputCant = document.getElementById('cantidadCartones');
+            const lblTotal = document.getElementById('lblTotalPagar');
+            const lblPrecioUnitario = document.getElementById('lblPrecioUnitario');
+            
+            if (lblPrecioUnitario) lblPrecioUnitario.innerText = `Bs. ${precioCartonActual.toFixed(2)}`;
+            if (!inputCant || !lblTotal) return;
+            
+            let cant = parseInt(inputCant.value) || 1;
+            let total = cant * precioCartonActual;
+            lblTotal.innerText = `Bs. ${total.toFixed(2)}`;
+        }
+
+        function renderizarVisualSorteo(animalesSorteo) {
+            const contenedorVisual = document.getElementById("gridVisualAnimalitos");
+            if (!contenedorVisual) return;
+
+            contenedorVisual.innerHTML = listaAnimalitosGlobal.map(animal => {
+                let animalNum = animal.split(" ")[0].trim();
+                let animalNom = animal.replace(animalNum, "").trim();
+
+                let salio = animalesSorteo.some(a => {
+                    let aStr = a.toString().toLowerCase().trim();
+                    let aPartes = aStr.split(" ");
+                    let aNum = aPartes[0].trim();
+                    let aNom = aPartes.slice(1).join(" ").trim();
+
+                    return aStr === animal.toLowerCase() || 
+                           aNum === animalNum.toLowerCase() || 
+                           (animalNom.toLowerCase() !== "" && aStr.includes(animalNom.toLowerCase())) ||
+                           (animalNom.toLowerCase() !== "" && animalNom.toLowerCase().includes(aNum));
+                });
+
+                return `
+                    <div class="btn-animal-visual ${salio ? 'salio' : ''}">
+                        <span>${animalNum}</span>
+                        <strong>${animalNom}</strong>
+                    </div>
+                `;
+            }).join("");
+        }
+
+        function togglePodioFlotante() {
+            const cuerpo = document.getElementById('contenidoPodioFlotante');
+            const icono = document.getElementById('iconoMinimizar');
+            podioMinimizado = !podioMinimizado;
+            if (podioMinimizado) {
+                cuerpo.style.display = 'none';
+                icono.innerText = '▼';
+            } else {
+                cuerpo.style.display = 'block';
+                icono.innerText = '▲';
+            }
+        }
+
+        function cambiarTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.seccion-tab').forEach(s => s.classList.remove('active'));
+            
+            if(tab === 'ventas') {
+                document.querySelector('.tabs button:nth-child(1)').classList.add('active');
+                document.getElementById('seccion-ventas').classList.add('active');
+            } else if(tab === 'visual') {
+                document.querySelector('.tabs button:nth-child(2)').classList.add('active');
+                document.getElementById('seccion-visual').classList.add('active');
+            } else if(tab === 'tickets') {
+                document.querySelector('.tabs button:nth-child(3)').classList.add('active');
+                document.getElementById('seccion-tickets').classList.add('active');
+                cargarEstadisticas();
+            } else if(tab === 'historial') {
+                document.querySelector('.tabs button:nth-child(4)').classList.add('active');
+                document.getElementById('seccion-historial').classList.add('active');
+                actualizarHistorialVentas();
+            }
+        }
+
+        async function realizarLogin() {
+            const usuario = document.getElementById("userInput").value.trim();
+            const clave = document.getElementById("passInput").value.trim();
+            const msgLogin = document.getElementById("mensajeLogin");
+
+            if(!usuario || !clave) {
+                msgLogin.style.color = "red";
+                msgLogin.innerText = "Por favor completa ambos campos.";
+                return;
+            }
+
+            msgLogin.style.color = "#333";
+            msgLogin.innerText = "Validando credenciales...";
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify({ accion: "iniciarSesion", usuario, clave })
+                });
+
+                const data = await response.json();
+
+                if (data.exito) {
+                    let p = Number(data.precioCarton || data.precioTicket || data.precio || data.costoCarton || 0);
+                    if (p > 0) precioCartonActual = p;
+                    localStorage.setItem("sesionVendedor", JSON.stringify(data));
+                    mostrarPanelVentas(data);
+                } else {
+                    msgLogin.style.color = "red";
+                    msgLogin.innerText = data.mensaje || "Credenciales incorrectas";
+                }
+            } catch (error) {
+                msgLogin.style.color = "red";
+                msgLogin.innerText = "Error de conexión con el servidor.";
+            }
+        }
+
+        async function bucleEstadisticas() {
+            if (!document.hidden) {
+                try {
+                    await cargarEstadisticas();
+                } catch (error) {
+                    console.error("Error al actualizar estadísticas:", error);
+                }
+            }
+            temporizadorEstadisticas = setTimeout(bucleEstadisticas, 5000);
+        }
+
+        function mostrarPanelVentas(vendedor) {
+            document.getElementById("loginScreen").style.display = "none";
+            document.getElementById("panelVentas").style.display = "block";
+            document.getElementById("widget-podio-flotante").style.display = "block";
+            document.getElementById("lblNombreVendedor").innerText = vendedor.nombre;
+            if(vendedor.comision) {
+                document.getElementById("txt-porc-comision").innerText = vendedor.comision;
+            }
+            cargarEstadisticas();
+            
+            if (temporizadorEstadisticas) clearTimeout(temporizadorEstadisticas);
+            bucleEstadisticas();
+
+            if (intervaloRotacionMensajes) clearInterval(intervaloRotacionMensajes);
+            intervaloRotacionMensajes = setInterval(rotarMensajeMotivacional, 10000);
+        }
+
+        function cerrarSesion() {
+            localStorage.removeItem("sesionVendedor");
+            if (temporizadorEstadisticas) clearTimeout(temporizadorEstadisticas);
+            if (intervaloRotacionMensajes) clearInterval(intervaloRotacionMensajes);
+            document.getElementById("panelVentas").style.display = "none";
+            document.getElementById("widget-podio-flotante").style.display = "none";
+            document.getElementById("loginScreen").style.display = "block";
+            document.getElementById("userInput").value = "";
+            document.getElementById("passInput").value = "";
+            document.getElementById("mensajeLogin").innerText = "";
+        }
+
+        function cargarEstadisticas() {
+            const sesionGuardada = localStorage.getItem("sesionVendedor");
+            if (!sesionGuardada) return Promise.resolve();
+            const vendedorData = JSON.parse(sesionGuardada);
+            const nombreVendedorActual = vendedorData.nombre.trim().toLowerCase();
+
+            return fetch(API_URL, {
+                method: "POST",
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify({ accion: "obtenerEstadisticas", idVendedor: vendedorData.idVendedor })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.exito) {
+                    let p = Number(data.precioCarton || data.precioTicket || data.precio || data.costoCarton || data.precioCartonActual || 0);
+                    if (p > 0) precioCartonActual = p;
+                    actualizarCalculoVenta();
+
+                    cacheTicketsGlobal = data.tickets || [];
+                    cacheTodosLosTicketsDelSorteo = data.ticketsGlobalSorteo || data.todosLosTicketsSorteo || data.ticketsDeTodos || data.todosLosTickets || data.ticketsSorteo || data.ticketsGlobal || data.tickets || data.todos || data.sorteoTickets || data.ticketsSorteoActual || [];
+
+                    let listaSorteoCruda = data.animalesSorteo || data.ganadoresSorteo || data.animalesGanadores || data.sorteoGanadores || [];
+                    if (typeof listaSorteoCruda === 'string') {
+                        animalesSorteoActual = listaSorteoCruda.split(',').map(x => x.trim());
+                    } else if (Array.isArray(listaSorteoCruda)) {
+                        animalesSorteoActual = listaSorteoCruda;
+                    } else {
+                        animalesSorteoActual = [];
+                    }
+
+                    renderizarVisualSorteo(animalesSorteoActual);
+
+                    const totalVendido = Number(data.totalVendido) || 0;
+                    const ganancia = Number(data.ganancia) || 0;
+                    const netoEntregar = Number(data.netoEntregar) || 0;
+                    const poteActual = Number(data.poteActual) || 0;
+
+                    document.getElementById('total-vendido').innerText = `Bs. ${totalVendido.toFixed(2)}`;
+                    document.getElementById('monto-comision').innerText = `Bs. ${ganancia.toFixed(2)}`;
+                    document.getElementById('neto-entregar').innerText = `Bs. ${netoEntregar.toFixed(2)}`;
+                    document.getElementById('pote-flotante').innerText = `🏆 Pote: Bs. ${poteActual}`;
+
+                    let sorteoActualTexto = "Sorteo Activo";
+                    if (data.nroSorteo) {
+                        sorteoActualTexto = "Sorteo #" + String(data.nroSorteo).padStart(2, '0');
+                    } else if (cacheTodosLosTicketsDelSorteo.length > 0 && (cacheTodosLosTicketsDelSorteo[0].sorteo || cacheTodosLosTicketsDelSorteo[0].Sorteo || cacheTodosLosTicketsDelSorteo[0].SORTEO)) {
+                        sorteoActualTexto = cacheTodosLosTicketsDelSorteo[0].sorteo || cacheTodosLosTicketsDelSorteo[0].Sorteo || cacheTodosLosTicketsDelSorteo[0].SORTEO;
+                    } else if (cacheTicketsGlobal.length > 0 && (cacheTicketsGlobal[0].sorteo || cacheTicketsGlobal[0].Sorteo || cacheTicketsGlobal[0].SORTEO)) {
+                        sorteoActualTexto = cacheTicketsGlobal[0].sorteo || cacheTicketsGlobal[0].Sorteo || cacheTicketsGlobal[0].SORTEO;
+                    }
+                    document.getElementById('lblSorteoActualVentas').innerText = `🎲 Sorteo Actual: ${sorteoActualTexto}`;
+
+                    if (cacheTodosLosTicketsDelSorteo && cacheTodosLosTicketsDelSorteo.length > 0) {
+                        let mapaVendedores = {};
+                        cacheTodosLosTicketsDelSorteo.forEach(t => {
+                            let v = ((t.vendedor || t.Vendedor || t.VENDEDOR) || "").trim();
+                            if (!v) return;
+                            let key = v.toLowerCase();
+                            if (!mapaVendedores[key]) {
+                                mapaVendedores[key] = { nombre: v, tickets: 0, monto: 0 };
+                            }
+                            mapaVendedores[key].tickets += 1;
+                            let cantT = Number(t.cantidadCartones || t.cantidad || t.cant || 1);
+                            let montoT = Number(t.monto || t.precio || t.Monto || t.Precio || (cantT * precioCartonActual));
+                            mapaVendedores[key].monto += montoT;
+                        });
+                        let rankingCalculado = Object.values(mapaVendedores).sort((a, b) => b.monto - a.monto || b.tickets - a.tickets);
+                        if (rankingCalculado.length > 0) listaRankingCache = rankingCalculado;
+                    }
+                    renderizarRanking(listaRankingCache);
+
+                    let ganadoresPropiosSorteo = [];
+                    let ganadoresExternosSorteo = [];
+
+                    cacheTicketsGlobal.forEach(t => {
+                        let estadoUpper = ((t.estado || t.Estado || t.ESTADO) || "").toUpperCase();
+                        let sName = (t.sorteo || t.Sorteo || t.SORTEO || '').trim();
+                        let idT = t.idTicket || t.IdTicket || t.IDTICKET || t.ticket || t.Ticket || '';
+                        
+                        if (estadoUpper.includes("GANADOR")) {
+                            if (!sName || sName === sorteoActualTexto || sorteoActualTexto.includes("Sorteo Activo") || sName.includes(data.nroSorteo ? String(data.nroSorteo) : "")) {
+                                if (!ganadoresPropiosSorteo.some(x => (x.idTicket || x.IdTicket || x.IDTICKET || x.ticket || x.Ticket || '') === idT)) {
+                                    ganadoresPropiosSorteo.push(t);
+                                }
+                            }
+                        }
+                    });
+
+                    cacheTodosLosTicketsDelSorteo.forEach(t => {
+                        let estadoUpper = ((t.estado || t.Estado || t.ESTADO) || "").toUpperCase();
+                        let vendTicket = ((t.vendedor || t.Vendedor || t.VENDEDOR) || "").trim().toLowerCase();
+                        let sName = (t.sorteo || t.Sorteo || t.SORTEO || '').trim();
+                        let idT = t.idTicket || t.IdTicket || t.IDTICKET || t.ticket || t.Ticket || '';
+                        let esDeOtroVendedor = vendTicket !== "" && vendTicket !== nombreVendedorActual;
+                        
+                        if (estadoUpper.includes("GANADOR") && esDeOtroVendedor) {
+                            if (!sName || sName === sorteoActualTexto || sorteoActualTexto.includes("Sorteo Activo")) {
+                                if (!ganadoresExternosSorteo.some(x => (x.idTicket || x.IdTicket || x.IDTICKET || x.ticket || x.Ticket || '') === idT)) {
+                                    ganadoresExternosSorteo.push(t);
+                                }
+                            }
+                        }
+                    });
+
+                    renderizarTablaTickets(cacheTicketsGlobal);
+                    actualizarHistorialVentas();
+
+                    const modalElement = document.getElementById("modalTicket");
+                    if (modalElement && modalElement.style.display === "flex" && window.ultimoTicketModalAbierto) {
+                        verTicketEnModal(window.ultimoTicketModalAbierto, true);
+                    }
+
+                    const alertaPanel = document.getElementById("alertaGanadorPanel");
+                    const alertaInformativa = document.getElementById("alertaInformativaSorteo");
+
+                    if (ganadoresPropiosSorteo.length > 0) {
+                        let textoPropios = "";
+                        ganadoresPropiosSorteo.forEach(g => {
+                            let modalGana = g.modalidad || g.Modalidad || g.MODALIDAD || 'Ganador';
+                            let sName = g.sorteo || g.Sorteo || g.SORTEO || 'Sorteo';
+                            let montoPremio = g.premio || g.Premio || g.PREMIO || "Por calcular";
+                            let idT = g.idTicket || g.IdTicket || g.IDTICKET || g.ticket || g.Ticket || '';
+                            textoPropios += `Sorteo: <strong>${sName}</strong> | Ticket: <span style="text-decoration:underline; cursor:pointer;" onclick="abrirModalTicketPorId('${idT}')">${idT}</span> (${modalGana}) | Premio: <strong style="color: #1e8449;">Bs. ${montoPremio}</strong><br>`;
+                        });
+                        document.getElementById("textoDetalleGanador").innerHTML = textoPropios;
+                        alertaPanel.style.display = "block";
+                    } else {
+                        alertaPanel.style.display = "none";
+                    }
+
+                    if (ganadoresExternosSorteo.length > 0) {
+                        let textoInfo = "";
+                        ganadoresExternosSorteo.forEach(g => {
+                            let vNom = (g.vendedor || g.Vendedor || g.VENDEDOR) || "Otro Vendedor";
+                            let modalGana = g.modalidad || g.Modalidad || g.MODALIDAD || "Modalidad Ganadora";
+                            let sName = g.sorteo || g.Sorteo || g.SORTEO || "Sorteo";
+                            let montoPremio = g.premio || g.Premio || g.PREMIO || "Por calcular";
+                            let idT = g.idTicket || g.IdTicket || g.IDTICKET || g.ticket || g.Ticket || '';
+                            textoInfo += `Sorteo: <strong>${sName}</strong> | Vendedor: <strong>${vNom}</strong> | Ticket: <span style="text-decoration:underline; cursor:pointer;" onclick="abrirModalTicketPorId('${idT}')">${idT}</span> (${modalGana}) | Premio: <strong style="color: #f1c40f;">Bs. ${montoPremio}</strong><br>`;
+                        });
+                        document.getElementById("textoInformativoSorteo").innerHTML = `🏆 ¡Ya hubo ganador(es) en este sorteo!<br>` + textoInfo;
+                        alertaInformativa.style.display = "block";
+                    } else {
+                        alertaInformativa.style.display = "none";
+                    }
+                }
+            }).catch(err => console.error("Error cargando estadísticas", err));
+        }
+
+        function filtrarHistorial(rango, btnElement) {
+            filtroHistorialActual = rango;
+            document.querySelectorAll('.btn-historial-filtro').forEach(b => b.classList.remove('active'));
+            if (btnElement) btnElement.classList.add('active');
+            document.getElementById('filtroFechaDesde').value = '';
+            document.getElementById('filtroFechaHasta').value = '';
+            fechaDesdeCustom = '';
+            fechaHastaCustom = '';
+            actualizarHistorialVentas();
+        }
+
+        function aplicarFiltroFechasCustom() {
+            fechaDesdeCustom = document.getElementById('filtroFechaDesde').value;
+            fechaHastaCustom = document.getElementById('filtroFechaHasta').value;
+            if (fechaDesdeCustom || fechaHastaCustom) {
+                document.querySelectorAll('.btn-historial-filtro').forEach(b => b.classList.remove('active'));
+                filtroHistorialActual = 'custom';
+            }
+            actualizarHistorialVentas();
+        }
+
+        function parsearFechaTicket(fechaStr) {
+            if (!fechaStr) return new Date(0);
+            try {
+                let partes = fechaStr.split(',');
+                if (partes.length > 0) {
+                    let fechaPartes = partes[0].trim().split('/');
+                    if (fechaPartes.length === 3) {
+                        let dia = parseInt(fechaPartes[0], 10);
+                        let mes = parseInt(fechaPartes[1], 10) - 1;
+                        let anio = parseInt(fechaPartes[2], 10);
+                        let horaMin = partes[1] ? partes[1].trim().split(':') : [0,0];
+                        let hora = parseInt(horaMin[0], 10) || 0;
+                        let min = parseInt(horaMin[1], 10) || 0;
+                        return new Date(anio, mes, dia, hora, min);
+                    }
+                }
+                return new Date(fechaStr);
+            } catch(e) {
+                return new Date(0);
+            }
+        }
+
+        function actualizarHistorialVentas() {
+            const lblTotalVendido = document.getElementById('historialTotalVendido');
+            const lblTotalTickets = document.getElementById('historialTotalTickets');
+            const lblTotalComision = document.getElementById('historialTotalComision');
+            const cuerpoResumenSorteo = document.getElementById('cuerpoResumenSorteo');
+            
+            if (!lblTotalVendido) return;
+
+            let ahora = new Date();
+            let ticketsFiltrados = cacheTicketsGlobal.filter(t => {
+                let fechaT = parsearFechaTicket(t.fecha || t.Fecha || t.FECHA);
+                
+                if (filtroHistorialActual === 'custom') {
+                    if (isNaN(fechaT.getTime())) return true;
+                    let fechaTStr = fechaT.toISOString().split('T')[0];
+                    if (fechaDesdeCustom && fechaTStr < fechaDesdeCustom) return false;
+                    if (fechaHastaCustom && fechaTStr > fechaHastaCustom) return false;
+                    return true;
+                }
+
+                if (isNaN(fechaT.getTime())) return true;
+
+                if (filtroHistorialActual === 'dia') {
+                    return fechaT.toDateString() === ahora.toDateString();
+                } else if (filtroHistorialActual === 'semana') {
+                    let primerDiaSemana = new Date(ahora);
+                    let diaSemana = ahora.getDay() || 7;
+                    primerDiaSemana.setDate(ahora.getDate() - diaSemana + 1);
+                    primerDiaSemana.setHours(0,0,0,0);
+                    return fechaT >= primerDiaSemana;
+                } else if (filtroHistorialActual === 'mes') {
+                    return fechaT.getMonth() === ahora.getMonth() && fechaT.getFullYear() === ahora.getFullYear();
+                }
+                return true;
+            });
+
+            let sumaMonto = 0;
+            let sumaComision = 0;
+            let totalTicketsCount = ticketsFiltrados.length;
+            let porcComision = 18;
+            try {
+                porcComision = Number(document.getElementById("txt-porc-comision").innerText) || 18;
+            } catch(e){}
+
+            let mapaSorteos = {};
+
+            ticketsFiltrados.forEach(t => {
+                let cantT = Number(t.cantidadCartones || t.cantidad || t.cant || 1);
+                let montoT = Number(t.monto || t.precio || t.Monto || t.Precio || (cantT * precioCartonActual));
+                sumaMonto += montoT;
+                let comisionT = (montoT * porcComision / 100);
+                sumaComision += comisionT;
+
+                let nombreSorteo = t.sorteo || t.Sorteo || t.SORTEO || 'Sorteo General';
+                if (!mapaSorteos[nombreSorteo]) {
+                    mapaSorteos[nombreSorteo] = { sorteo: nombreSorteo, tickets: 0, monto: 0, comision: 0 };
+                }
+                mapaSorteos[nombreSorteo].tickets += 1;
+                mapaSorteos[nombreSorteo].monto += montoT;
+                mapaSorteos[nombreSorteo].comision += comisionT;
+            });
+
+            lblTotalVendido.innerText = `Bs. ${sumaMonto.toFixed(2)}`;
+            lblTotalTickets.innerText = totalTicketsCount;
+            lblTotalComision.innerText = `Bs. ${sumaComision.toFixed(2)}`;
+
+            let listaResumen = Object.values(mapaSorteos);
+            if (listaResumen.length === 0) {
+                cuerpoResumenSorteo.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #94a3b8; font-size: 13px;">No hay registros en este período.</td></tr>`;
+                return;
+            }
+
+            cuerpoResumenSorteo.innerHTML = listaResumen.map(s => {
+                return `
+                    <tr>
+                        <td><strong>${s.sorteo}</strong></td>
+                        <td>${s.tickets}</td>
+                        <td>Bs. ${s.monto.toFixed(2)}</td>
+                        <td>Bs. ${s.comision.toFixed(2)}</td>
+                    </tr>
+                `;
+            }).join("");
+        }
+
+        function renderizarRanking(rankingData) {
+            const cuerpoRanking = document.getElementById('cuerpoTablaRankingFlotante');
+            if (!cuerpoRanking) return;
+
+            if (rankingData && rankingData.length > 0) listaRankingCache = rankingData;
+
+            if (listaRankingCache && listaRankingCache.length > 0) {
+                rotarMensajeMotivacional();
+
+                cuerpoRanking.innerHTML = listaRankingCache.map((item, index) => {
+                    let posicionTexto = `#${index + 1}`;
+                    let claseFila = "";
+                    
+                    if (index === 0) {
+                        posicionTexto = "👑 1º";
+                        claseFila = "fila-lider";
+                    } else if (index === 1) {
+                        posicionTexto = "🥈 2º";
+                    } else if (index === 2) {
+                        posicionTexto = "🥉 3º";
+                    }
+
+                    let montoSeguro = Number(item.monto || 0);
+
+                    return `
+                        <tr class="${claseFila}">
+                            <td><strong>${posicionTexto}</strong></td>
+                            <td style="text-align: left; padding-left: 4px;">${item.nombre}</td>
+                            <td>${item.tickets}</td>
+                            <td>${montoSeguro.toFixed(0)}</td>
+                        </tr>
+                    `;
+                }).join("");
+            } else {
+                const bannerEstmulo = document.getElementById('bannerEstmuloRanking');
+                if (bannerEstmulo) bannerEstmulo.innerHTML = "🚀 ¡Sé el primero en vender en este sorteo!";
+                cuerpoRanking.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #94a3b8; font-size: 11px;">Sin ventas aún.</td></tr>`;
+            }
+        }
+
+        function rotarMensajeMotivacional() {
+            const bannerEstmulo = document.getElementById('bannerEstmuloRanking');
+            if (!bannerEstmulo) return;
+
+            const sesionGuardada = localStorage.getItem("sesionVendedor");
+            let nombreVendedorActual = "";
+            if (sesionGuardada) {
+                try {
+                    nombreVendedorActual = JSON.parse(sesionGuardada).nombre.trim().toLowerCase();
+                } catch(e) {}
+            }
+
+            let posicionUsuario = -1;
+            let ticketsUsuario = 0;
+            let ticketsLider = 0;
+
+            if (listaRankingCache.length > 0) {
+                ticketsLider = Number(listaRankingCache[0].tickets || 0);
+                listaRankingCache.forEach((item, idx) => {
+                    if (item.nombre.trim().toLowerCase() === nombreVendedorActual) {
+                        posicionUsuario = idx + 1;
+                        ticketsUsuario = Number(item.tickets || 0);
+                    }
+                });
+            }
+
+            let poolMensajes = [];
+
+            if (posicionUsuario === 1) {
+                poolMensajes = [
+                    `👑 ¡Vas de 1º! Defiende tu trono con más ventas.`,
+                    `🔥 ¡Imparable! Mantén la ventaja en la cima.`,
+                    `💪 ¡Nadie te quita el primer lugar hoy!`
+                ];
+            } else if (posicionUsuario > 1) {
+                let diferencia = ticketsLider - ticketsUsuario;
+                poolMensajes = [
+                    `⚡ Vas de #${posicionUsuario}. ¡A ${diferencia === 0 ? 1 : diferencia} ticket(s) de cazar al líder!`,
+                    `🎯 ¡El 1er puesto está cerquita! Vende un poco más.`,
+                    `🏃‍♂️ ¡Acelera el paso! Ese primer lugar puede ser tuyo.`
+                ];
+            } else {
+                poolMensajes = [
+                    `🔥 ¡Entra al podio! A ofrecer tus cartones.`,
+                    `⏰ ¡El sorteo está activo! Sube tus ventas ya.`,
+                    `💰 ¡Gana tu comisión y asciende en la tabla!`
+                ];
+            }
+
+            indiceMensajeActual = (indiceMensajeActual + 1) % poolMensajes.length;
+            bannerEstmulo.innerHTML = poolMensajes[indiceMensajeActual];
+        }
+
+        function renderizarTablaTickets(tickets) {
+            const contenedorTickets = document.getElementById('contenedorAcordeonesTickets');
+            if (!contenedorTickets) return;
+
+            if(tickets.length === 0) {
+                contenedorTickets.innerHTML = `<div style="text-align: center; color: #94a3b8; font-size: 13px; padding: 15px;">No hay tickets registrados.</div>`;
+                return;
+            }
+
+            let gruposSorteos = {};
+            tickets.forEach(t => {
+                let sorteoT = t.sorteo || t.Sorteo || t.SORTEO || 'Sorteo General';
+                if (!gruposSorteos[sorteoT]) {
+                    gruposSorteos[sorteoT] = [];
+                }
+                gruposSorteos[sorteoT].push(t);
+            });
+
+            let sorteosKeys = Object.keys(gruposSorteos);
+
+            contenedorTickets.innerHTML = sorteosKeys.map((sorteoNombre, index) => {
+                let ticketsDelSorteo = gruposSorteos[sorteoNombre];
+                let estaAbierto = index === 0 ? 'open' : '';
+
+                let filasHtml = ticketsDelSorteo.map(t => {
+                    const idT = t.idTicket || t.IdTicket || t.IDTICKET || t.ticket || t.Ticket || '';
+                    const numsRaw = t.numeros || t.Numeros || t.NUMEROS || '';
+                    const fechaT = t.fecha || t.Fecha || t.FECHA || '';
+                    const estadoT = t.estado || t.Estado || t.ESTADO || 'Pendiente';
+                    const numerosStr = Array.isArray(numsRaw) ? numsRaw.join(", ") : numsRaw;
+
+                    const mensajeWs = encodeURIComponent(`🎰 *BINGO ANIMALITOS* 🎰\nTicket: ${idT}\nSorteo: ${sorteoNombre}\nFecha: ${fechaT}\nLotería: ${t.loteria || 'Lotto Activo y La Granjita'}\nNúmeros:\n${numerosStr}\n¡Mucha Suerte! 🍀`);
+                    
+                    let estadoUpper = estadoT.toUpperCase();
+                    let claseBadge = "badge-pendiente";
+                    
+                    if (estadoUpper.includes("GANADOR")) {
+                        claseBadge = "badge-ganador";
+                    } else if (estadoUpper.includes("NO GANÓ") || estadoUpper.includes("NO GAN") || estadoUpper.includes("PERDIÓ")) {
+                        claseBadge = "badge-no-ganado";
+                    }
+
+                    return `
+                        <tr>
+                            <td><span class="ticket-link" onclick='verTicketEnModal("${idT}")'>${idT}</span></td>
+                            <td>${fechaT}</td>
+                            <td><span class="${claseBadge}">${estadoT}</span></td>
+                            <td>
+                                <button class="btn-accion btn-print" onclick='reimprimirTanda("${fechaT}")' title="Reimprimir">🖨️</button>
+                                <a href="https://wa.me/?text=${mensajeWs}" target="_blank" class="btn-accion btn-wa" title="Enviar por WhatsApp">💬</a>
+                            </td>
+                        </tr>
+                    `;
+                }).join("");
+
+                return `
+                    <details class="acordeon-sorteo" ${estaAbierto}>
+                        <summary>🎟️ ${sorteoNombre} (${ticketsDelSorteo.length} tickets)</summary>
+                        <div class="acordeon-contenido">
+                            <table class="tabla-tickets">
+                                <thead>
+                                    <tr>
+                                        <th>Ticket</th>
+                                        <th>Fecha</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${filasHtml}
+                                </tbody>
+                            </table>
+                        </div>
+                    </details>
+                `;
+            }).join("");
+        }
+
+        function filtrarTicketsTabla() {
+            let filtro = document.getElementById("buscadorTicket").value.toLowerCase();
+            let ticketsFiltrados = cacheTicketsGlobal.filter(t => {
+                let idT = (t.idTicket || t.IdTicket || t.IDTICKET || t.ticket || t.Ticket || '').toLowerCase();
+                let sorteoT = (t.sorteo || t.Sorteo || t.SORTEO || '').toLowerCase();
+                return idT.includes(filtro) || sorteoT.includes(filtro);
+            });
+            renderizarTablaTickets(ticketsFiltrados);
+        }
+
+        function verTicketEnModal(idTicket, esRefrescoEnVivo = false) {
+            window.ultimoTicketModalAbierto = idTicket;
+            let ticketEncontrado = cacheTicketsGlobal.find(t => String(t.idTicket || t.IdTicket || t.IDTICKET || t.ticket || t.Ticket || '').trim() === String(idTicket).trim()) || 
+                                   cacheTodosLosTicketsDelSorteo.find(t => String(t.idTicket || t.IdTicket || t.IDTICKET || t.ticket || t.Ticket || '').trim() === String(idTicket).trim());
+            if (!ticketEncontrado) {
+                if (!esRefrescoEnVivo) alert("No se encontró la información detallada del ticket: " + idTicket);
+                return;
+            }
+
+            let numsArray = (ticketEncontrado.numeros || ticketEncontrado.Numeros || ticketEncontrado.NUMEROS || ticketEncontrado.carton || ticketEncontrado.Carton || '');
+            if (typeof numsArray === 'string') {
+                try {
+                    if (numsArray.trim().startsWith('[')) {
+                        numsArray = JSON.parse(numsArray);
+                    } else {
+                        numsArray = numsArray.split(',').map(s => s.trim());
+                    }
+                } catch(e) {
+                    numsArray = numsArray.split(',').map(s => s.trim());
+                }
+            } else if (!Array.isArray(numsArray)) {
+                numsArray = [];
+            }
+
+            let modalidad = ticketEncontrado.modalidad || ticketEncontrado.Modalidad || ticketEncontrado.MODALIDAD || "Pendiente";
+            let estadoTicket = ticketEncontrado.estado || ticketEncontrado.Estado || ticketEncontrado.ESTADO || "Pendiente";
+            
+            let sorteoTicket = ticketEncontrado.sorteo || ticketEncontrado.Sorteo || ticketEncontrado.SORTEO || ticketEncontrado.referencia;
+            if (!sorteoTrust(sorteoTicket)) {
+                let lblSorteoTexto = document.getElementById('lblSorteoActualVentas').innerText;
+                sorteoTicket = lblSorteoTexto.replace("🎲 Sorteo Actual: ", "").trim();
+            }
+            
+            let vendedorTicket = (ticketEncontrado.vendedor || ticketEncontrado.Vendedor || ticketEncontrado.VENDEDOR) || document.getElementById("lblNombreVendedor").innerText;
+            let idTicketReal = (ticketEncontrado.idTicket || ticketEncontrado.IdTicket || ticketEncontrado.IDTICKET || ticketEncontrado.ticket || ticketEncontrado.Ticket || idTicket);
+
+            let indicesGanadoresExactos = [];
+            
+            if (estadoTicket.toUpperCase().includes("GANADOR")) {
+                const esAnimalGanadorSorteo = (n) => {
+                    if (animalesSorteoActual.length === 0) return true; 
+                    let numLimpioStr = n.toString().trim();
+                    let partes = numLimpioStr.split(" ");
+                    let numNum = partes[0].trim();
+                    let nomNom = partes.slice(1).join(" ").trim().toLowerCase();
+
+                    return animalesSorteoActual.some(a => {
+                        let aStr = a.toString().toLowerCase().trim();
+                        let aPartes = aStr.split(" ");
+                        let aNum = aPartes[0].trim();
+                        let aNom = aPartes.slice(1).join(" ").trim();
+
+                        return aStr === numLimpioStr.toLowerCase() || 
+                               aStr === numNum.toLowerCase() || 
+                               (nomNom !== "" && aStr.includes(nomNom)) ||
+                               (nomNom !== "" && aNom.includes(nomNom));
+                    });
+                };
+
+                const lineasCandidatas = [
+                    { nombre: "Diagonal Principal", indices: [0, 5, 10, 15] },
+                    { nombre: "Diagonal Secundaria", indices: [3, 6, 9, 12] },
+                    { nombre: "Fila 1", indices: [0, 1, 2, 3] },
+                    { nombre: "Fila 2", indices: [4, 5, 6, 7] },
+                    { nombre: "Fila 3", indices: [8, 9, 10, 11] },
+                    { nombre: "Fila 4", indices: [12, 13, 14, 15] },
+                    { nombre: "Columna 1", indices: [0, 4, 8, 12] },
+                    { nombre: "Columna 2", indices: [1, 5, 9, 13] },
+                    { nombre: "Columna 3", indices: [2, 6, 10, 14] },
+                    { nombre: "Columna 4", indices: [3, 7, 11, 15] },
+                    { nombre: "4 Esquinas", indices: [0, 3, 12, 15] }
+                ];
+
+                let lineasValidasEncontradas = lineasCandidatas.filter(linea => 
+                    linea.indices.every(i => esAnimalGanadorSorteo(numsArray[i]))
+                );
+
+                if (lineasValidasEncontradas.length > 0) {
+                    let indicesSet = new Set();
+                    lineasValidasEncontradas.forEach(l => {
+                        l.indices.forEach(idx => indicesSet.add(idx));
+                    });
+                    indicesGanadoresExactos = Array.from(indicesSet);
+                } else {
+                    indicesGanadoresExactos = [3, 6, 9, 12];
+                }
+            }
+
+            let tablaHtml = '<table class="tabla-modal-carton"><tr>';
+            numsArray.forEach((num, index) => {
+                if (index > 0 && index % 4 === 0) {
+                    tablaHtml += '</tr><tr>';
+                }
+                let numLimpio = num ? num.toString().replace(/\s+/g, ' ').trim() : '';
+                let claseCelda = "";
+
+                let animalNumeroLimpio = numLimpio.split(" ")[0].trim(); 
+                let animalNombreLimpio = numLimpio.replace(animalNumeroLimpio, "").trim().toLowerCase(); 
+
+                let salioEnSorteo = animalesSorteoActual.some(a => {
+                    let aStr = a.toString().toLowerCase().trim();
+                    let aPartes = aStr.split(" ");
+                    let aNum = aPartes[0].trim();
+                    let aNom = aPartes.slice(1).join(" ").trim();
+
+                    return aStr === numLimpio.toLowerCase() || 
+                           aStr === animalNumeroLimpio.toLowerCase() || 
+                           (animalNombreLimpio !== "" && aStr.includes(animalNombreLimpio)) ||
+                           (animalNombreLimpio !== "" && animalNombreLimpio.includes(aNum));
+                });
+
+                if (estadoTicket.toUpperCase().includes("GANADOR") && indicesGanadoresExactos.includes(index)) {
+                    claseCelda = "celda-premiada";
+                } else if (salioEnSorteo) {
+                    claseCelda = "celda-marcada-sorteo";
+                }
+
+                tablaHtml += `<td class="${claseCelda}">${numLimpio}</td>`;
+            });
+            tablaHtml += '</tr></table>';
+
+            let htmlMontoPremio = "";
+            if (estadoTicket.toUpperCase().includes("GANADOR")) {
+                let montoM = ticketEncontrado.premio || ticketEncontrado.Premio || ticketEncontrado.PREMIO || "Por calcular";
+                htmlMontoPremio = `<strong>Premio:</strong> <span style="color: #e74c3c; font-size: 14px; font-weight: bold;">Bs. ${montoM}</span><br>`;
+            }
+
+            document.getElementById("detalleModalTicket").innerHTML = `
+                <strong>Ticket:</strong> ${idTicketReal}<br>
+                <strong>Sorteo:</strong> ${sorteoTicket}<br>
+                <strong>Vendedor:</strong> ${vendedorTicket}<br>
+                <strong>Modalidad:</strong> <span style="color: #27ae60; font-weight: bold;">${modalidad}</span><br>
+                ${htmlMontoPremio}
+                <strong>Estado:</strong> ${estadoTicket}
+            `;
+            document.getElementById("contenedorTablaModal").innerHTML = tablaHtml;
+            document.getElementById("modalTicket").style.display = "flex";
+        }
+
+        function sorteoTrust(val) {
+            return val && val !== "Sorteo Actual" && val !== "-";
+        }
+
+        function abrirModalTicketPorId(idTicket) {
+            verTicketEnModal(idTicket);
+        }
+
+        function cerrarModalTicket() {
+            window.ultimoTicketModalAbierto = null;
+            document.getElementById("modalTicket").style.display="none";
+        }
+
+        function iniciarProcesoVenta() {
+            const sesionGuardada = localStorage.getItem("sesionVendedor");
+            if (!sesionGuardada) {
+                alert("Sesión expirada. Por favor inicia sesión nuevamente.");
+                cerrarSesion();
+                return;
+            }
+
+            document.getElementById("pmBanco").value = "";
+            document.getElementById("pmCedula").value = "";
+            document.getElementById("pmTelefono").value = "";
+            document.getElementById("modalPagoMovil").style.display = "flex";
+        }
+
+        function confirmarPagoMovilEImprimir() {
+            const banco = document.getElementById("pmBanco").value.trim();
+            const cedula = document.getElementById("pmCedula").value.trim();
+            const telefono = document.getElementById("pmTelefono").value.trim();
+
+            if (!banco || !cedula || !telefono) {
+                alert("Por favor completa los 3 datos de pago móvil (Banco, Cédula y Teléfono).");
+                return;
+            }
+
+            document.getElementById("modalPagoMovil").style.display = "none";
+            ejecutarVentaConPagoMovil({ banco, cedula, telefono, referencia: "" });
+        }
+
+        function cancelarPagoMovil() {
+            document.getElementById("modalPagoMovil").style.display = "none";
+            alert("Venta cancelada.");
+        }
+
+        async function ejecutarVentaConPagoMovil(pagoMovilData) {
+            const sesionGuardada = localStorage.getItem("sesionVendedor");
+            if (!sesionGuardada) return;
+            const vendedorData = JSON.parse(sesionGuardada);
+            const cantidadCartones = document.getElementById("cantidadCartones").value;
+            const btn = document.getElementById("btnVender");
+            const mensaje = document.getElementById("mensaje");
+
+            btn.disabled = true;
+            mensaje.style.color = "#333";
+            mensaje.innerText = "Procesando venta y registrando pago móvil...";
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify({
+                        accion: "vender",
+                        idVendedor: vendedorData.idVendedor,
+                        vendedor: vendedorData.nombre,
+                        cantidadCartones: cantidadCartones,
+                        loteria: "Lotto Activo y La Granjita",
+                        banco: pagoMovilData.banco,
+                        cedula: pagoMovilData.cedula,
+                        telefono: pagoMovilData.telefono,
+                        referencia: pagoMovilData.referencia || ""
+                    })
+                });
+
+                const data = await response.json();
+
+                if(data.exito) {
+                    let p = Number(data.precioCarton || data.precioTicket || data.precio || data.costoCarton || 0);
+                    if (p > 0) precioCartonActual = p;
+                    mensaje.style.color = "green";
+                    mensaje.innerText = "¡Venta y pago móvil registrados con éxito!";
+                    if(data.poteActual) {
+                        document.getElementById('pote-flotante').innerText = `🏆 Pote: Bs. ${data.poteActual}`;
+                    }
+                    
+                    sincronizarParametrosAdmin();
+                    cargarEstadisticas();
+                    generarTicketsImpresion(data);
+
+                    setTimeout(() => { mensaje.innerText = ""; }, 3000);
+                } else {
+                    mensaje.style.color = "red";
+                    mensaje.innerText = "Error: " + (data.mensaje || "No se pudo procesar la venta.");
+                }
+            } catch (error) {
+                mensaje.style.color = "red";
+                mensaje.innerText = "Error de conexión con la base de datos.";
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        function generarTicketsImpresion(data) {
+            const areaImpresion = document.getElementById("area-impresion");
+            areaImpresion.innerHTML = "";
+            
+            const tickets = data.tickets || [];
+            const t0 = tickets[0] || {};
+            const sorteoActual = (t0.sorteo || t0.Sorteo || t0.SORTEO || t0.referencia) ? (t0.sorteo || t0.Sorteo || t0.SORTEO || t0.referencia) : (data.sorteoActual || "Sorteo #01");
+            const vendedorNombre = data.vendedor || document.getElementById("lblNombreVendedor").innerText || "Vendedor";
+            const precioUnitario = data.precioTicket || data.precioCarton || precioCartonActual || 100;
+            const precioTotal = precioUnitario * tickets.length;
+            const fechaTicket = t0.fecha || t0.Fecha || t0.FECHA || new Date().toLocaleString();
+            const idsText = tickets.map(t => t.idTicket || t.IdTicket || t.IDTICKET || t.ticket || t.Ticket || '').join(", ");
+            
+            let cartonesHtml = "";
+            tickets.forEach((ticket, idx) => {
+                let numsArray = (ticket.numeros || ticket.Numeros || ticket.NUMEROS || '');
+                if (typeof numsArray === 'string') {
+                    try {
+                        if (numsArray.trim().startsWith('[')) {
+                            numsArray = JSON.parse(numsArray);
+                        } else {
+                            numsArray = numsArray.split(',').map(s => s.trim());
+                        }
+                    } catch(e) {
+                        numsArray = numsArray.split(',').map(s => s.trim());
+                    }
+                } else if (!Array.isArray(numsArray)) {
+                    numsArray = [];
+                }
+
+                let tablaHtml = '<table class="tabla-carton"><tr>';
+                numsArray.forEach((num, index) => {
+                    if (index > 0 && index % 4 === 0) {
+                        tablaHtml += '</tr><tr>';
+                    }
+                    let numLimpio = num ? num.toString().replace(/\s+/g, ' ').trim() : '';
+                    tablaHtml += `<td>${numLimpio}</td>`;
+                });
+                tablaHtml += '</tr></table>';
+
+                const tId = ticket.idTicket || ticket.IdTicket || ticket.IDTICKET || ticket.ticket || ticket.Ticket || '';
+                cartonesHtml += `
+                    <div style="margin: 6px 0; border-top: 1px dotted #000; padding-top: 4px;">
+                        <div style="font-size: 8.5px; font-weight: bold; text-align: left;">Cartón #${idx + 1} - Ticket: ${tId}</div>
+                        ${tablaHtml}
+                    </div>
+                `;
+            });
+
+            areaImpresion.innerHTML = `
+                <div class="ticket-item">
+                    <div class="ticket-title">BINGO ANIMALITOS</div>
+                    <div style="font-size:9px; font-weight:bold; margin-bottom:2px;">Lotto Activo y La Granjita</div>
+                    <div style="font-size:8.5px; font-weight:bold; margin-bottom:4px;">TICKET MÚLTIPLE (${tickets.length} Cartones)</div>
+                    
+                    <div class="ticket-info">
+                        <div>FECHA: ${fechaTicket}</div>
+                        <div>SORTEO: ${sorteoActual}</div>
+                        <div>VENDEDOR: ${vendedorNombre}</div>
+                        <div>TICKETS: ${idsText}</div>
+                        <div>TOTAL PAGADO: Bs. ${precioTotal.toFixed(2)}</div>
+                    </div>
+
+                    ${cartonesHtml}
+
+                    <div style="font-size: 9px; font-weight: bold; text-align: left; margin: 5px 0; border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 4px 0;">
+                        <div>• 4 Esquinas • Horizontal</div>
+                        <div>• Columna    • Linea Diagonal</div>
+                    </div>
+
+                    <div class="ticket-footer">
+                        Revise sus tickets.<br>
+                        Si hay 2 o más ganadores al mismo tiempo, el pote acumulado se reparte por igual.<br>
+                        ¡Mucha Suerte! 🍀
+                    </div>
+                    <br>
+                </div>
+            `;
+            
+            setTimeout(() => {
+                window.print();
+            }, 300);
+        }
+
+        function reimprimirTanda(fechaTanda) {
+            let ticketsMismaTanda = cacheTicketsGlobal.filter(t => (t.fecha || t.Fecha || t.FECHA) === fechaTanda);
+            if(ticketsMismaTanda.length === 0) {
+                alert("No se encontraron los tickets de esta tanda para reimprimir.");
+                return;
+            }
+            const t0 = ticketsMismaTanda[0] || {};
+            generarTicketsImpresion({ tickets: ticketsMismaTanda, sorteoActual: t0.sorteo || t0.Sorteo || t0.SORTEO || t0.referencia });
+        }
+    </script>
+</body>
+</html>

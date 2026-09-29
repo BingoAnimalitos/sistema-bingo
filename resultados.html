@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultados y Probabilidades - Bingo Animalitos</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background-color: #0b0f19; color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; font-size: 0.95rem; }
+        
+        .navbar-custom { background: #1e293b; border: 1px solid #334155; padding: 15px 25px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
+        .nav-left, .nav-center, .nav-right { flex: 1; display: flex; align-items: center; }
+        .nav-left { justify-content: flex-start; gap: 10px; flex-direction: column; align-items: flex-start; }
+        .nav-center { justify-content: center; }
+        .nav-right { justify-content: flex-end; text-align: right; gap: 12px; }
+
+        .title-main { color: #facc15; font-weight: bold; font-size: 1.2rem; }
+        .badge-live-tag { background: #ef4444; color: white; padding: 4px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: bold; animation: pulseLive 2s infinite; display: inline-flex; align-items: center; gap: 5px; }
+        
+        @keyframes pulseLive {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .sorteo-global-badge { background: linear-gradient(135deg, #1e40af, #3b82f6); border: 1px solid #60a5fa; color: #fff; padding: 5px 14px; border-radius: 8px; font-weight: bold; font-size: 0.95rem; letter-spacing: 0.5px; box-shadow: 0 0 10px rgba(59, 130, 246, 0.4); }
+
+        .pote-container { background: linear-gradient(135deg, #7c2d12, #c2410c); border: 2px solid #fb923c; border-radius: 10px; padding: 8px 25px; text-align: center; box-shadow: 0 0 20px rgba(251, 146, 60, 0.3); }
+        .pote-title { font-size: 0.75rem; text-transform: uppercase; color: #ffedd5; letter-spacing: 1px; font-weight: bold; }
+        .pote-amount { font-size: 1.4rem; font-weight: bold; color: #fef08a; }
+
+        .clock-box { background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; padding: 6px 14px; border-radius: 8px; display: inline-flex; flex-direction: column; align-items: flex-end; }
+        #live-clock { font-weight: bold; color: #38bdf8; font-size: 1.1rem; letter-spacing: 0.5px; }
+        #live-date { font-size: 0.8rem; color: #cbd5e1; font-weight: 500; }
+
+        .main-container { display: flex; gap: 20px; flex-wrap: wrap; align-items: stretch; }
+        .column-left { flex: 2.5; min-width: 480px; display: flex; flex-direction: column; }
+        .column-right { flex: 0.8; min-width: 280px; max-width: 320px; display: flex; flex-direction: column; }
+
+        .card-custom { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); height: 100%; display: flex; flex-direction: column; justify-content: space-between; }
+        
+        .winner-box { background: linear-gradient(135deg, #0f172a, #1e293b); border: 2px solid #3b82f6; border-radius: 10px; padding: 20px; text-align: center; margin-bottom: 20px; box-shadow: 0 0 15px rgba(59, 130, 246, 0.2); }
+        .winners-grid { display: flex; gap: 15px; margin-top: 12px; }
+        .winner-card-item { flex: 1; background: #0b0f19; padding: 15px; border-radius: 8px; border: 1px solid #334155; text-align: center; }
+        .winner-card-title { font-size: 0.8rem; font-weight: bold; text-transform: uppercase; display: block; margin-bottom: 6px; letter-spacing: 1px; }
+        .winner-result-text { font-size: 1.2rem; font-weight: bold; color: #ffffff; }
+
+        .results-grid-day { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+        .hour-card-item { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px 15px; display: flex; flex-direction: column; gap: 8px; }
+        .hour-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; padding-bottom: 6px; }
+        .hour-label { font-weight: bold; color: #facc15; font-size: 0.9rem; }
+        .lottery-mini-res { display: flex; justify-content: space-between; font-size: 0.85rem; color: #cbd5e1; }
+        .lottery-mini-res span.admin-blanco { font-weight: bold; color: #ffffff; }
+
+        #tickets-table-container { flex-grow: 1; display: flex; flex-direction: column; position: relative; margin-top: 5px; min-height: 380px; overflow: hidden; }
+        
+        .table-responsive { 
+            width: 100%; 
+            opacity: 1;
+            transition: opacity 0.6s ease-in-out, transform 0.6s ease-in-out;
+            transform: translateY(0);
+        }
+        .table-responsive.fade-out { 
+            opacity: 0; 
+            transform: translateY(-8px);
+        }
+
+        table { width: 100%; border-collapse: collapse; color: #f8fafc; }
+        th, td { padding: 7px 6px; text-align: left; border-bottom: 1px solid #334155; font-size: 0.8rem; }
+        th { color: #94a3b8; font-weight: 600; background: #1e293b; }
+        
+        .badge { padding: 3px 6px; border-radius: 6px; font-size: 0.65rem; font-weight: bold; }
+        .bg-warning { background: #facc15; color: #000; }
+        .bg-danger { background: #ef4444; color: #fff; }
+        .bg-success { background: #22c55e; color: #fff; }
+
+        .progress-bar-bg { background: #334155; height: 4px; border-radius: 3px; width: 100%; overflow: hidden; margin-bottom: 2px; }
+        .progress-bar-fill { height: 100%; }
+
+        /* MODAL SORTEO VIVO */
+        #modal-sorteo-vivo {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(5, 8, 17, 0.85); backdrop-filter: blur(8px);
+            display: none; justify-content: center; align-items: center; z-index: 9999;
+            opacity: 0; transition: opacity 0.4s ease;
+        }
+        #modal-sorteo-vivo.show { display: flex; opacity: 1; }
+        .modal-content-box {
+            background: #1e293b; border: 2px solid #3b82f6; border-radius: 16px;
+            padding: 30px; width: 90%; max-width: 500px; text-align: center;
+            box-shadow: 0 0 40px rgba(59, 130, 246, 0.4);
+            animation: popupScale 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        @keyframes popupScale {
+            0% { transform: scale(0.7); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .modal-title-top { color: #facc15; font-size: 1.1rem; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; letter-spacing: 1px; }
+        .modal-subtitle-horario { color: #38bdf8; font-size: 1rem; font-weight: 600; margin-bottom: 20px; }
+        .roulette-container { display: flex; gap: 15px; justify-content: center; margin-bottom: 20px; }
+        .roulette-box { flex: 1; background: #0b0f19; border: 2px solid #475569; border-radius: 12px; padding: 20px 10px; }
+        .roulette-box-title { font-size: 0.85rem; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; }
+        .roulette-screen {
+            font-size: 1.3rem; font-weight: bold; color: #38bdf8; min-height: 50px;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(30, 41, 59, 0.6); border-radius: 8px; border: 1px dashed #475569;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- POPUP DE SORTEO EN VIVO -->
+    <div id="modal-sorteo-vivo">
+        <div class="modal-content-box">
+            <div class="modal-title-top">🚨 ¡SORTEO OFICIAL EN PROCESO! 🚨</div>
+            <div id="modal-horario-texto" class="modal-subtitle-horario">Sorteo en curso</div>
+            
+            <div class="roulette-container">
+                <div class="roulette-box" style="border-color: #38bdf8;">
+                    <div class="roulette-box-title" style="color: #38bdf8;">Lotto Activo</div>
+                    <div id="roulette-lotto" class="roulette-screen">🎲 Girando...</div>
+                </div>
+                <div class="roulette-box" style="border-color: #f43f5e;">
+                    <div class="roulette-box-title" style="color: #f43f5e;">La Granjita</div>
+                    <div id="roulette-granjita" class="roulette-screen">🎲 Girando...</div>
+                </div>
+            </div>
+
+            <p style="color: #38bdf8; font-size: 0.9rem; font-weight: bold; letter-spacing: 0.5px;">🍀 ¡La suerte está echada! Revelando ganadores... 🍀</p>
+        </div>
+    </div>
+
+    <!-- MODAL DE ALERTA DE GANADOR EN EL TV -->
+    <div id="modal-ganador-tv" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5, 8, 17, 0.9); backdrop-filter: blur(10px); display: none; justify-content: center; align-items: center; z-index: 10000;">
+        <div style="background: linear-gradient(135deg, #1e293b, #0f172a); border: 3px solid #facc15; border-radius: 20px; padding: 35px; width: 90%; max-width: 600px; text-align: center; box-shadow: 0 0 50px rgba(250, 204, 21, 0.5);">
+            <div style="font-size: 3rem; margin-bottom: 5px;">🏆</div>
+            <h2 style="color: #facc15; font-size: 1.6rem; text-transform: uppercase; margin-bottom: 5px; letter-spacing: 1px;">¡BINGO! ¡HAY GANADOR(ES)!</h2>
+            <p id="tv-ganador-horario" style="color: #38bdf8; font-size: 1.1rem; font-weight: bold; margin-bottom: 15px;"></p>
+            <div id="tv-ganadores-lista-container" style="max-height: 250px; overflow-y: auto; margin-bottom: 20px; padding-right: 5px; display: flex; flex-direction: column; gap: 10px;"></div>
+            <button onclick="cerrarModalGanadorTV()" style="background: #22c55e; color: #fff; border: none; padding: 10px 25px; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer;">Aceptar / Cerrar</button>
+        </div>
+    </div>
+
+    <!-- Cabecera -->
+    <div class="navbar-custom">
+        <div class="nav-left">
+            <span class="title-main">LOTTO ACTIVO & GRANJITA</span>
+            <div style="display: flex; gap: 10px; align-items: center; margin-top: 5px;">
+                <span class="badge-live-tag">🔴 EN VIVO</span>
+                <span id="sorteo-global-actual" class="sorteo-global-badge">Sorteo: #01</span>
+            </div>
+        </div>
+
+        <div class="nav-center">
+            <div class="pote-container">
+                <div class="pote-title">🔥 Pote Acumulado Bingo 🔥</div>
+                <div class="pote-amount">0.00 Bs</div>
+            </div>
+        </div>
+
+        <div class="nav-right">
+            <div class="clock-box">
+                <div id="live-clock">00:00:00</div>
+                <div id="live-date">Cargando...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenedor Principal -->
+    <div class="main-container">
+        
+        <!-- COLUMNA IZQUIERDA -->
+        <div class="column-left">
+            <div class="card-custom">
+                <div>
+                    <div class="winner-box">
+                        <span class="badge bg-warning mb-2" id="last-sorteo-badge" style="font-size: 0.8rem;">⚡ ÚLTIMO SORTEO OFICIAL</span>
+                        <div class="winners-grid">
+                            <div class="winner-card-item">
+                                <span class="winner-card-title" style="color: #38bdf8;">Lotto Activo</span>
+                                <div class="winner-result-text" id="last-lotto">Cargando...</div>
+                            </div>
+                            <div class="winner-card-item">
+                                <span class="winner-card-title" style="color: #f43f5e;">La Granjita</span>
+                                <div class="winner-result-text" id="last-granjita">Cargando...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h4 id="titulo-resultados" style="font-size: 1.05rem; color: #38bdf8; border-bottom: 2px solid #334155; padding-bottom: 10px; margin-bottom: 15px; font-weight: 600;">
+                        📋 Resultados del Día <span id="fecha-subtitulo" style="color: #facc15;"></span>
+                    </h4>
+                </div>
+                
+                <div class="results-grid-day"></div>
+            </div>
+        </div>
+
+        <!-- COLUMNA DERECHA -->
+        <div class="column-right">
+            <div class="card-custom">
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; padding-bottom: 8px; margin-bottom: 8px;">
+                        <h4 style="font-size: 0.9rem; color: #0ea5e9;">📊 Tickets (Sorteo Activo)</h4>
+                        <span id="ticket-page-indicator" style="font-size: 0.75rem; color: #94a3b8;">1/1</span>
+                    </div>
+
+                    <div id="tickets-table-container">
+                        <div class="table-responsive" id="ticket-table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Ticket ID</th>
+                                        <th>Prob.</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tickets-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <small style="color: #94a3b8; display: block; margin-top: 10px; font-size: 0.7rem; line-height: 1.4;">* Rotando bloques de 12 tickets automáticamente.</small>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        const URL_API = "https://script.google.com/macros/s/AKfycbzbbGiq4txDkhac4hp0h27Cy35NPeff91n1UrtSaZF7j0Bmdq2WMKi54QISa5bZjUoS/exec"; 
+        const INTERVALO_REFRESCO = 5000; 
+
+        const HORARIOS_ESTANDAR = [
+            "09:00 AM", "10:00 AM", "11:00 AM", "12:00 PM", 
+            "01:00 PM", "02:00 PM", "03:00 PM", "04:00 PM", 
+            "05:00 PM", "06:00 PM", "07:00 PM"
+        ];
+
+        const LISTA_ANIMALITOS_RANDOM = [
+            "01 Carnero", "02 Toro", "03 Ciempiés", "04 Alacrán", "05 León", "06 Rana",
+            "07 Perico", "08 Ratón", "09 Águila", "10 Tigre", "11 Gato", "12 Caballo",
+            "13 Mono", "14 Paloma", "15 Zorro", "16 Oso", "17 Pavo", "18 Burro",
+            "19 Chivo", "20 Cochino", "21 Gallo", "22 Camello", "23 Zebra", "24 Iguana",
+            "25 Gallina", "26 Vaca", "27 Perro", "28 Zamuro", "29 Elefante", "30 Caiman",
+            "31 Lapa", "32 Ardilla", "33 Pescado", "34 Venado", "35 Jirafa", "36 Culebra", "00 Ballena", "0 Delfín"
+        ];
+
+        let horariosRevelados = JSON.parse(localStorage.getItem('horariosRevelados') || "{}");
+        let ganadorMostradoEnTV = JSON.parse(localStorage.getItem('ganadorMostradoEnTV') || "{}");
+        let esPrimeraCarga = true;
+        let animacionEnCurso = false;
+        let temporizadorCierrePopup = null;
+        let ultimoClaveGanadorProcesado = "";
+
+        let allActiveTickets = [];
+        let ticketCurrentPage = 0;
+        const TICKETS_PER_PAGE = 12;
+        let ticketSliderInterval = null;
+
+        function obtenerEmojiAnimal(nombre) {
+            if (!nombre) return '🐾';
+            const n = nombre.toLowerCase();
+            if (n.includes('delfin')) return '🐬';
+            if (n.includes('ballena')) return '🐋';
+            if (n.includes('carnero')) return '🐏';
+            if (n.includes('toro')) return '🐂';
+            if (n.includes('ciempie')) return '🐛';
+            if (n.includes('alacran')) return '🦂';
+            if (n.includes('leon')) return '🦁';
+            if (n.includes('rana')) return '🐸';
+            if (n.includes('perico')) return '🦜';
+            if (n.includes('raton')) return '🐁';
+            if (n.includes('aguila')) return '🦅';
+            if (n.includes('tigre')) return '🐅';
+            if (n.includes('gato')) return '🐈';
+            if (n.includes('caballo')) return '🐎';
+            if (n.includes('mono')) return '🐒';
+            if (n.includes('paloma')) return '🕊️';
+            if (n.includes('zorro')) return '🦊';
+            if (n.includes('oso')) return '🐻';
+            if (n.includes('pavo')) return '🦃';
+            if (n.includes('burro')) return '🐴';
+            if (n.includes('chivo')) return '🐐';
+            if (n.includes('cochino') || n.includes('puerco')) return '🐖';
+            if (n.includes('gallo')) return '🐓';
+            if (n.includes('camello')) return '🐪';
+            if (n.includes('zebra') || n.includes('cebra')) return '🦓';
+            if (n.includes('iguana')) return '🦎';
+            if (n.includes('gallina')) return '🐔';
+            if (n.includes('vaca')) return '🐄';
+            if (n.includes('perro')) return '🐕';
+            if (n.includes('zamuro')) return '🦅';
+            if (n.includes('elefante')) return '🐘';
+            if (n.includes('caiman')) return '🐊';
+            if (n.includes('lapa')) return '🐹'; 
+            if (n.includes('ardilla')) return '🐿️';
+            if (n.includes('pescado')) return '🐟';
+            if (n.includes('venado')) return '🦌';
+            if (n.includes('jirafa')) return '🦒';
+            if (n.includes('culebra')) return '🐍';
+            return '🐾';
+        }
+
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('live-clock').innerText = now.toLocaleTimeString();
+            const fechaFormateada = now.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            document.getElementById('live-date').innerText = fechaFormateada;
+            const spanFecha = document.getElementById('fecha-subtitulo');
+            if (spanFecha) spanFecha.innerText = `(${fechaFormateada})`;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        function cerrarModalGanadorTV() {
+            document.getElementById('modal-ganador-tv').style.display = 'none';
+            if (temporizadorCierrePopup) {
+                clearTimeout(temporizadorCierrePopup);
+                temporizadorCierrePopup = null;
+            }
+        }
+
+        function dispararPopupSorteoEnVivo(horario, animalLottoFinal, animalGranjitaFinal, callbackDespues) {
+            animacionEnCurso = true;
+            const modal = document.getElementById('modal-sorteo-vivo');
+            const txtHorario = document.getElementById('modal-horario-texto');
+            const screenLotto = document.getElementById('roulette-lotto');
+            const screenGranjita = document.getElementById('roulette-granjita');
+
+            txtHorario.innerText = `Sorteo Oficial Hora: ${horario}`;
+            modal.classList.add('show');
+
+            let contadorGiro = 0;
+            const intervaloAnimacion = setInterval(() => {
+                let rand1 = LISTA_ANIMALITOS_RANDOM[Math.floor(Math.random() * LISTA_ANIMALITOS_RANDOM.length)];
+                let rand2 = LISTA_ANIMALITOS_RANDOM[Math.floor(Math.random() * LISTA_ANIMALITOS_RANDOM.length)];
+                
+                screenLotto.innerHTML = `${obtenerEmojiAnimal(rand1)} ${rand1}`;
+                screenGranjita.innerHTML = `${obtenerEmojiAnimal(rand2)} ${rand2}`;
+                
+                contadorGiro++;
+                if (contadorGiro > 35) { 
+                    clearInterval(intervaloAnimacion);
+
+                    const emojiL = obtenerEmojiAnimal(animalLottoFinal);
+                    const emojiG = obtenerEmojiAnimal(animalGranjitaFinal);
+
+                    // AQUÍ SÍ SE MANTIENE EL VERDE EN EL POPUP COMO LO PEDISTE
+                    screenLotto.innerHTML = `<span style="color: #22c55e; font-weight: bold;">${emojiL} ${animalLottoFinal}</span>`;
+                    screenGranjita.innerHTML = `<span style="color: #22c55e; font-weight: bold;">${emojiG} ${animalGranjitaFinal}</span>`;
+
+                    setTimeout(() => {
+                        modal.classList.remove('show');
+                        animacionEnCurso = false;
+                        if (callbackDespues) callbackDespues();
+                    }, 2800); 
+                }
+            }, 120);
+        }
+
+        function verificarGanadoresTV() {
+            let ganadoresPorTickets = allActiveTickets.filter(t => String(t.badgeText || "").trim().toUpperCase() === "GANADOR");
+            
+            if (ganadoresPorTickets.length > 0) {
+                let claveUnicaGanadores = ganadoresPorTickets.map(t => t.id).join('-');
+                ultimoClaveGanadorProcesado = claveUnicaGanadores;
+
+                if (!ganadorMostradoEnTV[claveUnicaGanadores]) {
+                    ganadorMostradoEnTV[claveUnicaGanadores] = true;
+                    localStorage.setItem('ganadorMostradoEnTV', JSON.stringify(ganadorMostradoEnTV));
+                    
+                    document.getElementById('tv-ganador-horario').innerText = `¡Sorteo Oficial Finalizado!`;
+                    
+                    const contenedorLista = document.getElementById('tv-ganadores-lista-container');
+                    contenedorLista.innerHTML = "";
+
+                    let textoPote = document.querySelector('.pote-amount')?.innerText || "0";
+                    let valorPoteNumerico = parseFloat(textoPote.replace(/\./g, '').replace(',', '.').replace(' Bs', '')) || 0;
+                    let premioPorGanador = valorPoteNumerico / ganadoresPorTickets.length;
+
+                    ganadoresPorTickets.forEach(t => {
+                        let itemDiv = document.createElement('div');
+                        itemDiv.style.cssText = "background: #0b0f19; border: 2px dashed #facc15; border-radius: 10px; padding: 12px; text-align: center;";
+                        let premioIndividualFormateado = premioPorGanador.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+                        itemDiv.innerHTML = `
+                            <div style="color: #fff; font-size: 1.2rem; font-weight: bold; margin-bottom: 4px;">Ticket ID: ${t.id}</div>
+                            <div style="color: #22c55e; font-size: 1.1rem; font-weight: bold;">Premio: ${premioIndividualFormateado} Bs</div>
+                        `;
+                        contenedorLista.appendChild(itemDiv);
+                    });
+
+                    document.getElementById('modal-ganador-tv').style.display = 'flex';
+                    if (temporizadorCierrePopup) clearTimeout(temporizadorCierrePopup);
+                    temporizadorCierrePopup = setTimeout(() => { cerrarModalGanadorTV(); }, 30000);
+                }
+            } else {
+                const modalTV = document.getElementById('modal-ganador-tv');
+                if (modalTV && modalTV.style.display === 'flex') cerrarModalGanadorTV();
+                ultimoClaveGanadorProcesado = "";
+            }
+        }
+
+        async function sincronizarDatosBackend() {
+            if (animacionEnCurso) return; 
+
+            try {
+                const resEstado = await fetch(URL_API, {
+                    method: "POST",
+                    body: JSON.stringify({ accion: "obtenerEstadoJuego" })
+                });
+                const dataEstado = await resEstado.json();
+
+                let numSorteoVal = "1";
+                if (dataEstado && dataEstado.exito) {
+                    const elPote = document.querySelector('.pote-amount');
+                    if (elPote) elPote.innerText = `${Number(dataEstado.pote || 0).toLocaleString('es-VE')} Bs`;
+
+                    numSorteoVal = dataEstado.nroSorteo || dataEstado.sorteo || dataEstado.NumeroSorteo || dataEstado.numeroSorteo || "1";
+                    const elSorteoGlobal = document.getElementById('sorteo-global-actual');
+                    if (elSorteoGlobal) {
+                        elSorteoGlobal.innerText = `Sorteo: #${String(numSorteoVal).padStart(2, '0')}`;
+                    }
+                }
+
+                let referenciaBusqueda = `Sorteo #${String(numSorteoVal).padStart(2, '0')}`;
+
+                const resTickets = await fetch(URL_API, {
+                    method: "POST",
+                    body: JSON.stringify({ accion: "obtenerTickets" })
+                });
+                const dataRes = await resTickets.json();
+                let dataTickets = dataRes.tickets || dataRes;
+
+                allActiveTickets = [];
+
+                if (Array.isArray(dataTickets)) {
+                    let ticketsFiltrados = dataTickets.filter(t => {
+                        let refTicket = String(t.referencia || "").trim();
+                        return refTicket.toLowerCase() === referenciaBusqueda.toLowerCase();
+                    });
+
+                    if (ticketsFiltrados.length > 0) {
+                        const ticketsUnicosMap = new Map();
+                        ticketsFiltrados.forEach(t => {
+                            let idUnico = String(t.idTicket || t.id || "").trim();
+                            if (idUnico && !ticketsUnicosMap.has(idUnico)) ticketsUnicosMap.set(idUnico, t);
+                        });
+
+                        ticketsUnicosMap.forEach((t, idUnico) => {
+                            let estadoReal = String(t.estado || "ACTIVO").trim().toUpperCase();
+                            let probVal = estadoReal === "GANADOR" ? 100 : (estadoReal === "NO GANÓ" ? 0 : (Math.random() * 50 + 40).toFixed(1));
+                            let color = estadoReal === "GANADOR" ? "#22c55e" : (estadoReal === "NO GANÓ" ? "#ef4444" : "#0ea5e9");
+                            let badgeText = estadoReal === "GANADOR" ? "GANADOR" : (estadoReal === "NO GANÓ" ? "NO GANÓ" : "En disputa");
+                            let badgeClass = estadoReal === "GANADOR" ? "bg-success" : (estadoReal === "NO GANÓ" ? "bg-danger" : "bg-warning");
+                            let customBg = estadoReal === "GANADOR" ? "" : (estadoReal === "NO GANÓ" ? "" : "#475569");
+
+                            allActiveTickets.push({
+                                id: idUnico,
+                                prob: parseFloat(probVal),
+                                color: color,
+                                badgeText: badgeText,
+                                badgeClass: badgeClass,
+                                customBg: customBg
+                            });
+                        });
+                    }
+                }
+
+                if (!ticketSliderInterval && allActiveTickets.length > 0) iniciarSliderTickets();
+                renderTicketsPage();
+                verificarGanadoresTV();
+
+                const resResultados = await fetch(URL_API, {
+                    method: "POST",
+                    body: JSON.stringify({ accion: "obtenerResultados" })
+                });
+                const dataResultados = await resResultados.json();
+
+                let listaResultados = [];
+                if (Array.isArray(dataResultados)) listaResultados = dataResultados;
+                else if (dataResultados.resultados && Array.isArray(dataResultados.resultados)) listaResultados = dataResultados.resultados;
+
+                let horarioParaAnimar = null;
+
+                HORARIOS_ESTANDAR.forEach(h => {
+                    const rL = listaResultados.find(r => (r.horaSorteo || r.Hora_Sorteo || "") === h && String(r.loteria || r.Loteria || "").toLowerCase().includes("lotto"));
+                    const rG = listaResultados.find(r => (r.horaSorteo || r.Hora_Sorteo || "") === h && String(r.loteria || r.Loteria || "").toLowerCase().includes("granjita"));
+                    
+                    const animalLotto = rL ? (rL.animalito || rL.Animalito) : null;
+                    const animalGranjita = rG ? (rG.animalito || rG.Animalito) : null;
+
+                    if (animalLotto && animalGranjita && animalLotto !== '---' && animalGranjita !== '---') {
+                        let claveHorarioActual = `${h}-${animalLotto}-${animalGranjita}`;
+
+                        if (esPrimeraCarga) {
+                            horariosRevelados[h] = claveHorarioActual;
+                        } else if (!horariosRevelados[h] || horariosRevelados[h] !== claveHorarioActual) {
+                            if (!horarioParaAnimar) {
+                                horarioParaAnimar = {
+                                    horario: h,
+                                    lotto: animalLotto,
+                                    granjiita: animalGranjita,
+                                    granjita: animalGranjita,
+                                    clave: claveHorarioActual
+                                };
+                            }
+                        }
+                    }
+                });
+
+                if (esPrimeraCarga) {
+                    esPrimeraCarga = false;
+                    localStorage.setItem('horariosRevelados', JSON.stringify(horariosRevelados));
+                    actualizarInterfazResultados(listaResultados);
+                } else if (horarioParaAnimar) {
+                    actualizarInterfazResultados(listaResultados);
+                    dispararPopupSorteoEnVivo(horarioParaAnimar.horario, horarioParaAnimar.lotto, horarioParaAnimar.granjita, () => {
+                        horariosRevelados[horarioParaAnimar.horario] = horarioParaAnimar.clave;
+                        localStorage.setItem('horariosRevelados', JSON.stringify(horariosRevelados));
+                        actualizarInterfazResultados(listaResultados);
+                    });
+                    return;
+                } else {
+                    actualizarInterfazResultados(listaResultados);
+                }
+
+            } catch (error) {
+                console.error("Error al conectar con Google Apps Script:", error);
+            }
+        }
+
+        function renderTicketsPage() {
+            const tbody = document.getElementById('tickets-tbody');
+            const pageIndicator = document.getElementById('ticket-page-indicator');
+            if (!tbody) return;
+
+            if (allActiveTickets.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #64748b; padding: 20px;">Sin tickets registrados</td></tr>`;
+                if (pageIndicator) pageIndicator.innerText = "0/0";
+                return;
+            }
+
+            const totalPages = Math.ceil(allActiveTickets.length / TICKETS_PER_PAGE);
+            if (ticketCurrentPage >= totalPages) ticketCurrentPage = 0;
+
+            const startIdx = ticketCurrentPage * TICKETS_PER_PAGE;
+            const currentSlice = allActiveTickets.slice(startIdx, startIdx + TICKETS_PER_PAGE);
+
+            tbody.innerHTML = "";
+            currentSlice.forEach(ticket => {
+                let badgeHTML = ticket.badgeClass ? 
+                    `<span class="badge ${ticket.badgeClass}">${ticket.badgeText}</span>` :
+                    `<span class="badge" style="background: ${ticket.customBg}; color: #fff;">${ticket.badgeText}</span>`;
+
+                let row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong style="color: #facc15;">${ticket.id}</strong></td>
+                    <td>
+                        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: ${ticket.prob}%; background: ${ticket.color};"></div></div>
+                        <span style="color: ${ticket.color}; font-size: 0.7rem; font-weight: bold;">${ticket.prob}%</span>
+                    </td>
+                    <td>${badgeHTML}</td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            if (pageIndicator) pageIndicator.innerText = `${ticketCurrentPage + 1}/${totalPages}`;
+        }
+
+        function iniciarSliderTickets() {
+            if (ticketSliderInterval) clearInterval(ticketSliderInterval);
+            ticketSliderInterval = setInterval(() => {
+                if (allActiveTickets.length <= TICKETS_PER_PAGE) return;
+                const wrapper = document.getElementById('ticket-table-wrapper');
+                if (wrapper) wrapper.classList.add('fade-out');
+
+                setTimeout(() => {
+                    ticketCurrentPage++;
+                    const totalPages = Math.ceil(allActiveTickets.length / TICKETS_PER_PAGE);
+                    if (ticketCurrentPage >= totalPages) ticketCurrentPage = 0;
+                    renderTicketsPage();
+                    if (wrapper) wrapper.classList.remove('fade-out');
+                }, 500);
+            }, 4500); 
+        }
+
+        function actualizarInterfazResultados(resultados) {
+            const gridContainer = document.querySelector('.results-grid-day');
+            if (!gridContainer) return;
+            gridContainer.innerHTML = "";
+
+            let ultimoSorteoValido = null;
+
+            HORARIOS_ESTANDAR.forEach(horario => {
+                const resLotto = resultados.find(r => String(r.horaSorteo || r.Hora_Sorteo || "").trim() === horario && String(r.loteria || r.Loteria || "").toLowerCase().includes("lotto"));
+                const resGranjita = resultados.find(r => String(r.horaSorteo || r.Hora_Sorteo || "").trim() === horario && String(r.loteria || r.Loteria || "").toLowerCase().includes("granjita"));
+                
+                let animalLotto = resLotto ? (resLotto.animalito || resLotto.Animalito) : null;
+                let animalGranjita = resGranjita ? (resGranjita.animalito || resGranjita.Animalito) : null;
+
+                let claveActual = `${horario}-${animalLotto}-${animalGranjita}`;
+                let estaRevelado = horariosRevelados[horario] === claveActual;
+
+                let cardHtml = '';
+                if (animalLotto && animalGranjita && animalLotto !== '---' && animalGranjita !== '---' && estaRevelado) {
+                    ultimoSorteoValido = { horario, animalLotto, animalGranjita };
+                    
+                    cardHtml = `
+                        <div class="hour-card-item">
+                            <div class="hour-header"><span class="hour-label">${horario}</span><span class="badge bg-success">Oficial</span></div>
+                            <div class="lottery-mini-res"><span style="color: #38bdf8;">Lotto:</span> <span class="admin-blanco">${obtenerEmojiAnimal(animalLotto)} ${animalLotto}</span></div>
+                            <div class="lottery-mini-res"><span style="color: #f43f5e;">Granjita:</span> <span class="admin-blanco">${obtenerEmojiAnimal(animalGranjita)} ${animalGranjita}</span></div>
+                        </div>
+                    `;
+                } else {
+                    cardHtml = `
+                        <div class="hour-card-item" style="opacity: 0.6;">
+                            <div class="hour-header"><span class="hour-label">${horario}</span><span style="font-size: 0.7rem; color: #64748b;">Próximo</span></div>
+                            <div class="lottery-mini-res"><span style="color: #38bdf8;">Lotto:</span> <span style="color: #64748b;">Pendiente</span></div>
+                            <div class="lottery-mini-res"><span style="color: #f43f5e;">Granjita:</span> <span style="color: #64748b;">Pendiente</span></div>
+                        </div>
+                    `;
+                }
+                gridContainer.innerHTML += cardHtml;
+            });
+
+            if (ultimoSorteoValido) {
+                document.querySelector('.winner-box').innerHTML = `
+                    <span class="badge bg-warning mb-2" style="font-size: 0.8rem;">⚡ ÚLTIMO SORTEO OFICIAL (${ultimoSorteoValido.horario})</span>
+                    <div class="winners-grid">
+                        <div class="winner-card-item">
+                            <span class="winner-card-title" style="color: #38bdf8;">Lotto Activo</span>
+                            <div class="winner-result-text">${obtenerEmojiAnimal(ultimoSorteoValido.animalLotto)} ${ultimoSorteoValido.animalLotto}</div>
+                        </div>
+                        <div class="winner-card-item">
+                            <span class="winner-card-title" style="color: #f43f5e;">La Granjita</span>
+                            <div class="winner-result-text">${obtenerEmojiAnimal(ultimoSorteoValido.animalGranjita)} ${ultimoSorteoValido.animalGranjita}</div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                document.querySelector('.winner-box').innerHTML = `
+                    <span class="badge bg-warning mb-2" style="font-size: 0.8rem;">⚡ ÚLTIMO SORTEO OFICIAL</span>
+                    <div class="winners-grid">
+                        <div class="winner-card-item">
+                            <span class="winner-card-title" style="color: #38bdf8;">Lotto Activo</span>
+                            <div class="winner-result-text" style="color: #fff;">Esperando sorteo...</div>
+                        </div>
+                        <div class="winner-card-item">
+                            <span class="winner-card-title" style="color: #f43f5e;">La Granjita</span>
+                            <div class="winner-result-text" style="color: #fff;">Esperando sorteo...</div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        sincronizarDatosBackend();
+        setInterval(sincronizarDatosBackend, INTERVALO_REFRESCO);
+    </script>
+</body>
+</html>

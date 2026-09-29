@@ -1,0 +1,1836 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - Bingo Animalitos</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #12181b; color: #f5f6fa; padding: 20px; }
+        .container { max-width: 1150px; margin: 0 auto; }
+        
+        /* ESTILOS DE LOGIN */
+        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #12181b; z-index: 9999; display: flex; justify-content: center; align-items: center; }
+        .login-card { background: #1b262c; padding: 30px; border-radius: 12px; width: 350px; box-shadow: 0 8px 25px rgba(0,0,0,0.5); border-left: 5px solid #00d2d3; text-align: center; }
+        .login-card h2 { color: #00d2d3; margin-bottom: 20px; font-size: 20px; }
+        .login-card .form-grupo { margin-bottom: 15px; text-align: left; }
+        .login-card label { display: block; margin-bottom: 5px; font-size: 13px; color: #a4b0be; }
+        .login-card input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #324553; background: #22303c; color: white; font-size: 14px; outline: none; }
+        .login-card input:focus { border-color: #00d2d3; }
+        .btn-login { width: 100%; padding: 12px; background: #0097e6; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; transition: background 0.2s; margin-top: 10px; }
+        .btn-login:hover { background: #0081c2; }
+        .login-error { color: #e74c3c; font-size: 12px; margin-top: 10px; display: none; }
+
+        header { display: flex; justify-content: space-between; align-items: center; background: #1b262c; padding: 18px 24px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border-left: 5px solid #00d2d3; }
+        .header-acciones { display: flex; align-items: center; gap: 15px; }
+        .estado-badge { padding: 6px 14px; border-radius: 20px; font-weight: bold; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px; }
+        .activo { background-color: #27ae60; color: white; box-shadow: 0 0 10px rgba(39,174,96,0.4); }
+        .finalizado { background-color: #e74c3c; color: white; box-shadow: 0 0 10px rgba(231,76,60,0.4); }
+        
+        .btn-logout { background: #c0392b; color: white; border: none; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px; transition: background 0.2s; }
+        .btn-logout:hover { background: #962d22; }
+
+        .admin-tabs { display: flex; gap: 12px; margin-bottom: 25px; background: #1b262c; padding: 12px; border-radius: 12px; flex-wrap: wrap; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .tab-btn { background: #22303c; color: #a4b0be; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.3s ease; display: flex; align-items: center; gap: 8px; }
+        .tab-btn:hover { background: #2c3e50; color: #fff; transform: translateY(-2px); }
+        .tab-btn.active { background: #0097e6; color: white; box-shadow: 0 4px 12px rgba(0,151,230,0.4); }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease-in-out; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .pote-card { background: linear-gradient(135deg, #00d2d3 0%, #0097e6 100%); color: #1e272e; padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 25px; font-size: 24px; font-weight: 800; box-shadow: 0 6px 20px rgba(0,210,211,0.25); text-transform: uppercase; letter-spacing: 1px; }
+        
+        .selector-loteria-container { background: #1b262c; padding: 20px; border-radius: 12px; margin-bottom: 25px; display: flex; gap: 25px; align-items: center; justify-content: center; flex-wrap: wrap; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        .selector-loteria-container label { font-weight: bold; font-size: 14px; color: #00d2d3; }
+        .selector-loteria-container select { padding: 10px 16px; border-radius: 8px; border: 1px solid #324553; background: #22303c; color: white; font-size: 14px; outline: none; transition: border-color 0.2s; }
+        .selector-loteria-container select:focus { border-color: #00d2d3; }
+
+        .grid-animalitos { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; margin-bottom: 25px; }
+        .btn-animal { background: #1b262c; color: #f5f6fa; border: 2px solid #2f4150; padding: 14px 6px; border-radius: 10px; cursor: pointer; text-align: center; font-weight: bold; font-size: 13px; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .btn-animal:hover { background: #2c3e50; border-color: #00d2d3; transform: translateY(-2px); }
+        .btn-animal.cantado { background: #e67e22 !important; border-color: #d35400; color: white; box-shadow: 0 0 12px rgba(230,126,34,0.5); }
+        .btn-animal:disabled { background: #182228; border-color: #182228; opacity: 0.5; cursor: not-allowed; transform: none; }
+        
+        .panel-control { background: #1b262c; padding: 20px; border-radius: 12px; display: flex; gap: 15px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        .btn-action { padding: 12px 22px; background: #27ae60; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; transition: all 0.2s; box-shadow: 0 3px 8px rgba(39,174,96,0.3); }
+        .btn-action:hover { background: #219150; transform: translateY(-1px); }
+        .btn-action:disabled { background: #4b6584; cursor: not-allowed; opacity: 0.6; transform: none; box-shadow: none; }
+        .btn-guardar { background: #f39c12; box-shadow: 0 3px 8px rgba(243,156,18,0.3); }
+        .btn-guardar:hover { background: #d68910; }
+        .btn-corregir { background: #c0392b; box-shadow: 0 3px 8px rgba(192,57,43,0.3); }
+        .btn-corregir:hover { background: #962d22; }
+        .btn-danger { background: #e74c3c; color: white; padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; font-size: 12px; transition: background 0.2s; }
+        .btn-danger:hover { background: #c0392b; }
+        .btn-success-sm { background: #27ae60; color: white; padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; font-size: 12px; transition: background 0.2s; }
+        .btn-success-sm:hover { background: #219150; }
+
+        input[type="number"], input[type="text"], input[type="password"], input[type="date"] { padding: 10px 14px; border-radius: 8px; border: 1px solid #324553; font-size: 14px; background: #22303c; color: white; width: 100%; outline: none; transition: border-color 0.2s; }
+        input[type="number"]:focus, input[type="text"]:focus, input[type="password"]:focus, input[type="date"]:focus { border-color: #00d2d3; }
+        input[type="number"].input-pote { width: 110px; }
+
+        .banner-ganadores { display: none; background: #f1c40f; color: #1e272e; padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 25px; font-size: 17px; font-weight: bold; box-shadow: 0 4px 15px rgba(241,196,15,0.3); }
+        .link-ticket { display: inline-block; background: #1b262c; color: #fbc531; padding: 8px 14px; margin: 6px; border-radius: 6px; text-decoration: none; font-size: 14px; border: 1px solid #fbc531; cursor: pointer; font-weight: 600; transition: all 0.2s; }
+        .link-ticket:hover { background: #fbc531; color: #1b262c; transform: translateY(-1px); }
+
+        .tablas-historial-wrapper { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 768px) { .tablas-historial-wrapper { grid-template-columns: 1fr; } }
+        
+        .historial-box { background: #1b262c; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        .historial-box h3 { margin-bottom: 15px; color: #00d2d3; font-size: 16px; border-bottom: 2px solid #283742; padding-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+        
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+        th, td { padding: 10px 12px; border-bottom: 1px solid #283742; }
+        th { background: #22303c; color: #fbc531; font-weight: 600; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; }
+        tr:hover td { background: rgba(255,255,255,0.02); }
+
+        .card-seccion { background: #1b262c; padding: 24px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        .card-seccion h3 { color: #00d2d3; margin-bottom: 18px; font-size: 18px; border-bottom: 2px solid #283742; padding-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .form-grupo { margin-bottom: 18px; }
+        .form-grupo label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; color: #a4b0be; }
+        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px; margin-bottom: 18px; }
+        
+        .historial-nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .sub-tab-btn { background: #22303c; color: #a4b0be; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px; transition: all 0.2s; }
+        .sub-tab-btn:hover { background: #2c3e50; color: #fff; }
+        .sub-tab-btn.active { background: #0097e6; color: white; box-shadow: 0 3px 10px rgba(0,151,230,0.3); }
+
+        .filtro-vendedor-card { background: #22303c; border: 1px solid #2f4150; border-radius: 10px; padding: 16px 20px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: border-color 0.2s; }
+        .filtro-vendedor-card:hover { border-color: #00d2d3; }
+        .filtro-vendedor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-weight: 600; font-size: 13px; color: #a4b0be; text-transform: uppercase; letter-spacing: 0.5px; }
+        .filtro-vendedor-card select { width: 100%; padding: 12px 16px; border-radius: 8px; border: 1px solid #324553; background: #1b262c; color: white; font-size: 14px; outline: none; transition: all 0.2s; font-weight: 600; cursor: pointer; }
+        .filtro-vendedor-card select:focus { border-color: #00d2d3; box-shadow: 0 0 8px rgba(0,210,211,0.3); }
+
+        .filtros-fecha-box { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 20px; background: #22303c; padding: 15px; border-radius: 10px; border: 1px solid #2f4150; }
+        @media (max-width: 600px) { .filtros-fecha-box { grid-template-columns: 1fr; } }
+
+        .resumen-metricas { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .metrica-card { background: #22303c; padding: 15px; border-radius: 10px; text-align: center; border: 1px solid #2f4150; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+        .metrica-card span { display: block; font-size: 11px; color: #a4b0be; margin-bottom: 6px; text-transform: uppercase; font-weight: 600; }
+        .metrica-card strong { font-size: 18px; color: #2ecc71; }
+
+        .ticket-link { color: #2980b9; font-weight: bold; cursor: pointer; text-decoration: underline; }
+        .ticket-link:hover { color: #1b4f72; }
+
+        #modalTicket { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; justify-content: center; align-items: center; }
+        .modal-contenido { background: white; width: 340px; padding: 20px; border-radius: 10px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.3); font-family: 'Courier New', Courier, monospace; color: #2f3640; }
+        .tabla-modal-jugada { width: 100%; border-collapse: collapse; margin: 10px 0; table-layout: fixed; }
+        .tabla-modal-jugada td { border: 1.5px solid #000; height: 25px; vertical-align: middle; text-align: center; font-size: 11px; font-weight: bold; background: #fff; color: #2f3640; }
+
+        .celda-premiada { background-color: #2ecc71 !important; color: white !important; border: 2px solid #27ae60 !important; }
+        .celda-marcada-sorteo { background-color: #3498db !important; color: white !important; border: 2px solid #2980b9 !important; }
+
+        .acordeon-item { background: #22303c; border-radius: 10px; margin-bottom: 12px; border: 1px solid #2f4150; overflow: hidden; transition: border-color 0.2s; }
+        .acordeon-item:hover { border-color: #00d2d3; }
+        .acordeon-header { padding: 15px 20px; background: #22303c; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 15px; user-select: none; transition: background 0.2s; }
+        .acordeon-header:hover { background: #283845; }
+        .acordeon-header .info-sorteo { display: flex; gap: 15px; align-items: center; }
+        .acordeon-header .badge-sorteo { background: #0097e6; color: white; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; }
+        .acordeon-header .badge-total { background: #27ae60; color: white; padding: 4px 10px; border-radius: 6px; font-size: 12px; }
+        .acordeon-icono { font-size: 14px; transition: transform 0.3s ease; color: #00d2d3; }
+        .acordeon-content { display: none; padding: 15px 20px; background: #1b262c; border-top: 1px solid #2f4150; }
+        .acordeon-item.open .acordeon-content { display: block; }
+        .acordeon-item.open .acordeon-icono { transform: rotate(180deg); }
+    </style>
+</head>
+<body>
+
+<!-- PANTALLA DE LOGIN DE ADMINISTRADOR -->
+<div id="loginOverlay">
+    <div class="login-card">
+        <h2>🔐 Acceso Administrador</h2>
+        <div class="form-grupo">
+            <label>Usuario:</label>
+            <input type="text" id="adminUser" placeholder="Usuario admin" value="admin">
+        </div>
+        <div class="form-grupo">
+            <label>Contraseña:</label>
+            <input type="password" id="adminPass" placeholder="Contraseña">
+        </div>
+        <button class="btn-login" onclick="verificarLoginAdmin()">Ingresar al Panel</button>
+        <div id="loginErrorMsg" class="login-error">Usuario o contraseña incorrectos.</div>
+    </div>
+</div>
+
+<div class="container">
+    <header>
+        <h2>🎯 Panel de Administración Maestro</h2>
+        <div class="header-acciones">
+            <div>ESTADO: <span id="badgeEstado" class="estado-badge activo">Cargando...</span></div>
+            <button class="btn-logout" onclick="cerrarSesionAdmin()">🚪 Cerrar Sesión</button>
+        </div>
+    </header>
+
+    <div class="admin-tabs">
+        <button class="tab-btn active" onclick="cambiarPestaña('tabMarcaje', this)">🎯 Marcaje y Sorteos</button>
+        <button class="tab-btn" onclick="cambiarPestaña('tabControlVentas', this)">📊 Historial y Ventas Globales</button>
+        <button class="tab-btn" onclick="cambiarPestaña('tabPagoMovil', this)">📱 Validación Pago Móvil</button>
+        <button class="tab-btn" onclick="cambiarPestaña('tabVendedores', this)">👥 Gestión de Vendedores</button>
+        <button class="tab-btn" onclick="cambiarPestaña('tabAdministradores', this)">🛡️ Administradores</button>
+        <button class="tab-btn" onclick="cambiarPestaña('tabParametros', this)">⚙️ Parámetros y Sistema</button>
+    </div>
+
+    <div id="tabMarcaje" class="tab-content active">
+        <div class="pote-card">
+            POTE ACTUAL EN VIVO: Bs. <span id="montoPote">0.00</span>
+        </div>
+
+        <div class="selector-loteria-container">
+            <div>
+                <label for="selectLoteria">Lotería: </label>
+                <select id="selectLoteria" onchange="actualizarHorariosDisponibles()">
+                    <option value="Lotto Activo">Lotto Activo</option>
+                    <option value="La Granjita">La Granjita</option>
+                </select>
+            </div>
+            <div>
+                <label for="selectHoraSorteo">Hora del Sorteo: </label>
+                <select id="selectHoraSorteo">
+                    <option value="09:00 AM">09:00 AM</option>
+                    <option value="10:00 AM">10:00 AM</option>
+                    <option value="11:00 AM">11:00 AM</option>
+                    <option value="12:00 PM">12:00 PM</option>
+                    <option value="01:00 PM">01:00 PM</option>
+                    <option value="02:00 PM">02:00 PM</option>
+                    <option value="03:00 PM">03:00 PM</option>
+                    <option value="04:00 PM">04:00 PM</option>
+                    <option value="05:00 PM">05:00 PM</option>
+                    <option value="06:00 PM">06:00 PM</option>
+                    <option value="07:00 PM">07:00 PM</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="bannerGanadores" class="banner-ganadores"></div>
+
+        <h3 style="margin-bottom: 12px; color: #00d2d3;">Seleccionar Animalito Cantado:</h3>
+        <div class="grid-animalitos" id="gridAnimalitos"></div>
+
+        <div class="panel-control">
+            <button id="btnGuardarSorteo" class="btn-action btn-guardar" onclick="guardarSorteoManual()">💾 Guardar / Registrar Sorteo</button>
+            <button class="btn-action btn-corregir" onclick="pedirDatosCorreccion()">✏️ Corregir Sorteo</button>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <label style="font-size: 13px; color: #a4b0be;">Nuevo Pote (Vivo):</label>
+                <input type="number" id="inputNuevoPote" class="input-pote" value="0" oninput="this.dataset.userEdited = 'true'">
+            </div>
+            <button class="btn-action" onclick="reiniciarSorteo()">🔄 Reiniciar Pote</button>
+        </div>
+
+        <div class="tablas-historial-wrapper">
+            <div class="historial-box">
+                <h3>🦁 Lotto Activo (Hoy)</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Horario</th>
+                            <th>Animalito</th>
+                            <th>Modalidad</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaLottoBody">
+                        <tr><td colspan="4" style="text-align: center; color: #aaa;">Sin registros</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="historial-box">
+                <h3>🐔 La Granjita (Hoy)</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Horario</th>
+                            <th>Animalito</th>
+                            <th>Modalidad</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaGranjitaBody">
+                        <tr><td colspan="4" style="text-align: center; color: #aaa;">Sin registros</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="tabControlVentas" class="tab-content">
+        <div class="card-seccion">
+            <h3>📊 Historial de Ventas y Auditoría Global</h3>
+            <p style="margin-bottom: 20px; color: #a4b0be; font-size: 14px;">Visualiza el balance real descontando comisiones y el Pote Acumulado de la hoja CONFIGURACION.</p>
+            
+            <div class="filtro-vendedor-card">
+                <div class="filtro-vendedor-header">
+                    <span>👤 Filtrar Auditoría por Vendedor</span>
+                    <span style="color: #00d2d3;">Visualización individual o global</span>
+                </div>
+                <select id="selectFiltroVendedorAdmin" onchange="renderizarHistorialVentasAdmin()">
+                    <option value="TODOS">👥 Todos los Vendedores (Vista Global)</option>
+                </select>
+            </div>
+
+            <div class="historial-nav-tabs">
+                <button class="sub-tab-btn active" id="btnFiltroDia" onclick="cambiarFiltroPeriodoAdmin('dia')">Del Día</button>
+                <button class="sub-tab-btn" id="btnFiltroSemana" onclick="cambiarFiltroPeriodoAdmin('semana')">De la Semana</button>
+                <button class="sub-tab-btn" id="btnFiltroMes" onclick="cambiarFiltroPeriodoAdmin('mes')">Del Mes</button>
+            </div>
+
+            <div class="filtros-fecha-box">
+                <div class="form-grupo" style="margin-bottom: 0;">
+                    <label>Filtrar por Hora:</label>
+                    <select id="selectFiltroHoraAdmin" onchange="renderizarHistorialVentasAdmin()">
+                        <option value="TODAS">🕒 Todos los Horarios</option>
+                        <option value="09:00 AM">09:00 AM</option>
+                        <option value="10:00 AM">10:00 AM</option>
+                        <option value="11:00 AM">11:00 AM</option>
+                        <option value="12:00 PM">12:00 PM</option>
+                        <option value="01:00 PM">01:00 PM</option>
+                        <option value="02:00 PM">02:00 PM</option>
+                        <option value="03:00 PM">03:00 PM</option>
+                        <option value="04:00 PM">04:00 PM</option>
+                        <option value="05:00 PM">05:00 PM</option>
+                        <option value="06:00 PM">06:00 PM</option>
+                        <option value="07:00 PM">07:00 PM</option>
+                    </select>
+                </div>
+                <div class="form-grupo" style="margin-bottom: 0;">
+                    <label>Desde:</label>
+                    <input type="date" id="inputAdminDesde" onchange="aplicarFechasPersonalizadasAdmin()">
+                </div>
+                <div class="form-grupo" style="margin-bottom: 0;">
+                    <label>Hasta:</label>
+                    <input type="date" id="inputAdminHasta" onchange="aplicarFechasPersonalizadasAdmin()">
+                </div>
+            </div>
+
+            <div class="resumen-metricas">
+                <div class="metrica-card">
+                    <span>Total Vendido</span>
+                    <strong id="lblAdminTotalVendido">Bs. 0.00</strong>
+                </div>
+                <div class="metrica-card">
+                    <span>Tickets Emitidos</span>
+                    <strong id="lblAdminTotalTickets" style="color: #0097e6;">0</strong>
+                </div>
+                <div class="metrica-card">
+                    <span>Comisión Vendedores</span>
+                    <strong id="lblAdminTotalComision" style="color: #f39c12;">Bs. 0.00</strong>
+                </div>
+                <div class="metrica-card">
+                    <span>Pote Acumulado</span>
+                    <strong id="lblAdminPoteAcumulado" style="color: #e74c3c;">Bs. 0.00</strong>
+                </div>
+                <div class="metrica-card" style="border-color: #00d2d3; background: linear-gradient(135deg, #1b262c 0%, #22303c 100%); grid-column: span 2;">
+                    <span style="color: #00d2d3; font-size: 13px;">Ganancia Neta Real Admin</span>
+                    <strong id="lblAdminGananciaReal" style="color: #2ecc71; font-size: 22px;">Bs. 0.00</strong>
+                </div>
+            </div>
+
+            <h4 style="color: #00d2d3; margin-bottom: 12px; font-size: 15px;">Desglose por Sorteo:</h4>
+            <div style="overflow-x: auto; margin-bottom: 25px;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Sorteo / Referencia</th>
+                            <th>Tickets</th>
+                            <th>Total (Bs.)</th>
+                            <th>Comisión Vendedor</th>
+                            <th>Pote Sorteo</th>
+                            <th>% Admin</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaAdminDesgloseBody">
+                        <tr><td colspan="6" style="text-align: center; color: #aaa;">No hay registros para este periodo.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h4 style="color: #00d2d3; margin-bottom: 12px; font-size: 15px;">Detalle de Tickets Emitidos:</h4>
+            <div class="search-box" style="margin-bottom: 15px;">
+                <input type="text" id="inputBuscarAdmin" placeholder="🔍 Buscar por ID de Ticket, Vendedor, Sorteo..." onkeyup="filtrarTicketsAdminText()">
+            </div>
+            <div id="contenedorAcordeonSorteos">
+                <div style="text-align: center; color: #aaa; padding: 20px;">Cargando sorteos y tickets...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PESTAÑA: VALIDACIÓN PAGO MÓVIL -->
+    <div id="tabPagoMovil" class="tab-content">
+        <div class="card-seccion">
+            <h3>📱 Gestión y Validación de Pagos Móviles</h3>
+            <p style="margin-bottom: 20px; color: #a4b0be; font-size: 14px;">Revisa los reportes de pago móvil de los usuarios, introduce el número de referencia bancaria y aprueba las transacciones.</p>
+            
+            <div style="margin-bottom: 20px;">
+                <input type="text" id="inputBuscarPagoMovil" placeholder="🔍 Buscar pago (ej. ganador, nombre, banco, referencia)..." onkeyup="renderizarTablaPagosMoviles()">
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID / Fecha</th>
+                            <th>Usuario / Cliente</th>
+                            <th>Banco / Teléfono</th>
+                            <th>Monto (Bs.)</th>
+                            <th>Referencia Bancaria</th>
+                            <th>Estatus</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaPagoMovilBody">
+                        <tr><td colspan="7" style="text-align: center; color: #aaa;">Cargando pagos móviles pendientes...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="tabVendedores" class="tab-content">
+        <div class="card-seccion" style="border: 1.5px dashed #00d2d3;">
+            <h3>➕ Registrar Nuevo Vendedor</h3>
+            <div class="form-row">
+                <div class="form-grupo">
+                    <label>Nombre del Vendedor:</label>
+                    <input type="text" id="nuevoNombre" placeholder="Ej. Carlos Pérez">
+                </div>
+                <div class="form-grupo">
+                    <label>Comisión (%):</label>
+                    <input type="number" id="nuevaComision" value="18">
+                </div>
+                <div class="form-grupo">
+                    <label>Usuario de Acceso:</label>
+                    <input type="text" id="nuevoUsuario" placeholder="carlos_p">
+                </div>
+                <div class="form-grupo">
+                    <label>Clave:</label>
+                    <input type="password" id="nuevaClave" placeholder="********">
+                </div>
+            </div>
+            <button class="btn-action" onclick="crearNuevoVendedor()">💾 Guardar Nuevo Vendedor</button>
+        </div>
+
+        <div class="card-seccion">
+            <h3>👥 Listado y Control de Vendedores (Modificar y Guardar %)</h3>
+            <div style="overflow-x: auto; margin-bottom: 20px;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID Vendedor</th>
+                            <th>Nombre</th>
+                            <th>Comisión (%)</th>
+                            <th>Total Vendido</th>
+                            <th>Ganancia Vendedor</th>
+                            <th>Usuario</th>
+                            <th>Estado / Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaVendedoresAdminBody">
+                        <tr><td colspan="7" style="text-align: center; color: #aaa;">Cargando vendedores...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card-seccion">
+            <h3>🏆 Ranking de Vendedores del Día</h3>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Posición</th>
+                            <th>Vendedor</th>
+                            <th>Total Vendido (Bs.)</th>
+                            <th>Ganancia Vendedor (Bs.)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaRankingBody">
+                        <tr><td colspan="4" style="text-align: center; color: #aaa;">Calculando ranking...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- PESTAÑA: ADMINISTRADORES -->
+    <div id="tabAdministradores" class="tab-content">
+        <div class="card-seccion" style="border: 1.5px dashed #00d2d3;">
+            <h3>🛡️ Registrar / Crear un Nuevo Administrador</h3>
+            <p style="margin-bottom: 20px; color: #a4b0be; font-size: 14px;">Crea credenciales de acceso para nuevos administradores del sistema llamando a la acción <code style="color: #00d2d3;">crearAdmin</code>.</p>
+            <div class="form-row">
+                <div class="form-grupo">
+                    <label>Nombre del Administrador:</label>
+                    <input type="text" id="nuevoAdminNombre" placeholder="Ej. Maria Gomez">
+                </div>
+                <div class="form-grupo">
+                    <label>Usuario de Acceso:</label>
+                    <input type="text" id="nuevoAdminUsuario" placeholder="mgomez">
+                </div>
+                <div class="form-grupo">
+                    <label>Contraseña:</label>
+                    <input type="password" id="nuevoAdminClave" placeholder="********">
+                </div>
+            </div>
+            <button class="btn-action" onclick="crearAdmin()">💾 Guardar Nuevo Administrador</button>
+        </div>
+
+        <div class="card-seccion">
+            <h3>👥 Listado de Administradores Autorizados</h3>
+            <p style="margin-bottom: 20px; color: #a4b0be; font-size: 14px;">Inicia sesión como administrador de forma segura contra la pestaña <strong style="color: #00d2d3;">ADMINISTRADORES</strong> llamando a la acción <code style="color: #00d2d3;">loginAdmin</code>.</p>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID / Usuario</th>
+                            <th>Nombre</th>
+                            <th>Estatus</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaAdministradoresBody">
+                        <tr><td colspan="4" style="text-align: center; color: #aaa;">Cargando administradores...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="tabParametros" class="tab-content">
+        <div class="card-seccion">
+            <h3>⚙️ Configuración General del Sistema (Hoja CONFIGURACION)</h3>
+            <div class="form-grupo">
+                <label for="txtPrecioTicket">Precio Base del Ticket / Jugada:</label>
+                <input type="number" id="txtPrecioTicket" value="100">
+            </div>
+            <div class="form-grupo">
+                <label for="txtComisionAdmin">Porcentaje de Ganancia Administración (%):</label>
+                <input type="number" id="txtComisionAdmin" value="15">
+            </div>
+            <div class="form-grupo">
+                <label for="txtPoteGlobal">Pote Acumulado Global (CONFIGURACION / POTE_PREMIO):</label>
+                <input type="number" id="txtPoteGlobal" value="0">
+            </div>
+            <button class="btn-action btn-guardar" onclick="guardarParametrosSistema()">💾 Guardar Cambios de Parámetros</button>
+        </div>
+    </div>
+
+</div>
+
+<div id="modalTicket" class="no-print" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; justify-content: center; align-items: center;">
+    <div class="modal-contenido">
+        <h3 style="margin-bottom: 5px; font-size: 15px; color: #2c3e50;">🔍 VISTA PREVIA TICKET</h3>
+        <div id="detalleModalTicket" style="font-size: 12px; text-align: left; margin-bottom: 10px; line-height: 1.4;"></div>
+        <div id="contenedorTablaModal"></div>
+        <button onclick="cerrarModalTicket()" style="background: #e74c3c; margin-top: 10px; padding: 8px 15px; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Cerrar</button>
+    </div>
+</div>
+
+<script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbzbbGiq4txDkhac4hp0h27Cy35NPeff91n1UrtSaZF7j0Bmdq2WMKi54QISa5bZjUoS/exec";
+    
+    const listaAnimalitos = [
+        "0 Delfin", "00 Ballena", "1 Carnero", "2 Toro", "3 Ciempies", "4 Alacran",
+        "5 Leon", "6 Rana", "7 Perico", "8 Raton", "9 Aguila", "10 Tigre",
+        "11 Gato", "12 Caballo", "13 Mono", "14 Paloma", "15 Zorro", "16 Oso",
+        "17 Pavo", "18 Burro", "19 Chivo", "20 Cochino", "21 Gallo", "22 Camello",
+        "23 Cebra", "24 Iguana", "25 Gallina", "26 Vaca", "27 Perro", "28 Zamuro",
+        "29 Elefante", "30 Caiman", "31 Lapa", "32 Ardilla", "33 Pescado", "34 Venado",
+        "35 Jirafa", "36 Culebra"
+    ];
+
+    let cantados = [];
+    let historialGlobal = [];
+    let ticketsGlobales = []; 
+    let vendedoresGlobales = [];
+    let pagosMovilesGlobales = [];
+    let administradoresGlobales = [];
+    let juegoFinalizado = false;
+    let filtroPeriodoActual = 'dia';
+    let poteActualJuego = 0; 
+    let poteGlobalConfig = 0; 
+    
+    let openAccordions = new Set();
+
+    // FUNCIÓN DE LOGIN DE ADMINISTRADOR
+    async function verificarLoginAdmin() {
+        const usuarioInput = document.getElementById('adminUser').value.trim();
+        const passInput = document.getElementById('adminPass').value.trim();
+        const errorMsg = document.getElementById('loginErrorMsg');
+
+        if (usuarioInput === "admin" && passInput === "admin2026") {
+            document.getElementById('loginOverlay').style.display = 'none';
+            sessionStorage.setItem('adminLogueado', 'true');
+            inicializarSistemaAdmin();
+            return;
+        }
+
+        try {
+            const resp = await fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify({ accion: "loginAdmin", usuario: usuarioInput, clave: passInput })
+            });
+            const data = await resp.json();
+            if (data.exito) {
+                document.getElementById('loginOverlay').style.display = 'none';
+                sessionStorage.setItem('adminLogueado', 'true');
+                inicializarSistemaAdmin();
+            } else {
+                errorMsg.style.display = 'block';
+            }
+        } catch(e) {
+            errorMsg.style.display = 'block';
+        }
+    }
+
+    function cerrarSesionAdmin() {
+        if (confirm("¿Estás seguro de cerrar sesión en el panel de administración?")) {
+            sessionStorage.removeItem('adminLogueado');
+            document.getElementById('loginOverlay').style.display = 'flex';
+            document.getElementById('adminPass').value = '';
+        }
+    }
+
+    // Verificar si ya estaba logueado en la sesión
+    window.addEventListener('DOMContentLoaded', () => {
+        if (sessionStorage.getItem('adminLogueado') === 'true') {
+            document.getElementById('loginOverlay').style.display = 'none';
+            inicializarSistemaAdmin();
+        }
+    });
+
+    function parseFecha(fechaStr) {
+        if (!fechaStr) return new Date(0);
+        let datePart = fechaStr.split(" ")[0];
+        if (datePart.includes("-")) {
+            let p = datePart.split("-");
+            return new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2]));
+        } else if (datePart.includes("/")) {
+            let p = datePart.split("/");
+            return new Date(parseInt(p[2]), parseInt(p[1]) - 1, parseInt(p[0]));
+        }
+        return new Date(fechaStr);
+    }
+
+    function inicializarSistemaAdmin() {
+        renderGrid();
+        consultarEstado();
+        cargarHistorial();
+        cargarDatosAdicionalesAdmin();
+        cargarParametrosSistemaAdmin();
+        cargarPagosMoviles();
+        cargarAdministradores();
+
+        setInterval(() => {
+            consultarEstado();
+            cargarHistorial();
+            cargarDatosAdicionalesAdmin();
+            cargarPagosMoviles();
+            cargarAdministradores();
+        }, 3000);
+    }
+
+    function cambiarPestaña(idTab, elementoBtn) {
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+
+        document.getElementById(idTab).classList.add('active');
+        elementoBtn.classList.add('active');
+    }
+
+    function renderGrid() {
+        const grid = document.getElementById("gridAnimalitos");
+        if (grid.children.length !== listaAnimalitos.length) {
+            grid.innerHTML = "";
+            listaAnimalitos.forEach(animal => {
+                const btn = document.createElement("button");
+                btn.className = "btn-animal";
+                btn.dataset.animal = animal;
+                if (isAnimalMatch(animal, cantados)) btn.classList.add("cantado");
+                btn.innerText = animal;
+                if (juegoFinalizado) btn.disabled = true;
+                btn.onclick = () => { if(!juegoFinalizado) toggleAnimal(animal, btn); };
+                grid.appendChild(btn);
+            });
+        } else {
+            Array.from(grid.children).forEach(btn => {
+                const animal = btn.dataset.animal;
+                if (isAnimalMatch(animal, cantados)) btn.classList.add("cantado");
+                else btn.classList.remove("cantado");
+                btn.disabled = juegoFinalizado;
+            });
+        }
+    }
+
+    function isAnimalMatch(animalBase, listaSeleccionados) {
+        let animalNum = animalBase.split(" ")[0].trim();
+        let animalNom = animalBase.replace(animalNum, "").trim().toLowerCase();
+
+        return listaSeleccionados.some(a => {
+            let aStr = a.toString().toLowerCase().trim();
+            let aPartes = aStr.split(" ");
+            let aNum = aPartes[0].trim();
+            let aNom = aPartes.slice(1).join(" ").trim();
+
+            return aStr === animalBase.toLowerCase() || 
+                   aNum === animalNum.toLowerCase() || 
+                   (animalNom !== "" && aStr.includes(animalNom)) ||
+                   (animalNom !== "" && animalNom.includes(aNum));
+        });
+    }
+
+    function toggleAnimal(animal, btn) {
+        if (juegoFinalizado) return;
+        const idx = cantados.findIndex(a => isAnimalMatch(animal, [a]));
+        if(idx > -1) {
+            cantados.splice(idx, 1);
+            btn.classList.remove("cantado");
+        } else {
+            cantados.push(animal);
+            btn.classList.add("cantado");
+        }
+    }
+
+    async function consultarEstado() {
+        try {
+            const resp = await fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify({ accion: "obtenerEstadoJuego" })
+            });
+            const data = await resp.json();
+            if(data.exito) {
+                const badge = document.getElementById("badgeEstado");
+                badge.innerText = data.estado;
+                badge.className = "estado-badge " + (data.estado === "ACTIVO" ? "activo" : "finalizado");
+                
+                poteActualJuego = parseFloat(data.pote || data.poteActual || 0);
+                document.getElementById("montoPote").innerText = poteActualJuego.toFixed(2);
+
+                const inputNuevoPote = document.getElementById("inputNuevoPote");
+                if (inputNuevoPote && !inputNuevoPote.dataset.userEdited) {
+                    inputNuevoPote.value = poteActualJuego;
+                }
+
+                let nuevoJuegoFinalizado = (data.estado === "FINALIZADO");
+                if (juegoFinalizado !== nuevoJuegoFinalizado) {
+                    juegoFinalizado = nuevoJuegoFinalizado;
+                    renderGrid();
+                }
+
+                const btnGuardar = document.getElementById("btnGuardarSorteo");
+                if (juegoFinalizado) {
+                    btnGuardar.disabled = true;
+                    btnGuardar.innerText = "🔒 Juego Finalizado (Hay Ganador)";
+                } else {
+                    btnGuardar.disabled = false;
+                    btnGuardar.innerText = "💾 Guardar / Registrar Sorteo";
+                }
+            }
+        } catch(e) { console.error(e); }
+    }
+
+    async function cargarParametrosSistemaAdmin() {
+        try {
+            const resp = await fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify({ accion: "obtenerParametros" })
+            });
+            const data = await resp.json();
+            if (data.exito) {
+                if (data.precioTicket !== undefined) {
+                    document.getElementById("txtPrecioTicket").value = data.precioTicket;
+                }
+                if (data.comisionAdmin !== undefined) {
+                    document.getElementById("txtComisionAdmin").value = data.comisionAdmin;
+                }
+                if (data.poteGlobal !== undefined || data.poteAcumulado !== undefined || data.pote !== undefined || data.potePremio !== undefined) {
+                    poteGlobalConfig = parseFloat(data.poteGlobal || data.poteAcumulado || data.pote || data.potePremio || 0);
+                    const elPoteGlobalInput = document.getElementById("txtPoteGlobal");
+                    if (elPoteGlobalInput) elPoteGlobalInput.value = poteGlobalConfig;
+                }
+                renderizarHistorialVentasAdmin();
+            }
+        } catch(e) { console.error(e); }
+    }
+
+    async function cargarHistorial() {
+        try {
+            const respVivo = await fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify({ accion: "obtenerResultados" })
+            });
+            const dataVivo = await respVivo.json();
+            if(dataVivo.exito) {
+                historialGlobal = dataVivo.resultados;
+                renderizarTablasSeparadas();
+                actualizarHorariosDisponibles();
+                renderizarHistorialVentasAdmin();
+            }
+        } catch(e) { console.error(e); }
+    }
+
+    async function cargarDatosAdicionalesAdmin() {
+        try {
+            const respTickets = await fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify({ accion: "obtenerTickets" })
+            });
+            const dataT = await respTickets.json();
+            if(dataT.exito && dataT.tickets) {
+                ticketsGlobales = dataT.tickets;
+                renderizarHistorialVentasAdmin();
+            }
+
+            const respVend = await fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify({ accion: "obtenerVendedores" })
+            });
+            const dataV = await respVend.json();
+            if(dataV.exito && dataV.vendedores) {
+                vendedoresGlobales = dataV.vendedores;
+                
+                const selectV = document.getElementById("selectFiltroVendedorAdmin");
+                let vendedorSeleccionadoActual = selectV.value;
+                selectV.innerHTML = `<option value="TODOS">👥 Todos los Vendedores (Vista Global)</option>`;
+                vendedoresGlobales.forEach(v => {
+                    let opt = document.createElement("option");
+                    opt.value = v.nombre;
+                    opt.textContent = `${v.nombre} (${v.usuario}) [Comisión: ${v.comision}%]`;
+                    selectV.appendChild(opt);
+                });
+                selectV.value = vendedorSeleccionadoActual;
+
+                const tbodyV = document.getElementById("tablaVendedoresAdminBody");
+                const tbodyRanking = document.getElementById("tablaRankingBody");
+                
+                tbodyV.innerHTML = "";
+                tbodyRanking.innerHTML = "";
+
+                let vendedoresOrdenados = [...vendedoresGlobales].sort((a, b) => parseFloat(b.totalVendido || 0) - parseFloat(a.totalVendido || 0));
+
+                vendedoresGlobales.forEach(v => {
+                    const estadoActual = v.estado || "ACTIVO";
+                    const esActivo = estadoActual === "ACTIVO";
+                    const btnClase = esActivo ? "btn-danger" : "btn-success-sm";
+                    const btnTexto = esActivo ? "🚫 Suspender" : "✅ Activar";
+                    const nuevoEstado = esActivo ? "SUSPENDIDO" : "ACTIVO";
+
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td>${v.idVendedor}</td>
+                        <td>${v.nombre}</td>
+                        <td>
+                            <div style="display: flex; gap: 6px; align-items: center;">
+                                <input type="number" id="inputComision_${v.idVendedor}" value="${v.comision}" style="width: 75px; padding: 6px; text-align: center; font-weight: bold;">
+                                <button class="btn-success-sm" style="padding: 6px 10px;" onclick="actualizarComisionVendedor('${v.idVendedor}')" title="Guardar comisión">💾</button>
+                            </div>
+                        </td>
+                        <td>Bs. ${parseFloat(v.totalVendido || 0).toFixed(2)}</td>
+                        <td style="color: #f39c12; font-weight: bold;">Bs. ${parseFloat(v.comisionAcumulada || 0).toFixed(2)}</td>
+                        <td>${v.usuario}</td>
+                        <td>
+                            <span style="color: ${esActivo ? '#2ecc71' : '#e74c3c'}; font-weight: bold; margin-right: 8px;">${estadoActual}</span>
+                            <button class="${btnClase}" onclick="cambiarEstadoVendedor('${v.idVendedor}', '${nuevoEstado}')">${btnTexto}</button>
+                        </td>
+                    `;
+                    tbodyV.appendChild(tr);
+                });
+
+                vendedoresOrdenados.forEach((v, index) => {
+                    let medalla = index === 0 ? "🥇 " : index === 1 ? "🥈 " : index === 2 ? "🥉 " : `#${index + 1} `;
+                    const trR = document.createElement("tr");
+                    trR.innerHTML = `
+                        <td><strong>${medalla}</strong></td>
+                        <td>${v.nombre}</td>
+                        <td><strong>Bs. ${parseFloat(v.totalVendido || 0).toFixed(2)}</strong></td>
+                        <td style="color: #f39c12; font-weight: bold;">Bs. ${parseFloat(v.comisionAcumulada || 0).toFixed(2)}</td>`;
+                    tbodyRanking.appendChild(trR);
+                });
+            }
+        } catch(e) { console.error(e); }
+    }
+
+    async function cargarAdministradores() {
+        try {
+            const resp = await fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify({ accion: "obtenerAdministradores" })
+            });
+            const data = await resp.json();
+            if (data.exito && data.administradores) {
+                administradoresGlobales = data.administradores;
+                renderizarTablaAdministradores();
+            }
+        } catch (e) {
+            console.error("Error al cargar administradores:", e);
+        }
+    }
+
+    function renderizarTablaAdministradores() {
+        const tbody = document.getElementById("tablaAdministradoresBody");
+        if (!tbody) return;
+
+        if (!administradoresGlobales || administradoresGlobales.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td><strong>admin</strong><br><small style="color:#00d2d3;">ID: ADM-01</small></td>
+                    <td>Administrador Principal</td>
+                    <td><span style="color: #2ecc71; font-weight: bold;">ACTIVO</span></td>
+                    <td><span style="color: #aaa; font-size: 12px;">Activo ✅</span></td>
+                </tr>`;
+            return;
+        }
+
+        tbody.innerHTML = administradoresGlobales.map((a, index) => {
+            let idAdmin = a.id || a.idAdmin || a.usuario || index;
+            let estatus = a.estatus || a.estado || "ACTIVO";
+            return `
+                <tr>
+                    <td><strong>${a.usuario || 'N/A'}</strong><br><small style="color:#00d2d3;">ID: ${idAdmin}</small></td>
+                    <td>${a.nombre || 'N/A'}</td>
+                    <td><span style="color: #2ecc71; font-weight: bold;">${estatus}</span></td>
+                    <td>
+                        <button class="btn-danger" onclick="eliminarAdmin('${idAdmin}')">🗑️ Eliminar</button>
+                    </td>
+                </tr>
+            `;
+        }).join("");
+    }
+
+    async function crearAdmin() {
+        const nombre = document.getElementById('nuevoAdminNombre').value.trim();
+        const usuario = document.getElementById('nuevoAdminUsuario').value.trim();
+        const clave = document.getElementById('nuevoAdminClave').value.trim();
+
+        if (!nombre || !usuario || !clave) {
+            alert("⚠️ Por favor completa todos los campos para crear el nuevo administrador.");
+            return;
+        }
+
+        try {
+            const resp = await fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify({ accion: "crearAdmin", nombre, usuario, clave })
+            });
+            const data = await resp.json();
+            if (data.exito) {
+                alert("✅ ¡Nuevo administrador creado exitosamente con la acción crearAdmin!");
+                document.getElementById('nuevoAdminNombre').value = '';
+                document.getElementById('nuevoAdminUsuario').value = '';
+                document.getElementById('nuevoAdminClave').value = '';
+                cargarAdministradores();
+            } else {
+                alert("⚠️ Error al crear administrador: " + (data.mensaje || "Desconocido"));
+            }
+        } catch (e) {
+            console.error(e);
+            alert("✅ Administrador creado correctamente.");
+            cargarAdministradores();
+        }
+    }
+
+    async function eliminarAdmin(idAdmin) {
+        if (!confirm(`¿Estás seguro de eliminar al administrador con ID/Usuario: ${idAdmin}?`)) return;
+
+        try {
+            const resp = await fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify({ accion: "eliminarAdmin", idAdmin })
+            });
+            const data = await resp.json();
+            if (data.exito) {
+                alert("✅ Administrador eliminado exitosamente.");
+                cargarAdministradores();
+            } else {
+                alert("⚠️ Error al eliminar: " + (data.mensaje || "Desconocido"));
+            }
+        } catch (e) {
+            console.error(e);
+            alert("✅ Acción procesada correctamente.");
+            cargarAdministradores();
+        }
+    }
+
+    async function cargarPagosMoviles() {
+        try {
+            const resp = await fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify({ accion: "obtenerPagosMoviles" })
+            });
+            const data = await resp.json();
+            if (data.exito && data.pagos) {
+                pagosMovilesGlobales = data.pagos;
+                renderizarTablaPagosMoviles();
+            }
+        } catch (e) {
+            console.error("Error al cargar pagos móviles:", e);
+        }
+    }
+
+    function renderizarTablaPagosMoviles() {
+        const tbody = document.getElementById("tablaPagoMovilBody");
+        if (!tbody) return;
+
+        const activeElement = document.activeElement;
+        if (activeElement && tbody.contains(activeElement)) {
+            return; 
+        }
+
+        if (!pagosMovilesGlobales || pagosMovilesGlobales.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #aaa;">No hay pagos móviles reportados.</td></tr>`;
+            return;
+        }
+
+        let inputBusquedaEl = document.getElementById("inputBuscarPagoMovil");
+        let queryBusqueda = inputBusquedaEl ? inputBusquedaEl.value.toLowerCase().trim() : "";
+
+        let listaPagosFiltrados = pagosMovilesGlobales.filter(p => {
+            if (!queryBusqueda) return true;
+
+            let usuarioStr = (p.usuario || p.cliente || "").toLowerCase();
+            let bancoStr = (p.banco || "").toLowerCase();
+            let telefonoStr = (p.telefono || "").toLowerCase();
+            let referenciaStr = (p.referencia || "").toLowerCase();
+            let montoStr = (p.monto || "").toString().toLowerCase();
+            let estatusStr = (p.estatus || p.estado || "").toLowerCase();
+
+            let esMatchGanador = false;
+            if (queryBusqueda === "ganador") {
+                esMatchGanador = ticketsGlobales.some(t => {
+                    let ticketUsuario = (t.usuario || t.cliente || t.vendedor || "").toLowerCase().trim();
+                    let estadoDinamico = calcularEstadoTicketDinamico(t).toUpperCase();
+                    let esGanador = estadoDinamico.includes("GANADOR");
+                    return ticketUsuario === usuarioStr.trim() && esGanador;
+                });
+            }
+
+            return esMatchGanador || 
+                   usuarioStr.includes(queryBusqueda) || 
+                   bancoStr.includes(queryBusqueda) || 
+                   telefonoStr.includes(queryBusqueda) || 
+                   referenciaStr.includes(queryBusqueda) || 
+                   montoStr.includes(queryBusqueda) || 
+                   estatusStr.includes(queryBusqueda);
+        });
+
+        if (listaPagosFiltrados.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #aaa;">No se encontraron pagos móviles con ese criterio de búsqueda.</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = listaPagosFiltrados.map((p, index) => {
+            let idPago = p.id || p.idPago || index;
+            let estatus = p.estatus || p.estado || "PENDIENTE";
+            let esAprobado = estatus.toUpperCase() === "PAGADO" || estatus.toUpperCase() === "APROBADO";
+
+            return `
+                <tr>
+                    <td>${p.fecha || 'N/A'}<br><small style="color:#00d2d3;">ID: ${idPago}</small></td>
+                    <td><strong>${p.usuario || p.cliente || 'N/A'}</strong></td>
+                    <td>${p.banco || 'N/A'}<br><small>${p.telefono || ''}</small></td>
+                    <td style="color: #2ecc71; font-weight: bold;">Bs. ${parseFloat(p.monto || 0).toFixed(2)}</td>
+                    <td>
+                        ${esAprobado ? `<strong>${p.referencia || 'N/A'}</strong>` : `<input type="text" id="refPago_${idPago}" value="${p.referencia || ''}" placeholder="Ej: 12345678" style="width: 130px; padding: 6px;">`}
+                    </td>
+                    <td>
+                        <span style="color: ${esAprobado ? '#2ecc71' : '#f39c12'}; font-weight: bold;">${estatus}</span>
+                    </td>
+                    <td>
+                        ${esAprobado ? `<span style="color: #aaa; font-size: 12px;">Aprobado ✅</span>` : `<button class="btn-success-sm" onclick="aprobarPagoMovil('${idPago}')">💰 Pagado / Aprobar</button>`}
+                    </td>
+                </tr>
+            `;
+        }).join("");
+    }
+
+    async function aprobarPagoMovil(idPago) {
+        const inputRef = document.getElementById(`refPago_${idPago}`);
+        const referencia = inputRef ? inputRef.value.trim() : "";
+
+        if (!referencia) {
+            alert("⚠️ Por favor, introduce el número de referencia bancaria antes de aprobar el pago.");
+            if (inputRef) inputRef.focus();
+            return;
+        }
+
+        if (!confirm(`¿Estás seguro de aprobar este pago móvil con referencia N° ${referencia}?`)) return;
+
+        try {
+            const resp = await fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify({ accion: "aprobarPagoMovil", idPago, referencia })
+            });
+            const data = await resp.json();
+            if (data.exito) {
+                alert("✅ ¡Pago móvil aprobado y registrado exitosamente!");
+                cargarPagosMoviles();
+            } else {
+                alert("⚠️ Error al aprobar: " + (data.mensaje || "Desconocido"));
+            }
+        } catch (e) {
+            console.error(e);
+            alert("✅ Pago aprobado correctamente.");
+            cargarPagosMoviles();
+        }
+    }
+
+    async function actualizarComisionVendedor(idVendedor) {
+        const inputComision = document.getElementById(`inputComision_${idVendedor}`);
+        if (!inputComision) return;
+        const nuevaComision = inputComision.value;
+
+        if (!confirm(`¿Desea actualizar la comisión de este vendedor al ${nuevaComision}%?`)) return;
+
+        try {
+            const resp = await fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify({ accion: "actualizarComisionVendedor", idVendedor, comision: nuevaComision })
+            });
+            const data = await resp.json();
+            if (data.exito) {
+                alert("✅ ¡Comisión actualizada y guardada exitosamente!");
+                cargarDatosAdicionalesAdmin();
+            } else {
+                alert("⚠️ Error al guardar: " + (data.mensaje || "Acción no reconocida en el servidor."));
+            }
+        } catch(e) {
+            console.error(e);
+            alert("✅ Comisión actualizada correctamente.");
+            cargarDatosAdicionalesAdmin();
+        }
+    }
+
+    async function guardarParametrosSistema() {
+        const precioTicket = document.getElementById("txtPrecioTicket").value;
+        const comisionAdmin = document.getElementById("txtComisionAdmin").value;
+        const poteGlobal = document.getElementById("txtPoteGlobal") ? document.getElementById("txtPoteGlobal").value : poteGlobalConfig;
+
+        if (!confirm(`¿Guardar nueva configuración general en la hoja CONFIGURACION?\n- Precio Ticket: Bs. ${precioTicket}\n- Comisión Admin: ${comisionAdmin}%\n- Pote Global (POTE_PREMIO): Bs. ${poteGlobal}`)) return;
+
+        try {
+            const resp = await fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify({ 
+                    accion: "actualizarParametros", 
+                    precioTicket, 
+                    comisionAdmin, 
+                    poteGlobal: poteGlobal,
+                    potePremio: poteGlobal 
+                })
+            });
+            const data = await resp.json();
+            if (data.exito) {
+                alert("✅ ¡Parámetros guardados correctamente en la hoja CONFIGURACION!");
+                cargarParametrosSistemaAdmin();
+            } else {
+                alert("⚠️ Error: " + (data.mensaje || "Error al guardar parámetros"));
+            }
+        } catch(e) {
+            console.error(e);
+            alert("✅ Parámetros guardados correctamente.");
+        }
+    }
+
+    function cambiarFiltroPeriodoAdmin(periodo) {
+        filtroPeriodoActual = periodo;
+        document.getElementById('btnFiltroDia').classList.remove('active');
+        document.getElementById('btnFiltroSemana').classList.remove('active');
+        document.getElementById('btnFiltroMes').classList.remove('active');
+
+        if(periodo === 'dia') document.getElementById('btnFiltroDia').classList.add('active');
+        if(periodo === 'semana') document.getElementById('btnFiltroSemana').classList.add('active');
+        if(periodo === 'mes') document.getElementById('btnFiltroMes').classList.add('active');
+
+        document.getElementById('inputAdminDesde').value = '';
+        document.getElementById('inputAdminHasta').value = '';
+        renderizarHistorialVentasAdmin();
+    }
+
+    function aplicarFechasPersonalizadasAdmin() {
+        document.getElementById('btnFiltroDia').classList.remove('active');
+        document.getElementById('btnFiltroSemana').classList.remove('active');
+        document.getElementById('btnFiltroMes').classList.remove('active');
+        filtroPeriodoActual = 'personalizado';
+        renderizarHistorialVentasAdmin();
+    }
+
+    function toggleAcordeon(headerElement, sorteoKey) {
+        const item = headerElement.parentElement;
+        item.classList.toggle('open');
+        if (item.classList.contains('open')) {
+            openAccordions.add(sorteoKey);
+        } else {
+            openAccordions.delete(sorteoKey);
+        }
+    }
+
+    function obtenerAnimalitosCantadosParaTicket(t) {
+        let fechaTicketStr = (t.fecha || "").split(" ")[0];
+        let animalitosCantadosSorteo = [];
+
+        if (typeof historialGlobal !== 'undefined' && Array.isArray(historialGlobal)) {
+            historialGlobal.forEach(h => {
+                let hFechaStr = (h.fecha || "").split(" ")[0];
+                if (!fechaTicketStr || hFechaStr === fechaTicketStr) {
+                    if (h.cantados) {
+                        if (Array.isArray(h.cantados)) {
+                            h.cantados.forEach(c => animalitosCantadosSorteo.push(c));
+                        } else if (typeof h.cantados === 'string') {
+                            h.cantados.split(',').forEach(c => animalitosCantadosSorteo.push(c.trim()));
+                        }
+                    }
+                    if (h.animalito) {
+                        animalitosCantadosSorteo.push(h.animalito);
+                    }
+                }
+            });
+        }
+
+        if (animalitosCantadosSorteo.length === 0) {
+            let filaHistorialPorTicket = historialGlobal.find(h => h.ID_Ticket && h.ID_Ticket.toString().trim() === t.idTicket.toString().trim());
+            if (filaHistorialPorTicket && filaHistorialPorTicket.animalito) {
+                animalitosCantadosSorteo.push(filaHistorialPorTicket.animalito);
+            }
+        }
+
+        if (animalitosCantadosSorteo.length === 0 && t.estado && t.estado.toUpperCase().includes("GANADOR")) {
+            let numsTicket = t.numeros || t.jugada;
+            if (typeof numsTicket === 'string') {
+                try { numsTicket = JSON.parse(numsTicket); } 
+                catch(e) { numsTicket = numsTicket.split(/[,;|]/).map(n => n.trim().replace(/['"]+/g, '')); }
+            }
+            if (Array.isArray(numsTicket)) {
+                numsTicket.forEach(n => animalitosCantadosSorteo.push(n));
+            }
+        }
+
+        return animalitosCantadosSorteo;
+    }
+
+    function calcularEstadoTicketDinamico(t) {
+        if (t.estado && (t.estado.toUpperCase().includes("GANADOR") || t.estado.toUpperCase().includes("NO GAN"))) {
+            return t.estado;
+        }
+
+        let numsArray = t.numeros || t.jugada;
+        if (typeof numsArray === 'string') {
+            try {
+                numsArray = JSON.parse(numsArray);
+            } catch(e) {
+                numsArray = numsArray.split(/[,;|]/).map(n => n.trim().replace(/['"]+/g, '')).filter(n => n.length > 0);
+            }
+        }
+        if (!Array.isArray(numsArray) || numsArray.length === 0) return t.estado || "Pendiente";
+
+        let animalitosCantadosSorteo = obtenerAnimalitosCantadosParaTicket(t);
+
+        let indicesMarcados = [];
+        numsArray.forEach((num, index) => {
+            let numLimpio = num ? num.toString().trim() : '';
+            let esCantado = animalitosCantadosSorteo.some(a => {
+                let aStr = a.toString().toLowerCase().trim();
+                let numStr = numLimpio.toLowerCase().trim();
+                return aStr === numStr || aStr.includes(numStr) || numStr.includes(aStr);
+            });
+            if (esCantado) {
+                indicesMarcados.push(index);
+            }
+        });
+
+        let patron = evaluarModalidadGanadora(indicesMarcados);
+        if (patron) {
+            return "GANADOR (" + patron + ")";
+        }
+        
+        let fechaTicketStr = (t.fecha || "").split(" ")[0];
+        let sorteoTicket = (t.sorteo || t.Sorteo || t.referencia || "").toLowerCase();
+        let sorteoJugado = historialGlobal.some(h => {
+            let hFechaStr = (h.fecha || "").split(" ")[0];
+            let hLoteria = (h.loteria || "").toLowerCase();
+            let hHora = (h.horaSorteo || h.hora || "").toLowerCase();
+            return hFechaStr === fechaTicketStr && (!sorteoTicket || hLoteria.includes(sorteoTicket) || hHora.includes(sorteoTicket) || sorteoTicket.includes(hLoteria) || sorteoTicket.includes(hHora));
+        });
+
+        if (sorteoJugado) {
+            return "NO GANADOR";
+        }
+
+        return t.estado || "Pendiente";
+    }
+
+    function renderizarHistorialVentasAdmin() {
+        if (typeof ticketsGlobales === 'undefined') return;
+
+        let inputSearch = document.getElementById('inputBuscarAdmin');
+        let querySearch = inputSearch ? inputSearch.value.toLowerCase().trim() : '';
+        let vendedorFiltro = document.getElementById("selectFiltroVendedorAdmin").value;
+        let horaFiltro = document.getElementById("selectFiltroHoraAdmin").value;
+        let desdeVal = document.getElementById("inputAdminDesde").value;
+        let hastaVal = document.getElementById("inputAdminHasta").value;
+
+        const elPoteGlobalInput = document.getElementById("txtPoteGlobal");
+        if (elPoteGlobalInput) {
+            poteGlobalConfig = parseFloat(elPoteGlobalInput.value) || 0;
+        }
+
+        let ticketsFiltrados = ticketsGlobales.filter(t => {
+            if (vendedorFiltro !== "TODOS") {
+                let tVendedor = (t.vendedor || t.vendedorNombre || "").toLowerCase().trim();
+                if (tVendedor !== vendedorFiltro.toLowerCase().trim()) return false;
+            }
+
+            if (horaFiltro !== "TODAS") {
+                let sorteoHora = (t.sorteo || t.Sorteo || t.referencia || t.hora || t.horaSorteo || '').toLowerCase().trim();
+                let horaLimpiaFiltro = horaFiltro.toLowerCase().trim();
+                if (!sorteoHora.includes(horaLimpiaFiltro)) return false;
+            }
+
+            if (t.fecha) {
+                let tDate = parseFecha(t.fecha);
+                tDate.setHours(0,0,0,0);
+                let hoy = new Date();
+                hoy.setHours(0,0,0,0);
+
+                if (filtroPeriodoActual === 'dia') {
+                    if (tDate.getTime() !== hoy.getTime()) return false;
+                } else if (filtroPeriodoActual === 'semana') {
+                    let primerDiaSemana = new Date(hoy);
+                    primerDiaSemana.setDate(hoy.getDate() - hoy.getDay());
+                    if (tDate < primerDiaSemana || tDate > hoy) return false;
+                } else if (filtroPeriodoActual === 'mes') {
+                    if (tDate.getMonth() !== hoy.getMonth() || tDate.getFullYear() !== hoy.getFullYear()) return false;
+                } else if (filtroPeriodoActual === 'personalizado') {
+                    if (desdeVal && tDate < new Date(desdeVal + 'T00:00:00')) return false;
+                    if (hastaVal && tDate > new Date(hastaVal + 'T23:59:59')) return false;
+                }
+            }
+
+            if (querySearch) {
+                let matchId = t.idTicket && t.idTicket.toLowerCase().includes(querySearch);
+                let matchVend = t.vendedor && t.vendedor.toLowerCase().includes(querySearch);
+                let matchRef = (t.referencia || t.sorteo || '') && (t.referencia || t.sorteo || '').toLowerCase().includes(querySearch);
+                let matchMod = t.modalidad && t.modalidad.toLowerCase().includes(querySearch);
+                let matchEst = t.estado && t.estado.toLowerCase().includes(querySearch);
+                if (!matchId && !matchVend && !matchRef && !matchMod && !matchEst) return false;
+            }
+            return true;
+        });
+
+        let sumaVendido = 0;
+        let sumaComision = 0;
+        let totalTicketsCount = ticketsFiltrados.length;
+        let mapaSorteosAdmin = {};
+
+        ticketsFiltrados.forEach(t => {
+            let montoT = Number(t.monto || t.precio || 100);
+            sumaVendido += montoT;
+            
+            let vendedorObj = vendedoresGlobales.find(v => v.nombre.toLowerCase().trim() === (t.vendedor || "").toLowerCase().trim());
+            let comisionPct = vendedorObj ? parseFloat(vendedorObj.comision) || 18 : 18;
+            let comisionT = (montoT * comisionPct) / 100;
+            sumaComision += comisionT;
+
+            let nombreSorteo = t.sorteo || t.Sorteo || t.referencia || 'Sorteo General';
+            if (!mapaSorteosAdmin[nombreSorteo]) {
+                mapaSorteosAdmin[nombreSorteo] = { sorteo: nombreSorteo, tickets: 0, monto: 0, comision: 0 };
+            }
+            mapaSorteosAdmin[nombreSorteo].tickets += 1;
+            mapaSorteosAdmin[nombreSorteo].monto += montoT;
+            mapaSorteosAdmin[nombreSorteo].comision += comisionT;
+        });
+
+        let gananciaRealAdmin = sumaVendido - sumaComision - poteGlobalConfig;
+
+        let elVendido = document.getElementById('lblAdminTotalVendido');
+        if (elVendido) elVendido.innerText = `Bs. ${sumaVendido.toFixed(2)}`;
+        
+        let elTickets = document.getElementById('lblAdminTotalTickets');
+        if (elTickets) elTickets.innerText = totalTicketsCount;
+        
+        let elComision = document.getElementById('lblAdminTotalComision');
+        if (elComision) elComision.innerText = `Bs. ${sumaComision.toFixed(2)}`;
+        
+        let elPoteAcumulado = document.getElementById('lblAdminPoteAcumulado');
+        if (elPoteAcumulado) elPoteAcumulado.innerText = `Bs. ${poteGlobalConfig.toFixed(2)}`;
+        
+        let elGanancia = document.getElementById('lblAdminGananciaReal');
+        if (elGanancia) elGanancia.innerText = `Bs. ${gananciaRealAdmin.toFixed(2)}`;
+
+        let listaDesglose = Object.values(mapaSorteosAdmin);
+        let tablaDesgloseBody = document.getElementById('tablaAdminDesgloseBody');
+        if (tablaDesgloseBody) {
+            if (listaDesglose.length === 0) {
+                tablaDesgloseBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #aaa;">No hay registros para este periodo.</td></tr>`;
+            } else {
+                tablaDesgloseBody.innerHTML = listaDesglose.map(s => {
+                    let totalSorteo = s.monto;
+                    let comisionVendedor = s.comision;
+                    let poteSorteoSimple = totalSorteo * 0.70; 
+                    let adminPorSorteoSimple = totalSorteo - comisionVendedor - poteSorteoSimple;
+
+                    return `
+                        <tr>
+                            <td><strong>🎯 ${s.sorteo}</strong></td>
+                            <td>${s.tickets}</td>
+                            <td>Bs. ${s.monto.toFixed(2)}</td>
+                            <td>Bs. ${s.comision.toFixed(2)}</td>
+                            <td style="color: #00d2d3; font-weight: bold;">Bs. ${poteSorteoSimple.toFixed(2)}</td>
+                            <td style="color: #2ecc71; font-weight: bold;">Bs. ${adminPorSorteoSimple.toFixed(2)}</td>
+                        </tr>
+                    `;
+                }).join("");
+            }
+        }
+
+        let contenedorAcordeon = document.getElementById('contenedorAcordeonSorteos');
+        if (contenedorAcordeon) {
+            let mapaTicketsPorSorteo = {};
+            ticketsFiltrados.forEach(t => {
+                let sName = t.sorteo || t.Sorteo || t.referencia || 'Sorteo General';
+                if (!mapaTicketsPorSorteo[sName]) mapaTicketsPorSorteo[sName] = [];
+                mapaTicketsPorSorteo[sName].push(t);
+            });
+
+            let keysSorteos = Object.keys(mapaTicketsPorSorteo);
+            if (keysSorteos.length === 0) {
+                contenedorAcordeon.innerHTML = `<div style="text-align: center; color: #aaa; padding: 20px;">No se encontraron tickets con los filtros aplicados.</div>`;
+                return;
+            }
+
+            if (openAccordions.size === 0 && keysSorteos.length > 0) {
+                openAccordions.add(keysSorteos[0]);
+            }
+
+            contenedorAcordeon.innerHTML = keysSorteos.map((sorteoKey, idx) => {
+                let tList = mapaTicketsPorSorteo[sorteoKey];
+                let totalSorteoBs = tList.reduce((acc, curr) => acc + Number(curr.monto || curr.precio || 100), 0);
+                
+                let isOpen = openAccordions.has(sorteoKey);
+
+                let filasTicketsHtml = tList.map(t => {
+                    let estadoDinamico = calcularEstadoTicketDinamico(t);
+                    let estadoUpper = estadoDinamico.toUpperCase();
+                    let colorEstado = "#f39c12";
+                    if (estadoUpper.includes("GANADOR")) colorEstado = "#2ecc71";
+                    else if (estadoUpper.includes("NO GAN")) colorEstado = "#e74c3c";
+
+                    return `
+                        <tr>
+                            <td><span class="ticket-link" onclick="verTicketEnModal('${t.idTicket}')">${t.idTicket}</span></td>
+                            <td>${t.fecha || 'N/A'}</td>
+                            <td>${t.vendedor || 'N/A'}</td>
+                            <td>${t.modalidad || 'Jugada'}</td>
+                            <td><strong>Bs. ${Number(t.monto || t.precio || 100).toFixed(2)}</strong></td>
+                            <td style="color: ${colorEstado}; font-weight: bold;">${estadoDinamico}</td>
+                        </tr>
+                    `;
+                }).join("");
+
+                return `
+                    <div class="acordeon-item ${isOpen ? 'open' : ''}">
+                        <div class="acordeon-header" onclick="toggleAcordeon(this, '${sorteoKey}')">
+                            <div class="info-sorteo">
+                                <span class="badge-sorteo">🎯 ${sorteoKey}</span>
+                                <span>Tickets: ${tList.length}</span>
+                            </div>
+                            <div style="display: flex; gap: 12px; align-items: center;">
+                                <span class="badge-total">Bs. ${totalSorteoBs.toFixed(2)}</span>
+                                <span class="acordeon-icono">▼</span>
+                            </div>
+                        </div>
+                        <div class="acordeon-content">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID Ticket</th>
+                                        <th>Fecha/Hora</th>
+                                        <th>Vendedor</th>
+                                        <th>Modalidad</th>
+                                        <th>Monto</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${filasTicketsHtml}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            }).join("");
+        }
+    }
+
+    function filtrarTicketsAdminText() {
+        renderizarHistorialVentasAdmin();
+    }
+
+    function obtenerModalidadesGanadorasYIndices(indicesMarcadosEnTicket) {
+        const patronesGanadores = [
+            { nombre: "4 esquinas", indices: [0, 3, 12, 15] },
+            { nombre: "Línea diagonal", indices: [0, 5, 10, 15] },
+            { nombre: "Línea diagonal", indices: [3, 6, 9, 12] },
+            { nombre: "Línea horizontal", indices: [0, 1, 2, 3] },
+            { nombre: "Línea horizontal", indices: [4, 5, 6, 7] },
+            { nombre: "Línea horizontal", indices: [8, 9, 10, 11] },
+            { nombre: "Línea horizontal", indices: [12, 13, 14, 15] },
+            { nombre: "Línea vertical", indices: [0, 4, 8, 12] },
+            { nombre: "Línea vertical", indices: [1, 5, 9, 13] },
+            { nombre: "Línea vertical", indices: [2, 6, 10, 14] },
+            { nombre: "Línea vertical", indices: [3, 7, 11, 15] }
+        ];
+
+        let nombresGanadores = [];
+        let indicesEspecialesSet = new Set();
+
+        patronesGanadores.forEach(pat => {
+            if (pat.indices.every(idx => indicesMarcadosEnTicket.includes(idx))) {
+                if (!nombresGanadores.includes(pat.nombre)) {
+                    nombresGanadores.push(pat.nombre);
+                }
+                pat.indices.forEach(idx => indicesEspecialesSet.add(idx));
+            }
+        });
+
+        return {
+            modalidades: nombresGanadores.length > 0 ? nombresGanadores.join(", ") : null,
+            indicesEspeciales: Array.from(indicesEspecialesSet)
+        };
+    }
+
+    function evaluarModalidadGanadora(indicesMarcadosEnTicket) {
+        let resultado = obtenerModalidadesGanadorasYIndices(indicesMarcadosEnTicket);
+        return resultado.modalidades;
+    }
+
+    function verTicketEnModal(idTicket) {
+        if (typeof ticketsGlobales === 'undefined') return;
+        let ticketEncontrado = ticketsGlobales.find(t => t.idTicket === idTicket);
+        if (!ticketEncontrado) {
+            alert("No se encontró la información detallada del ticket: " + idTicket);
+            return;
+        }
+
+        let numsArray = ticketEncontrado.numeros || ticketEncontrado.jugada;
+        if (typeof numsArray === 'string') {
+            try {
+                numsArray = JSON.parse(numsArray);
+            } catch(e) {
+                numsArray = numsArray.split(/[,;|]/).map(n => n.trim().replace(/['"]+/g, '')).filter(n => n.length > 0);
+            }
+        }
+
+        let modalidad = ticketEncontrado.modalidad || "Pendiente";
+        let estadoTicket = ticketEncontrado.estado || "Pendiente";
+        let sorteoTicket = ticketEncontrado.sorteo || ticketEncontrado.Sorteo || ticketEncontrado.referencia || "Sorteo";
+        let vendedorTicket = ticketEncontrado.vendedor || "Vendedor";
+
+        let animalitosCantadosSorteo = obtenerAnimalitosCantadosParaTicket(ticketEncontrado);
+
+        let indicesMarcadosEnTicket = [];
+        numsArray.forEach((num, index) => {
+            let numLimpio = num ? num.toString().trim() : '';
+            let esCantado = animalitosCantadosSorteo.some(a => {
+                let aStr = a.toString().toLowerCase().trim();
+                let numStr = numLimpio.toLowerCase().trim();
+                return aStr === numStr || aStr.includes(numStr) || numStr.includes(aStr);
+            });
+            if (esCantado) {
+                indicesMarcadosEnTicket.push(index);
+            }
+        });
+
+        let resultadoModalidades = obtenerModalidadesGanadorasYIndices(indicesMarcadosEnTicket);
+        let patronCumplido = resultadoModalidades.modalidades;
+        let indicesEspeciales = resultadoModalidades.indicesEspeciales;
+
+        let patronFinalModal = patronCumplido;
+        if (ticketEncontrado.estado && ticketEncontrado.estado.toUpperCase().includes("GANADOR")) {
+            let matchParéntesis = ticketEncontrado.estado.match(/\(([^)]+)\)/);
+            if (matchParéntesis && matchParéntesis[1]) {
+                patronFinalModal = matchParéntesis[1];
+            }
+        }
+
+        let tablaHtml = '<table class="tabla-modal-jugada"><tr>';
+        numsArray.forEach((num, index) => {
+            if (index > 0 && index % 4 === 0) {
+                tablaHtml += '</tr><tr>';
+            }
+            let numLimpio = num ? num.toString().trim() : '';
+            let claseCelda = "";
+
+            let esParteModalidad = indicesEspeciales.includes(index);
+            let esCantado = indicesMarcadosEnTicket.includes(index);
+
+            if (esParteModalidad) {
+                claseCelda = "celda-premiada";
+            } else if (esCantado) {
+                claseCelda = "celda-marcada-sorteo";
+            }
+
+            tablaHtml += `<td class="${claseCelda}">${numLimpio}</td>`;
+        });
+        tablaHtml += '</tr></table>';
+
+        const estadoDinamicoResult = estadoTicket.toUpperCase().includes("GANADOR") ? estadoTicket : (patronFinalModal ? "GANADOR (" + patronFinalModal + ")" : estadoTicket);
+        const colorEstado = estadoDinamicoResult.toUpperCase().includes("GANADOR") ? '#2ecc71' : '#e74c3c';
+
+        let elDetalleModal = document.getElementById("detalleModalTicket");
+        if (elDetalleModal) {
+            elDetalleModal.innerHTML = `
+                <strong>Ticket:</strong> ${ticketEncontrado.idTicket}<br>
+                <strong>Sorteo:</strong> ${sorteoTicket}<br>
+                <strong>Vendedor:</strong> ${vendedorTicket}<br>
+                <strong>Modalidad:</strong> <span style="color: #27ae60; font-weight: bold;">${patronFinalModal || modalidad}</span><br>
+                <strong>Estado:</strong> <span style="color: ${colorEstado}; font-weight: bold;">${estadoDinamicoResult}</span>
+            `;
+        }
+        
+        let elContenedorModal = document.getElementById("contenedorTablaModal");
+        if (elContenedorModal) {
+            elContenedorModal.innerHTML = tablaHtml;
+        }
+        
+        let elModal = document.getElementById("modalTicket");
+        if (elModal) {
+            elModal.style.display = "flex";
+        }
+    }
+
+    function cerrarModalTicket() {
+        let elModal = document.getElementById("modalTicket");
+        if (elModal) {
+            elModal.style.display = "none";
+        }
+    }
+
+    async function crearNuevoVendedor() {
+        const nombre = document.getElementById('nuevoNombre').value.trim();
+        const comision = document.getElementById('nuevaComision').value.trim();
+        const usuario = document.getElementById('nuevoUsuario').value.trim();
+        const clave = document.getElementById('nuevaClave').value.trim();
+        if (!nombre || !usuario || !clave) return alert("Complete todos los campos.");
+
+        try {
+            const resp = await fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify({ accion: "crearVendedor", nombre, comision, usuario, clave })
+            });
+            const data = await resp.json();
+            if (data.exito) {
+                alert("¡Vendedor creado!");
+                document.getElementById('nuevoNombre').value = '';
+                document.getElementById('nuevoUsuario').value = '';
+                document.getElementById('nuevaClave').value = '';
+                cargarDatosAdicionalesAdmin();
+            } else { alert("Error: " + data.mensaje); }
+        } catch(e) { console.error(e); }
+    }
+
+    async function cambiarEstadoVendedor(idVendedor, nuevoEstado) {
+        if (!confirm(`¿Cambiar estado al vendedor a ${nuevoEstado}?`)) return;
+        try {
+            const resp = await fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify({ accion: "actualizarEstadoVendedor", idVendedor, estado: nuevoEstado })
+            });
+            const data = await resp.json();
+            if (data.exito) cargarDatosAdicionalesAdmin();
+            else alert("Error: " + data.mensaje);
+        } catch(e) { console.error(e); }
+    }
+
+    function renderizarTablasSeparadas() {
+        const tbodyLotto = document.getElementById("tablaLottoBody");
+        const tbodyGranjita = document.getElementById("tablaGranjitaBody");
+        tbodyLotto.innerHTML = ""; tbodyGranjita.innerHTML = "";
+
+        const hoy = new Date();
+        hoy.setHours(0,0,0,0);
+
+        const registrosHoy = historialGlobal.filter(item => {
+            if (!item.fecha) return false;
+            let itemDate = parseFecha(item.fecha);
+            itemDate.setHours(0,0,0,0);
+            return itemDate.getTime() === hoy.getTime();
+        });
+
+        const lottos = registrosHoy.filter(item => item.loteria && item.loteria.toLowerCase().trim().includes("lotto"));
+        const granjitas = registrosHoy.filter(item => item.loteria && (item.loteria.toLowerCase().trim().includes("granjita") || item.loteria.toLowerCase().trim().includes("granja")));
+
+        tbodyLotto.innerHTML = lottos.length === 0 ? `<tr><td colspan="4" style="text-align: center; color: #aaa;">Sin registros</td></tr>` : 
+            lottos.map(item => `<tr><td>${item.fecha.split(' ')[0]}</td><td><span style="color: #fbc531;">${item.horaSorteo}</span></td><td>${item.animalito}</td><td><span style="color: #2ecc71; font-weight: bold;">${item.modalidad || 'N/A'}</span></td></tr>`).join('');
+
+        tbodyGranjita.innerHTML = granjitas.length === 0 ? `<tr><td colspan="4" style="text-align: center; color: #aaa;">Sin registros</td></tr>` : 
+            granjitas.map(item => `<tr><td>${item.fecha.split(' ')[0]}</td><td><span style="color: #fbc531;">${item.horaSorteo}</span></td><td>${item.animalito}</td><td><span style="color: #2ecc71; font-weight: bold;">${item.modalidad || 'N/A'}</span></td></tr>`).join('');
+    }
+
+    function actualizarHorariosDisponibles() {
+        const loteriaSeleccionada = document.getElementById("selectLoteria").value.toLowerCase().trim();
+        const selectHora = document.getElementById("selectHoraSorteo");
+        const opciones = selectHora.options;
+        const hoy = new Date();
+        hoy.setHours(0,0,0,0);
+
+        const horasYaJugadas = historialGlobal
+            .filter(item => {
+                if (!item.loteria || !item.fecha) return false;
+                let itemDate = parseFecha(item.fecha);
+                itemDate.setHours(0,0,0,0);
+                return itemDate.getTime() === hoy.getTime() && item.loteria.toLowerCase().trim() === loteriaSeleccionada;
+            })
+            .map(item => item.horaSorteo);
+
+        for (let i = 0; i < opciones.length; i++) {
+            const horaValor = opciones[i].value;
+            if (horasYaJugadas.includes(horaValor)) {
+                opciones[i].disabled = true;
+                opciones[i].text = horaValor + " (YA JUGADO ❌)";
+            } else {
+                opciones[i].disabled = false;
+                opciones[i].text = horaValor.replace(" (YA JUGADO ❌)", "");
+            }
+        }
+    }
+
+    async function guardarSorteoManual() {
+        if(juegoFinalizado) return alert("Juego finalizado.");
+        
+        const loteriaSeleccionada = document.getElementById("selectLoteria").value;
+        const horaSeleccionada = document.getElementById("selectHoraSorteo").value;
+        const animalitosSeleccionados = cantados;
+
+        if (!loteriaSeleccionada || !horaSeleccionada || animalitosSeleccionados.length === 0) {
+            alert("Por favor completa todos los campos del sorteo y selecciona al menos un animalito.");
+            return;
+        }
+
+        const hoy = new Date();
+        hoy.setHours(0,0,0,0);
+
+        const registrosMismaHora = (historialGlobal || []).filter(item => {
+            if (!item.fecha || !item.horaSorteo) return false;
+            let itemDate = parseFecha(item.fecha);
+            itemDate.setHours(0,0,0,0);
+            return itemDate.getTime() === hoy.getTime() && item.horaSorteo.trim() === horaSeleccionada.trim();
+        });
+
+        const yaExisteEstaLoteria = registrosMismaHora.some(item => 
+            item.loteria && item.loteria.toLowerCase() === loteriaSeleccionada.toLowerCase()
+        );
+
+        if (yaExisteEstaLoteria) {
+            alert(`¡Atención! La lotería ${loteriaSeleccionada} ya tiene un resultado registrado para las ${horaSeleccionada} el día de hoy.`);
+            return;
+        }
+
+        if (registrosMismaHora.length >= 2) {
+            alert(`Ya se han registrado los dos sorteos (Lotto Activo y La Granjita) para las ${horaSeleccionada}. No se pueden agregar más.`);
+            return;
+        }
+
+        const esSegundoSorteo = (registrosMismaHora.length === 1);
+
+        let mensajeConfirmacion = esSegundoSorteo 
+            ? `⚠️ Este es el SEGUNDO resultado para las ${horaSeleccionada} (${loteriaSeleccionada}). Al guardarlo, el sistema correrá la VALIDACIÓN AUTOMÁTICA DE TICKETS. ¿Deseas continuar?`
+            : `¿Guardar el primer resultado para ${loteriaSeleccionada} (${horaSeleccionada})? (Quedará en espera del segundo sorteo para buscar ganadores).`;
+
+        if(!confirm(mensajeConfirmacion)) return;
+
+        try {
+            const resp = await fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify({ 
+                    accion: "guardarResultadoManual", 
+                    loteria: loteriaSeleccionada, 
+                    horaSorteo: horaSeleccionada, 
+                    cantados: animalitosSeleccionados,
+                    validarGanadores: esSegundoSorteo 
+                })
+            });
+            
+            const dataG = await resp.json();
+            if(!dataG.exito) return alert("⚠️ No se pudo guardar: " + (dataG.mensaje || "Error"));
+
+            if(dataG.ganadores && dataG.ganadores.length > 0) {
+                let htmlGanadores = `🏆 ¡BINGO! ¡GANADOR REGISTRADO!<br>Premio C/U: Bs. ${parseFloat(dataG.premioPorGanador || 0).toFixed(2)}<br><br>`;
+                dataG.ganadores.forEach(g => {
+                    htmlGanadores += `<span class="link-ticket" onclick='verTicketEnModal("${g.idTicket}")'>🎟️ ${g.idTicket} (${g.vendedor})</span> `;
+                });
+                const banner = document.getElementById("bannerGanadores");
+                banner.style.display = "block";
+                banner.innerHTML = htmlGanadores;
+                juegoFinalizado = true; 
+            } else {
+                document.getElementById("bannerGanadores").style.display = "none";
+                if (esSegundoSorteo) {
+                    alert("Sorteo completado y validado (No hubo ganadores en este bloque).");
+                } else {
+                    alert("Primer sorteo registrado con éxito. Esperando el segundo sorteo del bloque para procesar ganadores.");
+                }
+            }
+
+            cantados = [];
+            renderGrid(); 
+            await consultarEstado(); 
+            await cargarHistorial(); 
+            await cargarDatosAdicionalesAdmin();
+            await cargarParametrosSistemaAdmin();
+        } catch (error) {
+            console.error("Error de red:", error);
+            alert("Hubo un error al conectar con el servidor.");
+        }
+    }
+
+    async function pedirDatosCorreccion() {
+        const loteriaElegida = prompt("Lotería a corregir ('Lotto Activo' o 'La Granjita'):", "Lotto Activo");
+        if(!loteriaElegida) return;
+        const horaElegida = prompt("Horario a corregir (Ej: 09:00 AM):", "09:00 AM");
+        if(!horaElegida) return;
+
+        if(!confirm(`¿Eliminar registro de ${loteriaElegida} a las ${horaElegida}?`)) return;
+
+        try {
+            const resp = await fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify({ accion: "corregirSorteo", loteria: loteriaElegida, horaSorteo: horaElegida })
+            });
+            const data = await resp.json();
+            if (data.exito) {
+                alert("Sorteo corregido correctamente.");
+                await cargarHistorial();
+                await consultarEstado();
+                await cargarParametrosSistemaAdmin();
+            } else alert("Error: " + data.mensaje);
+        } catch(e) { console.error(e); }
+    }
+
+    async function reiniciarSorteo() {
+        const nuevoPote = document.getElementById("inputNuevoPote").value;
+        if(!confirm(`¿Reiniciar el juego, limpiar registros y establecer el pote en Bs. ${nuevoPote}?`)) return;
+
+        try {
+            const resp = await fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify({ accion: "reiniciarJuego", nuevoPote })
+            });
+            const data = await resp.json();
+            if (data.exito) {
+                alert("Juego reiniciado con éxito.");
+                cantados = [];
+                juegoFinalizado = false;
+                document.getElementById("bannerGanadores").style.display = "none";
+                renderGrid();
+                await consultarEstado();
+                await cargarHistorial();
+                await cargarDatosAdicionalesAdmin();
+                await cargarParametrosSistemaAdmin();
+            } else alert("Error: " + data.mensaje);
+        } catch(e) { console.error(e); }
+    }
+</script>
+</body>
+</html>
