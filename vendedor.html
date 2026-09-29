@@ -1080,20 +1080,24 @@
                 let ticketsDelSorteo = gruposSorteos[sorteoNombre];
                 let estaAbierto = index === 0 ? 'open' : '';
 
-                let filasHtml = ticketsDelSorteo.map(t => {
-                    const idT = t.idTicket || t.IdTicket || t.IDTICKET || t.ticket || t.Ticket || '';
-                    const fechaT = t.fecha || t.Fecha || t.FECHA || '';
-                    const estadoT = t.estado || t.Estado || t.ESTADO || 'Pendiente';
+                // Agrupamos por fecha exacta para consolidar tandas de venta múltiple
+                let tandasMap = {};
+                ticketsDelSorteo.forEach(t => {
+                    let f = t.fecha || t.Fecha || t.FECHA || '';
+                    if (!tandasMap[f]) tandasMap[f] = [];
+                    tandasMap[f].push(t);
+                });
 
-                    // Agrupar IDs de tickets con la misma fecha exactas (misma tanda)
-                    let ticketsDeLaTanda = ticketsDelSorteo.filter(item => (item.fecha || item.Fecha || item.FECHA) === fechaT);
-                    let listaIdsTanda = ticketsDeLaTanda.map(item => item.idTicket || item.IdTicket || item.IDTICKET || item.ticket || item.Ticket || '').filter(Boolean);
+                let filasHtml = Object.keys(tandasMap).map(fechaT => {
+                    let itemsTanda = tandasMap[fechaT];
+                    let listaIdsTanda = itemsTanda.map(item => item.idTicket || item.IdTicket || item.IDTICKET || item.ticket || item.Ticket || '').filter(Boolean);
                     let idsUnicosTanda = [...new Set(listaIdsTanda)].join(', ');
-                    if(!idsUnicosTanda) idsUnicosTanda = idT;
+                    let idPrincipal = listaIdsTanda[0] || '';
+                    let estadoT = itemsTanda[0].estado || itemsTanda[0].Estado || itemsTanda[0].ESTADO || 'Pendiente';
 
-                    // URL base dinámica apuntando a ver-ticket.html (usando el primer ID para el enlace detallado del botón de vista, o se puede usar el conjunto si es compatible)
+                    // URL base dinámica apuntando a ver-ticket.html incluyendo TODOS los tickets de la tanda separados por coma sin espacios extra
                     let urlBaseWeb = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
-                    let linkConsultaTicket = `${urlBaseWeb}ver-ticket.html?ticket=${idT}`;
+                    let linkConsultaTicket = `${urlBaseWeb}ver-ticket.html?ticket=${idsUnicosTanda}`;
 
                     const mensajeWs = encodeURIComponent(`🎰 *BINGO ANIMALITOS* 🎰\n¡Hola! Tu(s) ticket(s) han sido generado(s) con éxito.\n\n🎟️ *Ticket(s):* ${idsUnicosTanda}\n🎲 *Sorteo:* ${sorteoNombre}\n📅 *Fecha:* ${fechaT}\n\nPuedes ver tu(s) cartón(es) interactivo(s) y seguir los resultados en tiempo real ingresando al siguiente enlace:\n👉 ${linkConsultaTicket}\n\n¡Mucha Suerte! 🍀`);
                     
@@ -1108,7 +1112,7 @@
 
                     return `
                         <tr>
-                            <td><span class="ticket-link" onclick='verTicketEnModal("${idT}")'>${idT}</span></td>
+                            <td><span class="ticket-link" onclick='verTicketEnModal("${idPrincipal}")'>${idsUnicosTanda}</span></td>
                             <td>${fechaT}</td>
                             <td><span class="${claseBadge}">${estadoT}</span></td>
                             <td>
@@ -1121,7 +1125,7 @@
 
                 return `
                     <details class="acordeon-sorteo" ${estaAbierto}>
-                        <summary>🎟️ ${sorteoNombre} (${ticketsDelSorteo.length} tickets)</summary>
+                        <summary>🎟️️ ${sorteoNombre} (${ticketsDelSorteo.length} tickets)</summary>
                         <div class="acordeon-contenido">
                             <table class="tabla-tickets">
                                 <thead>
