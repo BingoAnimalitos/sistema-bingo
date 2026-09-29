@@ -75,13 +75,21 @@ function responderJSON(obj) {
 }
 
 // ==========================================
-// MÓDULO DE CONSULTA PÚBLICA DE TICKET (OPTIMIZADO)
+// MÓDULO DE CONSULTA PÚBLICA DE TICKET (OPTIMIZADO Y MULTIPLE)
 // ==========================================
 function consultarTicketPublico(data) {
   try {
-    const idTicketBuscado = String(data.idTicket || data.ticketId || "").trim();
-    if (!idTicketBuscado) {
-      return { exito: false, mensaje: "Debe proporcionar un ID de ticket válido." };
+    let ticketsParam = data.tickets || data.ticket || data.idTicket || "";
+    let idsArray = [];
+    
+    if (Array.isArray(ticketsParam)) {
+      idsArray = ticketsParam.map(s => String(s).trim()).filter(Boolean);
+    } else if (typeof ticketsParam === 'string') {
+      idsArray = ticketsParam.split(',').map(s => s.trim()).filter(Boolean);
+    }
+
+    if (idsArray.length === 0) {
+      return { exito: false, mensaje: "Debe proporcionar al menos un ID de ticket válido." };
     }
 
     const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -91,14 +99,17 @@ function consultarTicketPublico(data) {
     }
 
     const datosTickets = sheetTickets.getDataRange().getDisplayValues();
-    let ticketEncontrado = null;
+    let ticketsEncontrados = [];
 
-    // Búsqueda directa optimizada
+    // Recorremos la hoja buscando coincidencias con cualquiera de los IDs solicitados
     for (let i = 1; i < datosTickets.length; i++) {
       let idFila = String(datosTickets[i][0] || "").trim();
-      if (idFila.toLowerCase() === idTicketBuscado.toLowerCase()) {
+      
+      let coincide = idsArray.some(idBuscado => idFila.toLowerCase() === idBuscado.toLowerCase());
+      
+      if (coincide) {
         let montoTicket = parseFloat(datosTickets[i][8]) || PRECIO_TICKET_DEFECTO;
-        ticketEncontrado = {
+        ticketsEncontrados.push({
           idTicket: idFila,
           fecha: String(datosTickets[i][1] || ""),
           vendedor: String(datosTickets[i][2] || ""),
@@ -108,25 +119,24 @@ function consultarTicketPublico(data) {
           sorteo: String(datosTickets[i][6] || ""),
           modalidad: String(datosTickets[i][7] || ""),
           monto: montoTicket
-        };
-        break;
+        });
       }
     }
 
-    if (!ticketEncontrado) {
-      return { exito: false, mensaje: "No se encontró información para el ticket: " + idTicketBuscado };
+    if (ticketsEncontrados.length > 0) {
+      const animalesSorteo = obtenerAnimalitosSorteoActual();
+      const estadoJuego = obtenerEstadoJuego();
+
+      return {
+        exito: true,
+        tickets: ticketsEncontrados,
+        animalesSorteo: animalesSorteo,
+        poteActual: estadoJuego.pote,
+        nroSorteo: estadoJuego.nroSorteo
+      };
+    } else {
+      return { exito: false, mensaje: "Los tickets consultados no existen o expiraron." };
     }
-
-    const animalesSorteo = obtenerAnimalitosSorteoActual();
-    const estadoJuego = obtenerEstadoJuego();
-
-    return {
-      exito: true,
-      ticket: ticketEncontrado,
-      animalesSorteo: animalesSorteo,
-      poteActual: estadoJuego.pote,
-      nroSorteo: estadoJuego.nroSorteo
-    };
   } catch (err) {
     return { exito: false, mensaje: "Error al consultar el ticket: " + err.toString() };
   }
