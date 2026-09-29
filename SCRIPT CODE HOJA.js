@@ -25,13 +25,15 @@ function validarOrigen(e) {
 function doPost(e) {
   try {
     // --- CAPA DE SEGURIDAD POR ORIGEN ---
-    // Verificamos si la petición cumple con las condiciones de seguridad
     if (!validarOrigen(e)) {
       return responderJSON({ exito: false, mensaje: "Acceso no autorizado desde este origen." });
     }
 
     const data = JSON.parse(e.postData.contents);
     const accion = data.accion;
+
+    // --- ACCIÓN DE CONSULTA PÚBLICA DE TICKETS ---
+    if (accion === "consultarTicketPublico") return responderJSON(consultarTicketPublico(data));
 
     // --- ACCIONES DE ADMINISTRADORES ---
     if (accion === "loginAdmin") return responderJSON(loginAdminSeguro(data));
@@ -70,6 +72,65 @@ function doPost(e) {
 
 function responderJSON(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
+}
+
+// ==========================================
+// MÓDULO DE CONSULTA PÚBLICA DE TICKET
+// ==========================================
+function consultarTicketPublico(data) {
+  try {
+    const idTicketBuscado = String(data.idTicket || data.ticketId || "").trim();
+    if (!idTicketBuscado) {
+      return { exito: false, mensaje: "Debe proporcionar un ID de ticket válido." };
+    }
+
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheetTickets = ss.getSheetByName(HOJA_TICKETS);
+    if (!sheetTickets) {
+      return { exito: false, mensaje: "La hoja de Tickets no existe." };
+    }
+
+    const datosTickets = sheetTickets.getDataRange().getDisplayValues();
+    let ticketEncontrado = null;
+
+    // Buscar el ticket por ID (Columna A -> Índice 0)
+    for (let i = 1; i < datosTickets.length; i++) {
+      let idFila = String(datosTickets[i][0] || "").trim();
+      if (idFila.toLowerCase() === idTicketBuscado.toLowerCase()) {
+        let montoTicket = parseFloat(datosTickets[i][8]) || PRECIO_TICKET_DEFECTO;
+        ticketEncontrado = {
+          idTicket: idFila,
+          fecha: String(datosTickets[i][1] || ""),
+          vendedor: String(datosTickets[i][2] || ""),
+          loteria: String(datosTickets[i][3] || "Lotto Activo y La Granjita"),
+          numeros: String(datosTickets[i][4] || "").split(", "),
+          estado: String(datosTickets[i][5] || "ACTIVO"),
+          sorteo: String(datosTickets[i][6] || ""),
+          modalidad: String(datosTickets[i][7] || ""),
+          monto: montoTicket
+        };
+        break;
+      }
+    }
+
+    if (!ticketEncontrado) {
+      return { exito: false, mensaje: "No se encontró información para el ticket: " + idTicketBuscado };
+    }
+
+    // Obtener los animales del sorteo actual o resultados vigentes para que el cliente valide aciertos
+    const animalesSorteo = obtenerAnimalitosSorteoActual();
+    const estadoJuego = obtenerEstadoJuego();
+
+    return {
+      exito: true,
+      ticket: ticketEncontrado,
+      animalesSorteo: animalesSorteo,
+      poteActual: estadoJuego.pote,
+      nroSorteo: estadoJuego.nroSorteo
+    };
+  } catch (err) {
+    return { exito: false, mensaje: "Error al consultar el ticket: " + err.toString() };
+  }
 }
 
 // ==========================================
