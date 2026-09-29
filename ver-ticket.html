@@ -100,7 +100,7 @@
                 const response = await fetch(API_URL, {
                     method: "POST",
                     headers: { "Content-Type": "text/plain;charset=utf-8" },
-                    body: JSON.stringify({ accion: "consultarTicketsPublico", tickets: idsArray })
+                    body: JSON.stringify({ accion: "consultarTicketPublico", tickets: idsArray })
                 });
                 const data = await response.json();
 
