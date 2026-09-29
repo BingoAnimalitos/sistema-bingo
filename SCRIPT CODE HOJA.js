@@ -75,7 +75,7 @@ function responderJSON(obj) {
 }
 
 // ==========================================
-// MÓDULO DE CONSULTA PÚBLICA DE TICKET
+// MÓDULO DE CONSULTA PÚBLICA DE TICKET (OPTIMIZADO)
 // ==========================================
 function consultarTicketPublico(data) {
   try {
@@ -93,7 +93,7 @@ function consultarTicketPublico(data) {
     const datosTickets = sheetTickets.getDataRange().getDisplayValues();
     let ticketEncontrado = null;
 
-    // Buscar el ticket por ID (Columna A -> Índice 0)
+    // Búsqueda directa optimizada
     for (let i = 1; i < datosTickets.length; i++) {
       let idFila = String(datosTickets[i][0] || "").trim();
       if (idFila.toLowerCase() === idTicketBuscado.toLowerCase()) {
@@ -117,7 +117,6 @@ function consultarTicketPublico(data) {
       return { exito: false, mensaje: "No se encontró información para el ticket: " + idTicketBuscado };
     }
 
-    // Obtener los animales del sorteo actual o resultados vigentes para que el cliente valide aciertos
     const animalesSorteo = obtenerAnimalitosSorteoActual();
     const estadoJuego = obtenerEstadoJuego();
 

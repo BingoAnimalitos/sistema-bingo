@@ -109,20 +109,8 @@
         .alerta-ganador-animada { background: linear-gradient(135deg, #f1c40f, #e67e22); border: 2px solid #d35400; color: #78281f; padding: 12px; border-radius: 8px; text-align: center; font-weight: bold; margin-bottom: 15px; animation: parpadeoAlerta 1.5s infinite; display: none; }
         .alerta-informativa-sorteo { background: linear-gradient(135deg, #3498db, #2980b9); border: 2px solid #1b4f72; color: #fff; padding: 12px; border-radius: 8px; text-align: center; font-weight: bold; margin-bottom: 15px; display: none; font-size: 13px; }
 
-        /* PODIO FLOTANTE OPTIMIZADO */
         #widget-podio-flotante { 
-            position: fixed; 
-            top: 20px; 
-            left: 20px; 
-            background: white; 
-            border-radius: 12px; 
-            box-shadow: 0 5px 20px rgba(0,0,0,0.25); 
-            width: 300px; 
-            z-index: 1000; 
-            overflow: visible; 
-            border: 2px solid #f39c12; 
-            font-size: 12px; 
-            transition: all 0.3s ease; 
+            position: fixed; top: 20px; left: 20px; background: white; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.25); width: 300px; z-index: 1000; overflow: visible; border: 2px solid #f39c12; font-size: 12px; transition: all 0.3s ease; 
         }
         .podio-header { background: linear-gradient(135deg, #f39c12, #d35400); color: white; padding: 10px 12px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .podio-body { padding: 10px; height: auto; max-height: none; overflow-y: visible; background: #fff; }
@@ -145,29 +133,11 @@
 
         #area-impresion { display: none; }
 
-        /* REGLAS RESPONSIVAS MÓVILES */
         @media (max-width: 768px) {
             body { padding: 4px; }
             .card { padding: 12px; max-width: 100%; }
-            #widget-podio-flotante { 
-                position: relative !important;
-                top: auto !important;
-                left: auto !important;
-                right: auto !important;
-                width: 100% !important;
-                max-width: 100% !important;
-                margin-bottom: 15px !important;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.15);
-            }
-            #pote-flotante { 
-                position: fixed !important;
-                top: auto !important; 
-                bottom: 10px !important; 
-                right: 10px !important; 
-                font-size: 0.85rem !important; 
-                padding: 5px 12px; 
-                box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-            }
+            #widget-podio-flotante { position: relative !important; top: auto !important; left: auto !important; right: auto !important; width: 100% !important; max-width: 100% !important; margin-bottom: 15px !important; box-shadow: 0 2px 10px rgba(0,0,0,0.15); }
+            #pote-flotante { position: fixed !important; top: auto !important; bottom: 10px !important; right: 10px !important; font-size: 0.85rem !important; padding: 5px 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
             .grid-visual-animalitos { grid-template-columns: repeat(auto-fill, minmax(65px, 1fr)); max-height: 240px; }
             .tabla-tickets th, .tabla-tickets td { padding: 6px 4px; font-size: 11px; }
         }
@@ -176,16 +146,7 @@
             @page { size: 58mm auto; margin: 0mm; }
             body { background: white; padding: 0; margin: 0; }
             .no-print, #pote-flotante, #widget-podio-flotante, #modalTicket, #modalPagoMovil { display: none !important; }
-            
-            #area-impresion {
-                display: block !important;
-                width: 46mm;
-                margin-left: -0.131mm;
-                padding-top: 2mm;
-                font-family: 'Courier New', Courier, monospace;
-                color: #000;
-                text-align: center;
-            }
+            #area-impresion { display: block !important; width: 46mm; margin-left: -0.131mm; padding-top: 2mm; font-family: 'Courier New', Courier, monospace; color: #000; text-align: center; }
             .ticket-item { width: 100%; margin-bottom: 10px; page-break-after: always; }
             .ticket-title { font-size: 13px; font-weight: 900; text-transform: uppercase; }
             .ticket-info { font-size: 10px; font-weight: bold; text-align: left; margin: 5px 0; line-height: 1.3; }
@@ -208,12 +169,7 @@
             <div id="bannerEstmuloRanking" style="font-size: 10.5px; text-align: center; color: #d35400; background: #fef9e7; border: 1px dashed #f39c12; padding: 5px; border-radius: 6px; font-weight: bold; margin-bottom: 8px;"></div>
             <table class="tabla-tickets" style="margin-top: 0;">
                 <thead>
-                    <tr>
-                        <th>Pos</th>
-                        <th>Vendedor</th>
-                        <th>Tick</th>
-                        <th>Bs</th>
-                    </tr>
+                    <tr><th>Pos</th><th>Vendedor</th><th>Tick</th><th>Bs</th></tr>
                 </thead>
                 <tbody id="cuerpoTablaRankingFlotante">
                     <tr><td colspan="4" style="text-align: center; color: #94a3b8; font-size: 11px;">Cargando...</td></tr>
@@ -222,17 +178,20 @@
         </div>
     </div>
 
-    <!-- MODAL VISTA PREVIA -->
+    <!-- MODAL VISTA PREVIA / OPCIONES POST-VENTA -->
     <div id="modalTicket" class="no-print">
         <div class="modal-contenedor-principal">
             <div class="modal-contenido" id="capturaTicketContainer">
-                <h3 style="margin-bottom: 5px; font-size: 15px; color: #2c3e50;">🔍 VISTA PREVIA TICKET</h3>
+                <h3 style="margin-bottom: 5px; font-size: 15px; color: #2c3e50;">🔍 TICKET DIGITAL</h3>
                 <div id="detalleModalTicket" style="font-size: 12px; text-align: left; margin-bottom: 10px; line-height: 1.4;"></div>
                 <div id="contenedorTablaModal"></div>
             </div>
-            <div style="display: flex; gap: 8px;">
-                <button id="btnModalCompartirWA" style="background: #25D366; padding: 10px 15px; font-size: 14px; width: auto; margin-top: 0; font-weight: bold; border-radius: 6px;">💬 WhatsApp</button>
-                <button onclick="cerrarModalTicket()" style="background: #e74c3c; padding: 10px 15px; font-size: 14px; width: auto; margin-top: 0; font-weight: bold; border-radius: 6px;">Cerrar</button>
+            <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
+                <button id="btnModalCompartirWA" style="background: #25D366; padding: 12px; font-size: 14px; font-weight: bold; border-radius: 6px; margin-top: 0;">💬 Copiar Link y Enviar por WhatsApp</button>
+                <div style="display: flex; gap: 8px;">
+                    <button onclick="reimprimirDesdeModal()" style="background: #2980b9; padding: 10px; font-size: 13px; font-weight: bold; border-radius: 6px; margin-top: 0; flex: 1;">🖨️ Imprimir Tickera</button>
+                    <button onclick="cerrarModalTicket()" style="background: #e74c3c; padding: 10px; font-size: 13px; font-weight: bold; border-radius: 6px; margin-top: 0; flex: 1;">Cerrar</button>
+                </div>
             </div>
         </div>
     </div>
@@ -271,12 +230,12 @@
                 <input type="text" id="pmTelefono" placeholder="Ej. 04121234567" style="padding: 8px; font-size: 14px;">
             </div>
 
-            <button onclick="confirmarPagoMovilEImprimir()" style="background: #27ae60; margin-top: 0; padding: 10px;">Continuar con la Impresión</button>
+            <button onclick="confirmarPagoMovilEImprimir()" style="background: #27ae60; margin-top: 0; padding: 10px;">Generar Ticket</button>
             <button onclick="cancelarPagoMovil()" style="background: #e74c3c; margin-top: 5px; padding: 8px;">Cancelar</button>
         </div>
     </div>
 
-    <!-- PANTALLA DE LOGIN CON SEGURIDAD REFORZADA -->
+    <!-- LOGIN -->
     <div id="loginScreen" class="card no-print">
         <h2>🔐 Acceso Vendedor</h2>
         <div class="form-group">
@@ -291,6 +250,7 @@
         <div id="mensajeLogin"></div>
     </div>
 
+    <!-- PANEL DE VENTAS -->
     <div id="panelVentas" class="card no-print" style="display: none;">
         <div class="user-bar">
             <span>👤 <strong id="lblNombreVendedor"></strong></span>
@@ -334,15 +294,9 @@
                 Precio Unitario: <span id="lblPrecioUnitario" style="color: #2c3e50;">Bs. 100.00</span> | Total a Pagar: <span id="lblTotalPagar" style="color: #27ae60;">Bs. 100.00</span>
             </div>
 
-            <!-- BLOQUE DEL TICKET RECIÉN CREADO -->
-            <div id="bloqueUltimoTicket" style="display: none; background: #fff; border: 1px dashed #27ae60; padding: 12px; border-radius: 8px; margin-bottom: 15px; text-align: center; font-family: 'Courier New', Courier, monospace;">
-                <div style="font-weight: bold; color: #27ae60; margin-bottom: 5px; font-size: 13px;">🎟️ Último Ticket Generado</div>
-                <div id="contenidoUltimoTicket" style="font-size: 11px; text-align: left; line-height: 1.3;"></div>
-            </div>
-
             <input type="hidden" id="loteria-select" value="Lotto Activo y La Granjita">
 
-            <button onclick="iniciarProcesoVenta()" id="btnVender">Generar e Imprimir</button>
+            <button onclick="iniciarProcesoVenta()" id="btnVender">Generar Ticket Digital</button>
             <div id="mensaje"></div>
         </div>
 
@@ -397,12 +351,7 @@
             <div style="max-height: 180px; overflow-y: auto;">
                 <table class="tabla-tickets">
                     <thead>
-                        <tr>
-                            <th>Sorteo</th>
-                            <th>Tickets</th>
-                            <th>Total (Bs)</th>
-                            <th>Comisión</th>
-                        </tr>
+                        <tr><th>Sorteo</th><th>Tickets</th><th>Total (Bs)</th><th>Comisión</th></tr>
                     </thead>
                     <tbody id="cuerpoResumenSorteo">
                         <tr><td colspan="4" style="text-align: center; color: #94a3b8; font-size: 13px;">Cargando historial...</td></tr>
@@ -415,11 +364,8 @@
     <div id="area-impresion"></div>
 
     <script>
-        // CAPAS DE SEGURIDAD AVANZADAS INTEGRADAS
-        // 1. Bloqueo de Clic Derecho
         document.addEventListener('contextmenu', event => event.preventDefault());
 
-        // 2. Bloqueo de Atajos de Teclado (F12, Ctrl+Shift+I/J/C, Ctrl+U)
         document.addEventListener('keydown', event => {
             if (
                 event.key === 'F12' || 
@@ -431,16 +377,6 @@
                 return false;
             }
         });
-
-        // 3. Trampa de Depuración (Debugger Trap) con control de rendimiento
-        setInterval(() => {
-            const t0 = performance.now();
-            debugger;
-            const t1 = performance.now();
-            if (t1 - t0 > 100) {
-                document.body.innerHTML = "<h2 style='text-align:center; margin-top:20vh; color:#e74c3c;'>⚠️ Acceso Bloqueado por Medidas de Seguridad</h2>";
-            }
-        }, 1000);
 
         const API_URL = "https://script.google.com/macros/s/AKfycbzbbGiq4txDkhac4hp0h27Cy35NPeff91n1UrtSaZF7j0Bmdq2WMKi54QISa5bZjUoS/exec";
         
@@ -466,11 +402,9 @@
         let fechaDesdeCustom = '';
         let fechaHastaCustom = '';
         let precioCartonActual = 100;
+        let ultimoDatosVentaGlobal = null;
 
-        // VERIFICACIÓN DE SESIÓN SEGURA AL CARGAR LA PÁGINA
-        window.onload = async function() {
-            await cargarParametrosSistemaVendedor();
-            
+        window.onload = function() {
             const sesionGuardada = localStorage.getItem("sesionVendedor");
             if (sesionGuardada) {
                 try {
@@ -478,7 +412,7 @@
                     if (vendedor && (vendedor.idVendedor || vendedor.nombre)) {
                         let p = Number(vendedor.precioCarton || vendedor.precioTicket || vendedor.precio || vendedor.costoCarton || 0);
                         if (p > 0) precioCartonActual = p;
-                        verificarSesionRemota(vendedor);
+                        mostrarPanelVentas(vendedor);
                     } else {
                         cerrarSesion();
                     }
@@ -489,25 +423,8 @@
                 cerrarSesion();
             }
             actualizarCalculoVenta();
+            cargarParametrosSistemaVendedor();
         };
-
-        async function verificarSesionRemota(vendedor) {
-            try {
-                const response = await fetch(API_URL, {
-                    method: "POST",
-                    headers: { "Content-Type": "text/plain;charset=utf-8" },
-                    body: JSON.stringify({ accion: "validarSesionVendedor", idVendedor: vendedor.idVendedor, usuario: vendedor.usuario })
-                });
-                const data = await response.json();
-                if (data && data.exito !== false) {
-                    mostrarPanelVentas(vendedor);
-                } else {
-                    cerrarSesion();
-                }
-            } catch (e) {
-                mostrarPanelVentas(vendedor);
-            }
-        }
 
         async function cargarParametrosSistemaVendedor() {
             try {
@@ -519,7 +436,10 @@
                 const data = await response.json();
                 if (data.exito && (data.precioCarton || data.precioTicket || data.precio || data.costoCarton)) {
                     let p = Number(data.precioCarton || data.precioTicket || data.precio || data.costoCarton);
-                    if (p > 0) precioCartonActual = p;
+                    if (p > 0) {
+                        precioCartonActual = p;
+                        actualizarCalculoVenta();
+                    }
                 }
             } catch (e) {
                 console.error("Error al cargar parámetros iniciales:", e);
@@ -1095,7 +1015,6 @@
                     const fechaT = t.fecha || t.Fecha || t.FECHA || '';
                     const estadoT = t.estado || t.Estado || t.ESTADO || 'Pendiente';
                     
-                    // URL limpia del ticket con su identificador correspondiente
                     const urlTicketLimpia = `https://bingoanimalitos.github.io/sistema-bingo/ver-ticket.html?ticket=${idT}`;
                     const mensajeWs = encodeURIComponent(`🎰 *BINGO ANIMALITOS* 🎰\nRevisa tu ticket aquí:\n${urlTicketLimpia}\n¡Mucha Suerte! 🍀`);
                     
@@ -1127,16 +1046,9 @@
                         <div class="acordeon-contenido">
                             <table class="tabla-tickets">
                                 <thead>
-                                    <tr>
-                                        <th>Ticket</th>
-                                        <th>Fecha</th>
-                                        <th>Estado</th>
-                                        <th>Acciones</th>
-                                    </tr>
+                                    <tr><th>Ticket</th><th>Fecha</th><th>Estado</th><th>Acciones</th></tr>
                                 </thead>
-                                <tbody>
-                                    ${filasHtml}
-                                </tbody>
+                                <tbody>${filasHtml}</tbody>
                             </table>
                         </div>
                     </details>
@@ -1291,13 +1203,19 @@
             `;
             document.getElementById("contenedorTablaModal").innerHTML = tablaHtml;
             
-            // Configurar el botón de WhatsApp dentro del modal con la URL limpia y el ID
             const urlTicketLimpiaModal = `https://bingoanimalitos.github.io/sistema-bingo/ver-ticket.html?ticket=${idTicketReal}`;
-            const textoWsModal = encodeURIComponent(`🎰 *BINGO ANIMALITOS* 🎰\nRevisa tu ticket aquí:\n${urlTicketLimpiaModal}\n¡Mucha Suerte! 🍀`);
+            
+            // Botón de WhatsApp interactivo con copiado al portapapeles y apertura de chat
             const btnWADesdeModal = document.getElementById("btnModalCompartirWA");
             if (btnWADesdeModal) {
                 btnWADesdeModal.onclick = function() {
-                    window.open(`https://wa.me/?text=${textoWsModal}`, '_blank');
+                    navigator.clipboard.writeText(urlTicketLimpiaModal).then(() => {
+                        let textoWsModal = encodeURIComponent(`🎰 *BINGO ANIMALITOS* 🎰\nAquí tienes tu ticket digital:\n${urlTicketLimpiaModal}\n¡Mucha Suerte! 🍀`);
+                        window.open(`https://api.whatsapp.com/send?text=${textoWsModal}`, '_blank');
+                    }).catch(err => {
+                        let textoWsModal = encodeURIComponent(`🎰 *BINGO ANIMALITOS* 🎰\nAquí tienes tu ticket digital:\n${urlTicketLimpiaModal}\n¡Mucha Suerte! 🍀`);
+                        window.open(`https://api.whatsapp.com/send?text=${textoWsModal}`, '_blank');
+                    });
                 };
             }
 
@@ -1315,6 +1233,20 @@
         function cerrarModalTicket() {
             window.ultimoTicketModalAbierto = null;
             document.getElementById("modalTicket").style.display="none";
+        }
+
+        function reimprimirDesdeModal() {
+            if (window.ultimoTicketModalAbierto) {
+                let ticketEncontrado = cacheTicketsGlobal.find(t => String(t.idTicket || t.IdTicket || t.IDTICKET || t.ticket || t.Ticket || '').trim() === String(window.ultimoTicketModalAbierto).trim());
+                if (ticketEncontrado) {
+                    let fechaT = ticketEncontrado.fecha || ticketEncontrado.Fecha || ticketEncontrado.FECHA || '';
+                    reimprimirTanda(fechaT);
+                } else if (ultimoDatosVentaGlobal) {
+                    generarTicketsImpresion(ultimoDatosVentaGlobal);
+                }
+            } else if (ultimoDatosVentaGlobal) {
+                generarTicketsImpresion(ultimoDatosVentaGlobal);
+            }
         }
 
         function iniciarProcesoVenta() {
@@ -1385,29 +1317,25 @@
                     let p = Number(data.precioCarton || data.precioTicket || data.precio || data.costoCarton || 0);
                     if (p > 0) precioCartonActual = p;
                     mensaje.style.color = "green";
-                    mensaje.innerText = "¡Venta y pago móvil registrados con éxito!";
+                    mensaje.innerText = "¡Venta registrada con éxito!";
+                    
+                    ultimoDatosVentaGlobal = data;
+
                     if(data.poteActual) {
                         document.getElementById('pote-flotante').innerText = `🏆 Pote: Bs. ${data.poteActual}`;
-                    }
-                    
-                    // MOSTRAR EN EL NUEVO BLOQUE DE TICKET EN PANTALLA
-                    const ticketsGenerados = data.tickets || [];
-                    if (ticketsGenerados.length > 0) {
-                        const bloqueTicket = document.getElementById("bloqueUltimoTicket");
-                        const contenidoTicket = document.getElementById("contenidoUltimoTicket");
-                        if (bloqueTicket && contenidoTicket) {
-                            let t1 = ticketsGenerados[0];
-                            let tId = t1.idTicket || t1.IdTicket || t1.IDTICKET || t1.ticket || t1.Ticket || '';
-                            let nums = t1.numeros || t1.Numeros || t1.NUMEROS || '';
-                            let numsTexto = Array.isArray(nums) ? nums.join(', ') : nums;
-                            contenidoTicket.innerHTML = `<strong>ID:</strong> ${tId}<br><strong>Cartones:</strong> ${ticketsGenerados.length}<br><strong>Números:</strong> ${numsTexto}`;
-                            bloqueTicket.style.display = "block";
-                        }
                     }
 
                     sincronizarParametrosAdmin();
                     cargarEstadisticas();
-                    generarTicketsImpresion(data);
+
+                    // Abrir directamente el modal del último ticket generado para enviar por WhatsApp o Imprimir en tickera
+                    const ticketsGenerados = data.tickets || [];
+                    if (ticketsGenerados.length > 0) {
+                        const primerId = ticketsGenerados[0].idTicket || ticketsGenerados[0].IdTicket || ticketsGenerados[0].IDTICKET || ticketsGenerados[0].ticket || ticketsGenerados[0].Ticket || '';
+                        if (primerId) {
+                            verTicketEnModal(primerId);
+                        }
+                    }
 
                     setTimeout(() => { mensaje.innerText = ""; }, 3000);
                 } else {
@@ -1512,7 +1440,7 @@
                 alert("No se encontraron los tickets de esta tanda para reimprimir.");
                 return;
             }
-            const t0 = ticketsMismaTanda[0] || {};
+            const t0 = ticketsMismaTundo[0] || ticketsMismaTanda[0] || {};
             generarTicketsImpresion({ tickets: ticketsMismaTanda, sorteoActual: t0.sorteo || t0.Sorteo || t0.SORTEO || t0.referencia });
         }
     </script>
