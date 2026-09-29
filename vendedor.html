@@ -7,7 +7,7 @@
     <!-- Librería html2canvas para la conversión del ticket en imagen -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; }
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             background-color: #f1f5f9; 
@@ -29,7 +29,7 @@
         
         .form-group { margin-bottom: 15px; }
         label { display: block; font-weight: bold; margin-bottom: 5px; color: #555; }
-        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; background: rgba(255, 255, 255, 0.9); }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; background: rgba(255, 255, 255, 0.9); user-select: text; -webkit-user-select: text; }
         
         button { width: 100%; padding: 12px; background-color: #27ae60; color: white; font-weight: bold; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; margin-top: 10px; }
         button:hover { background-color: #219150; }
@@ -408,6 +408,33 @@
     <div id="area-impresion"></div>
 
     <script>
+        // CAPAS DE SEGURIDAD AVANZADAS INTEGRADAS
+        // 1. Bloqueo de Clic Derecho
+        document.addEventListener('contextmenu', event => event.preventDefault());
+
+        // 2. Bloqueo de Atajos de Teclado (F12, Ctrl+Shift+I/J/C, Ctrl+U)
+        document.addEventListener('keydown', event => {
+            if (
+                event.key === 'F12' || 
+                (event.ctrlKey && event.shiftKey && ['I', 'J', 'C'].includes(event.key.toUpperCase())) || 
+                (event.ctrlKey && event.key.toUpperCase() === 'U')
+            ) {
+                event.preventDefault();
+                event.stopPropagation();
+                return false;
+            }
+        });
+
+        // 3. Trampa de Depuración (Debugger Trap) con control de rendimiento
+        setInterval(() => {
+            const t0 = performance.now();
+            debugger;
+            const t1 = performance.now();
+            if (t1 - t0 > 100) {
+                document.body.innerHTML = "<h2 style='text-align:center; margin-top:20vh; color:#e74c3c;'>⚠️ Acceso Bloqueado por Medidas de Seguridad</h2>";
+            }
+        }, 1000);
+
         const API_URL = "https://script.google.com/macros/s/AKfycbzbbGiq4txDkhac4hp0h27Cy35NPeff91n1UrtSaZF7j0Bmdq2WMKi54QISa5bZjUoS/exec";
         
         const listaAnimalitosGlobal = [
@@ -441,12 +468,9 @@
             if (sesionGuardada) {
                 try {
                     const vendedor = JSON.parse(sesionGuardada);
-                    // Validar integridad básica de la sesión guardada
                     if (vendedor && (vendedor.idVendedor || vendedor.nombre)) {
                         let p = Number(vendedor.precioCarton || vendedor.precioTicket || vendedor.precio || vendedor.costoCarton || 0);
                         if (p > 0) precioCartonActual = p;
-                        
-                        // Validar token/sesión contra el backend de forma segura
                         verificarSesionRemota(vendedor);
                     } else {
                         cerrarSesion();
@@ -460,7 +484,6 @@
             actualizarCalculoVenta();
         };
 
-        // Verificación remota adicional para garantizar seguridad robusta igual que el admin
         async function verificarSesionRemota(vendedor) {
             try {
                 const response = await fetch(API_URL, {
@@ -472,11 +495,9 @@
                 if (data && data.exito !== false) {
                     mostrarPanelVentas(vendedor);
                 } else {
-                    // Si el backend rechaza la sesión activa, forzar cierre de sesión
                     cerrarSesion();
                 }
             } catch (e) {
-                // En caso de fallo de red temporal, permitimos el acceso basado en la sesión local almacenada
                 mostrarPanelVentas(vendedor);
             }
         }
@@ -615,7 +636,6 @@
                     let p = Number(data.precioCarton || data.precioTicket || data.precio || data.costoCarton || 0);
                     if (p > 0) precioCartonActual = p;
                     
-                    // Almacenamiento seguro de sesión
                     localStorage.setItem("sesionVendedor", JSON.stringify(data));
                     mostrarPanelVentas(data);
                 } else {
