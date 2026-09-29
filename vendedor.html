@@ -1085,11 +1085,17 @@
                     const fechaT = t.fecha || t.Fecha || t.FECHA || '';
                     const estadoT = t.estado || t.Estado || t.ESTADO || 'Pendiente';
 
-                    // URL base dinámica apuntando a ver-ticket.html
+                    // Agrupar IDs de tickets con la misma fecha exactas (misma tanda)
+                    let ticketsDeLaTanda = ticketsDelSorteo.filter(item => (item.fecha || item.Fecha || item.FECHA) === fechaT);
+                    let listaIdsTanda = ticketsDeLaTanda.map(item => item.idTicket || item.IdTicket || item.IDTICKET || item.ticket || item.Ticket || '').filter(Boolean);
+                    let idsUnicosTanda = [...new Set(listaIdsTanda)].join(', ');
+                    if(!idsUnicosTanda) idsUnicosTanda = idT;
+
+                    // URL base dinámica apuntando a ver-ticket.html (usando el primer ID para el enlace detallado del botón de vista, o se puede usar el conjunto si es compatible)
                     let urlBaseWeb = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
                     let linkConsultaTicket = `${urlBaseWeb}ver-ticket.html?ticket=${idT}`;
 
-                    const mensajeWs = encodeURIComponent(`🎰 *BINGO ANIMALITOS* 🎰\n¡Hola! Tu ticket ha sido generado con éxito.\n\n🎟️ *Ticket:* ${idT}\n🎲 *Sorteo:* ${sorteoNombre}\n📅 *Fecha:* ${fechaT}\n\nPuedes ver tu cartón interactivo y seguir los resultados en tiempo real ingresando al siguiente enlace:\n👉 ${linkConsultaTicket}\n\n¡Mucha Suerte! 🍀`);
+                    const mensajeWs = encodeURIComponent(`🎰 *BINGO ANIMALITOS* 🎰\n¡Hola! Tu(s) ticket(s) han sido generado(s) con éxito.\n\n🎟️ *Ticket(s):* ${idsUnicosTanda}\n🎲 *Sorteo:* ${sorteoNombre}\n📅 *Fecha:* ${fechaT}\n\nPuedes ver tu(s) cartón(es) interactivo(s) y seguir los resultados en tiempo real ingresando al siguiente enlace:\n👉 ${linkConsultaTicket}\n\n¡Mucha Suerte! 🍀`);
                     
                     let estadoUpper = estadoT.toUpperCase();
                     let claseBadge = "badge-pendiente";
@@ -1201,7 +1207,7 @@
                         return aStr === numLimpioStr.toLowerCase() || 
                                aStr === numNum.toLowerCase() || 
                                (nomNom !== "" && aStr.includes(nomNom)) ||
-                               (nomNom !== "" && aNom.includes(nomNum));
+                               (nomNom !== "" && aNom.includes(numNum));
                     });
                 };
 
