@@ -65,24 +65,26 @@ function doPost(e) {
     if (accion === "obtenerPagosMoviles") return responderJSON(obtenerPagosMovilesAdmin());
     if (accion === "aprobarPagoMovil") return responderJSON(aprobarPagoMovilAdmin(data));
 
-    // --- ACCIÓN: REGISTRAR CUADRE DE CAJA ---
+    // --- ACCIÓN: REGISTRAR CUADRE DE CAJA (CORREGIDA) ---
     if (accion === "registrarCuadre") {
         var ss = SpreadsheetApp.getActiveSpreadsheet();
         var hojaCuadres = ss.getSheetByName(HOJA_HISTORIAL_CAJAS);
         
         if (!hojaCuadres) {
           hojaCuadres = ss.insertSheet(HOJA_HISTORIAL_CAJAS);
-          // Creamos las cabeceras incluyendo "Referencia" antes de "Estatus"
           hojaCuadres.appendRow(["Fecha_Hora", "ID_Vendedor", "Nombre", "Total_Vendido", "Comision", "Neto_Entregado", "Referencia", "Estatus"]);
         }
 
         var fechaHora = new Date().toLocaleString();
         var idVendedor = data.idVendedor || "";
         var nombre = data.nombre || "";
+        
+        // Conversión segura a número flotante para evitar que se guarden como ceros o textos vacíos
         var totalVendido = parseFloat(data.totalVendido) || 0;
         var comision = parseFloat(data.comision) || 0;
-        var netoEntregado = parseFloat(data.netoEntregado) || 0;
-        var referencia = data.referencia || data.ref || "N/A"; // Captura de la referencia de pago/entrega
+        var netoEntregado = parseFloat(data.netoEntregado) || (totalVendido - comision);
+        
+        var referencia = data.referencia || data.ref || "N/A";
         var estatus = "Pendiente";
 
         hojaCuadres.appendRow([
@@ -1176,7 +1178,6 @@ function obtenerHistorialCajasAdmin() {
     const datos = hojaCajas.getDataRange().getDisplayValues();
     let registrosCajas = [];
 
-    // Empezamos desde i = 1 para saltar la fila de títulos (cabeceras)
     for (let i = 1; i < datos.length; i++) {
       if (datos[i][0]) {
         registrosCajas.push({
@@ -1186,13 +1187,12 @@ function obtenerHistorialCajasAdmin() {
           totalVendido: parseFloat(datos[i][3]) || 0,
           comision: parseFloat(datos[i][4]) || 0,
           netoEntregado: parseFloat(datos[i][5]) || 0,
-          referencia: String(datos[i][6] || "N/A"), // Lectura de la columna de Referencia
-          estatus: String(datos[i][7] || "Pendiente") // Lectura de la columna de Estatus
+          referencia: String(datos[i][6] || "N/A"),
+          estatus: String(datos[i][7] || "Pendiente")
         });
       }
     }
 
-    // Retorna los registros invirtiendo el orden para ver los más recientes primero
     return { exito: true, historialCajas: registrosCajas.reverse() };
   } catch (err) {
     return { exito: false, mensaje: err.toString() };
