@@ -871,20 +871,32 @@
             }).catch(err => console.error("Error cargando estadísticas", err));
         }
 
-        // --- FUNCIÓN DE CUADRE DE CAJA Y WHATSAPP INTEGRADA ---
+        // --- FUNCIÓN DE CUADRE DE CAJA Y WHATSAPP INTEGRADA (CORREGIDA) ---
         async function enviarCuadreWhatsApp() {
             const sesionGuardada = localStorage.getItem("sesionVendedor");
             if (!sesionGuardada) return;
             const vendedorData = JSON.parse(sesionGuardada);
             
-            // Capturar los valores numéricos y de texto limpios
+            // Función auxiliar para extraer solo el valor numérico limpio (remueve "Bs.", comas, espacios, etc.)
+            const limpiarNumero = (texto) => {
+                if (!texto) return 0;
+                let limpio = texto.replace(/[^0-9.-]+/g, "");
+                return parseFloat(limpio) || 0;
+            };
+
+            // Capturar los valores numéricos limpios para enviarlos a la base de datos (HISTORIAL_CAJAS)
+            const totalVendidoNum = limpiarNumero(document.getElementById('total-vendido')?.innerText);
+            const comisionNum = limpiarNumero(document.getElementById('monto-comision')?.innerText);
+            const netoEntregarNum = limpiarNumero(document.getElementById('neto-entregar')?.innerText);
+
+            // Textos originales formateados para el mensaje visual de WhatsApp
             const totalVendidoTxt = document.getElementById('total-vendido')?.innerText || "0";
             const comisionTxt = document.getElementById('monto-comision')?.innerText || "0";
             const netoEntregarTxt = document.getElementById('neto-entregar')?.innerText || "0";
             const sorteoActualTxt = document.getElementById('lblSorteoActualVentas')?.innerText || "Sorteo actual";
             const referenciaPago = document.getElementById('txtReferenciaCuadre')?.value.trim() || "No especificada";
 
-            // 1. Enviar los datos al backend para guardarlos en HISTORIAL_CAJAS
+            // 1. Enviar los datos numéricos correctos al backend para guardarlos en HISTORIAL_CAJAS
             try {
                 await fetch(API_URL, {
                     method: "POST",
@@ -893,9 +905,9 @@
                         accion: "registrarCuadre",
                         idVendedor: vendedorData.idVendedor,
                         nombre: vendedorData.nombre,
-                        totalVendido: totalVendidoTxt,
-                        comision: comisionTxt,
-                        netoEntregar: netoEntregarTxt,
+                        totalVendido: totalVendidoNum,
+                        comision: comisionNum,
+                        netoEntregar: netoEntregarNum,
                         referencia: referenciaPago
                     })
                 });
@@ -1149,7 +1161,7 @@
                 poolMensajes = [
                     `👑 ¡Vas de 1º! Defiende tu trono con más ventas.`,
                     `🔥 ¡Imparable! Mantén la ventaja en la cima.`,
-                    `💪 ¡Nadie te quita el primer lugar hoy!`
+                    `💪 🔥 ¡Nadie te quita el primer lugar hoy!`
                 ];
             } else if (posicionUsuario > 1) {
                 let diferencia = ticketsLider - ticketsUsuario;
@@ -1332,7 +1344,7 @@
                         let aNom = aPartes.slice(1).join(" ").trim();
 
                         return aStr === numLimpioStr.toLowerCase() || 
-                               aStr === numNum.toLowerCase() || 
+                               aStr === aNum.toLowerCase() || 
                                (nomNom !== "" && aStr.includes(nomNom)) ||
                                (nomNom !== "" && aNom.includes(numNum));
                     });
