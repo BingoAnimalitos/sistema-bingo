@@ -206,7 +206,7 @@
         .anim-horizontal .mini-celda:nth-child(8) { background: #f39c12; animation: parpadeo 1.5s infinite; }
 
         .anim-columna .mini-celda:nth-child(2),
-        .anim-columna .mini-celda:nth-child(6),
+        .mini-celda:nth-child(6),
         .anim-columna .mini-celda:nth-child(10),
         .anim-columna .mini-celda:nth-child(14) { background: #27ae60; animation: parpadeo 1.5s infinite; }
 
@@ -388,15 +388,16 @@
                 banner.innerHTML = '🎉 ¡FELICIDADES! ¡TIENES TICKET(S) GANADOR(ES)! 🎉';
 
                 let infoPremiosModal = ticketsGanadores.map(t => {
-                    let mod = t.modalidad || t.premioDetalle || 'Línea';
+                    let mod = t.modalidad || t.premioDetalle || 'Columna';
                     let prem = t.premio || t.montoPremio || t.premioMonto || t.valorPremio || '';
-                    return prem ? `${mod} (Premio: ${prem})` : mod;
+                    let premFormatted = prem ? (isNaN(prem) ? prem : `Bs. ${Number(prem).toLocaleString('es-VE', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`) : '';
+                    return premFormatted ? `${mod} (Premio: ${premFormatted})` : mod;
                 }).filter(Boolean);
 
-                let detalleTexto = infoPremiosModal.length > 0 ? ` Modalidad y Premio: <b>${infoPremiosModal.join(' | ')}</b>.` : '';
+                let detalleTexto = infoPremiosModal.length > 0 ? `<br><br><b>Detalle:</b> ${infoPremiosModal.join(' | ')}.` : '';
                 
                 if (!modalYaMostrado) {
-                    document.getElementById('textoModalGanador').innerHTML = `¡Felicidades! Tu(s) ticket(s) han ganado.${detalleTexto} ¡La Acreditación Sera Automática Por Pagomóvil!`;
+                    document.getElementById('textoModalGanador').innerHTML = `¡Felicidades! Tu(s) ticket(s) han ganado.${detalleTexto}<br><br>¡La Acreditación Será Automática Por Pagomóvil!`;
                     document.getElementById('modalGanador').classList.add('activo');
                     modalYaMostrado = true;
                 }
@@ -432,8 +433,10 @@
                 let valorPremio = t.premio || t.montoPremio || t.premioMonto || t.valorPremio || null;
                 let nombreModalidad = t.modalidad || t.premioDetalle || null;
 
+                let premioFormateado = valorPremio ? (isNaN(valorPremio) ? valorPremio : `Bs. ${Number(valorPremio).toLocaleString('es-VE', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`) : null;
+
                 let infoModalidadTicket = nombreModalidad ? `<div style="font-size: 11px; color: #27ae60; font-weight: bold; margin-top: 6px;">🎯 Modalidad: ${nombreModalidad}</div>` : '';
-                let infoMontoPremio = valorPremio ? `<div style="font-size: 13px; background: #e8f8f5; border: 1.5px solid #27ae60; color: #117a65; padding: 8px; border-radius: 6px; font-weight: bold; margin-top: 6px; text-align: center;">💰 ¡PREMIO GANADO: ${valorPremio}!</div>` : '';
+                let infoMontoPremio = premioFormateado ? `<div style="font-size: 13px; background: #e8f8f5; border: 1.5px solid #27ae60; color: #117a65; padding: 8px; border-radius: 6px; font-weight: bold; margin-top: 6px; text-align: center;">💰 ¡PREMIO GANADO: ${premioFormateado}!</div>` : '';
 
                 contenedor.innerHTML += `
                     <div class="ticket-box">
