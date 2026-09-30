@@ -12,13 +12,15 @@
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220' viewBox='0 0 220 220'%3E%3Ctext x='-20' y='110' transform='rotate(-35 -20 110)' fill='%230f172a' fill-opacity='0.045' font-size='15' font-family='sans-serif' font-weight='bold'%3EBingo Animalitos%3C/text%3E%3Ctext x='90' y='40' transform='rotate(-35 90 40)' fill='%230f172a' fill-opacity='0.045' font-size='15' font-family='sans-serif' font-weight='bold'%3EBingo Animalitos%3C/text%3E%3Ctext x='90' y='180' transform='rotate(-35 90 180)' fill='%230f172a' fill-opacity='0.045' font-size='15' font-family='sans-serif' font-weight='bold'%3EBingo Animalitos%3C/text%3E%3C/svg%3E");
             padding: 15px; 
             color: #333;
-            /* Capa CSS adicional para evitar selección de texto accidental o rastreo visual rápido */
             -webkit-user-select: none;
             -moz-user-select: none;
             -ms-user-select: none;
             user-select: none;
         }
-        .contenedor { max-width: 500px; margin: 0 auto; }
+        
+        /* Contenedor adaptativo: Ancho máximo mayor en PC para permitir distribución horizontal */
+        .contenedor { max-width: 900px; margin: 0 auto; }
+        
         .card { 
             background: rgba(255, 255, 255, 0.95); 
             backdrop-filter: blur(5px);
@@ -28,31 +30,42 @@
             margin-bottom: 15px;
             text-align: center;
         }
-        h2 { color: #2c3e50; margin-bottom: 10px; font-size: 20px; }
+        h2 { color: #2c3e50; margin-bottom: 5px; font-size: 20px; }
         .subtitel { font-size: 13px; color: #666; margin-bottom: 15px; }
         
-        /* Estilos del Botón Resultados TV */
-        .btn-resultados-tv {
+        /* Contenedor de botones superiores */
+        .acciones-superiores {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        @media (max-width: 600px) {
+            .acciones-superiores { flex-direction: column; }
+        }
+
+        /* Estilos de Botones */
+        .btn-accion {
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
             color: white;
             text-decoration: none;
-            width: 100%;
+            flex: 1;
             padding: 12px;
             border-radius: 8px;
             font-weight: bold;
             font-size: 14px;
-            margin-bottom: 15px;
-            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+            border: none;
+            cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
-            animation: pulse-live 2s infinite;
         }
-        .btn-resultados-tv:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(231, 76, 60, 0.4);
+        .btn-accion:hover { transform: translateY(-2px); }
+
+        .btn-resultados-tv {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+            animation: pulse-live 2s infinite;
         }
         @keyframes pulse-live {
             0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.6); }
@@ -60,15 +73,39 @@
             100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
         }
 
+        .btn-modalidades {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+        }
+
+        .banner-estado-general {
+            background: #2c3e50; color: white; padding: 12px; border-radius: 8px; font-weight: bold; margin-bottom: 15px; font-size: 14px;
+        }
+
+        /* Estructura Grid para Tickets (Horizontal en PC, Vertical en Móvil) */
+        #contenedorTickets {
+            display: grid;
+            grid-template-columns: 1fr; /* Por defecto móvil: una columna */
+            gap: 15px;
+        }
+        @media (min-width: 768px) {
+            /* En pantallas de PC o tablets, si hay 2 o más tickets, se acomodan en 2 columnas lado a lado */
+            #contenedorTickets.multiples-tickets {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
         .ticket-box {
             background: #fff;
             border: 2px solid #cbd5e1;
             border-radius: 10px;
             padding: 15px;
-            margin-bottom: 15px;
             text-align: left;
             font-family: 'Courier New', Courier, monospace;
             box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
         .ticket-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #ccc; padding-bottom: 8px; margin-bottom: 10px; font-size: 13px; font-weight: bold; }
         
@@ -83,7 +120,6 @@
             background: #fafafa;
         }
         
-        /* Clases de aciertos y estados */
         .celda-marcada-sorteo { background-color: #3498db !important; color: white !important; border: 2px solid #2980b9 !important; }
         .celda-premiada { background-color: #2ecc71 !important; color: white !important; border: 2px solid #27ae60 !important; }
         
@@ -91,11 +127,7 @@
         .badge-ganador { background: #27ae60; color: white; }
         .badge-pendiente { background: #f39c12; color: white; }
 
-        .banner-estado-general {
-            background: #2c3e50; color: white; padding: 12px; border-radius: 8px; font-weight: bold; margin-bottom: 15px; font-size: 14px;
-        }
-
-        /* Estilos del Popup Ganador */
+        /* Estilos de Popups (General y Modalidades) */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(3px);
@@ -103,24 +135,104 @@
             opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
         }
         .modal-overlay.activo { opacity: 1; pointer-events: auto; }
+        
         .modal-content {
-            background: white; padding: 25px; border-radius: 16px; width: 90%; max-width: 400px;
+            background: white; padding: 25px; border-radius: 16px; width: 90%; max-width: 450px;
             text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            animation: bounceIn 0.5s ease;
+            transform: scale(0.7); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-height: 90vh; overflow-y: auto;
         }
-        @keyframes bounceIn {
-            0% { transform: scale(0.7); opacity: 0; }
-            70% { transform: scale(1.05); opacity: 1; }
-            100% { transform: scale(1); opacity: 1; }
-        }
+        .modal-overlay.activo .modal-content { transform: scale(1); }
+
         .modal-content h3 { color: #27ae60; font-size: 22px; margin-bottom: 10px; }
         .modal-content p { font-size: 14px; color: #444; margin-bottom: 20px; line-height: 1.5; }
+        
         .btn-cerrar-modal {
             background: #2c3e50; color: white; border: none; padding: 10px 20px;
-            border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px;
+            border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; margin-top: 15px;
         }
-        
-        #mensajeCarga { font-size: 14px; color: #555; padding: 20px; }
+
+        /* Estilos específicos para el Grid de Modalidades Animadas */
+        .modalidades-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 15px 0;
+            text-align: left;
+        }
+        @media (max-width: 450px) { .modalidades-grid { grid-template-columns: 1fr; } }
+
+        .modalidad-card {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 12px;
+            transition: transform 0.2s, border-color 0.2s, background 0.2s;
+        }
+        .modalidad-card:hover {
+            transform: translateY(-3px);
+            border-color: #3498db;
+            background: #ebf8ff;
+        }
+        .modalidad-card h4 {
+            font-size: 13px;
+            color: #2c3e50;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .modalidad-card p {
+            font-size: 11px;
+            color: #64748b;
+            margin: 0;
+            line-height: 1.3;
+        }
+
+        /* Mini-representación visual en miniatura para cada modalidad */
+        .mini-carton {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2px;
+            width: 50px;
+            height: 50px;
+            margin-bottom: 8px;
+            background: #cbd5e1;
+            padding: 2px;
+            border-radius: 4px;
+        }
+        .mini-celda {
+            background: white;
+            border-radius: 1px;
+        }
+        /* Animación iluminada para las celdas de ejemplo */
+        .anim-esquina .mini-celda:nth-child(1),
+        .anim-esquina .mini-celda:nth-child(4),
+        .anim-esquina .mini-celda:nth-child(13),
+        .anim-esquina .mini-celda:nth-child(16) { background: #e74c3c; animation: parpadeo 1.5s infinite; }
+
+        .anim-horizontal .mini-celda:nth-child(5),
+        .anim-horizontal .mini-celda:nth-child(6),
+        .anim-horizontal .mini-celda:nth-child(7),
+        .anim-horizontal .mini-celda:nth-child(8) { background: #f39c12; animation: parpadeo 1.5s infinite; }
+
+        .anim-columna .mini-celda:nth-child(2),
+        .anim-columna .mini-celda:nth-child(6),
+        .anim-columna .mini-celda:nth-child(10),
+        .anim-columna .mini-celda:nth-child(14) { background: #27ae60; animation: parpadeo 1.5s infinite; }
+
+        .anim-diagonal .mini-celda:nth-child(1),
+        .anim-diagonal .mini-celda:nth-child(6),
+        .anim-diagonal .mini-celda:nth-child(11),
+        .anim-diagonal .mini-celda:nth-child(16) { background: #8e44ad; animation: parpadeo 1.5s infinite; }
+
+        @keyframes parpadeo {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.9); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        #mensajeCarga { font-size: 14px; color: #555; padding: 20px; grid-column: 1 / -1; }
     </style>
 </head>
 <body>
@@ -130,7 +242,67 @@
         <div class="modal-content">
             <h3>🏆 ¡BINGO GANADOR! 🏆</h3>
             <p id="textoModalGanador">¡Felicidades! Uno o más de tus tickets han resultado premiados en el sorteo.</p>
-            <button class="btn-cerrar-modal" onclick="cerrarModal()">¡Excelente, A Celebrar!</button>
+            <button class="btn-cerrar-modal" onclick="cerrarModalGanador()">¡Excelente, A Celebrar!</button>
+        </div>
+    </div>
+
+    <!-- Popup de Modalidades de Ganar -->
+    <div id="modalModalidades" class="modal-overlay">
+        <div class="modal-content" style="max-width: 500px;">
+            <h3 style="color: #2980b9;">🎯 Modalidades de Ganar</h3>
+            <p style="margin-bottom: 10px; font-size: 13px;">Conoce las formas en las que puedes completar tu cartón y ganar fabulosos premios:</p>
+            
+            <div class="modalidades-grid">
+                <!-- 4 Esquinas -->
+                <div class="modalidad-card">
+                    <div class="mini-carton anim-esquina">
+                        <div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div>
+                        <div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div>
+                        <div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div>
+                        <div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div>
+                    </div>
+                    <h4>📌 4 Esquinas</h4>
+                    <p>Las 4 esquinas exteriores de tu cartón.</p>
+                </div>
+
+                <!-- Horizontal -->
+                <div class="modalidad-card">
+                    <div class="mini-carton anim-horizontal">
+                        <div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div>
+                        <div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div>
+                        <div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div>
+                        <div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div>
+                    </div>
+                    <h4>➖ Línea Horizontal</h4>
+                    <p>Cualquiera de las 4 filas completas de lado a lado.</p>
+                </div>
+
+                <!-- Columna -->
+                <div class="modalidad-card">
+                    <div class="mini-carton anim-columna">
+                        <div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div>
+                        <div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div>
+                        <div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div>
+                        <div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div>
+                    </div>
+                    <h4>⬇️ Columna</h4>
+                    <p>Cualquiera de las 4 columnas verticales completas.</p>
+                </div>
+
+                <!-- Línea Diagonal -->
+                <div class="modalidad-card">
+                    <div class="mini-carton anim-diagonal">
+                        <div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div>
+                        <div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div>
+                        <div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div>
+                        <div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div>
+                    </div>
+                    <h4>↗️ Línea Diagonal</h4>
+                    <p>Una línea completa de esquina a esquina en diagonal.</p>
+                </div>
+            </div>
+
+            <button class="btn-cerrar-modal" style="background: #3498db;" onclick="cerrarModalModalidades()">¡Entendido, A Jugar!</button>
         </div>
     </div>
 
@@ -139,12 +311,19 @@
             <h2>🎟️ Estado del Ticket</h2>
             <div class="subtitel">Bingo Animalitos - Consulta en Línea</div>
             
-            <!-- Botón de Resultados TV en Vivo -->
-            <a href="https://bingoanimalitos.github.io/sistema-bingo/resultados.html" target="_blank" class="btn-resultados-tv">
-                📺 Ver Resultados en Vivo (TV)
-            </a>
+            <!-- Botones Superiores (Resultados TV y Modalidades) -->
+            <div class="acciones-superiores">
+                <a href="https://bingoanimalitos.github.io/sistema-bingo/resultados.html" target="_blank" class="btn-accion btn-resultados-tv">
+                    📺 Ver Resultados TV
+                </a>
+                <button onclick="abrirModalModalidades()" class="btn-accion btn-modalidades">
+                    🎯 ¿Cómo se Gana?
+                </button>
+            </div>
 
             <div id="bannerGeneral" class="banner-estado-general">Cargando información del ticket...</div>
+            
+            <!-- Contenedor adaptativo de tickets -->
             <div id="contenedorTickets">
                 <div id="mensajeCarga">Buscando registros en el sistema...</div>
             </div>
@@ -155,44 +334,22 @@
         // ==========================================
         // CAPAS DE SEGURIDAD Y BLOQUEO DE INSPECCIÓN
         // ==========================================
-
-        // 1. Bloquear Clic Derecho
-        document.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-            // Opcional: alert("Acción protegida por Bingo Animalitos");
-        });
-
-        // 2. Bloquear Teclas de Inspección y Atajos de Código Fuente
+        document.addEventListener('contextmenu', function(e) { e.preventDefault(); });
         document.addEventListener('keydown', function(e) {
-            // Bloquear F12
-            if (e.key === 'F12') {
-                e.preventDefault();
-                return false;
-            }
-            // Bloquear Ctrl+U (Ver Código Fuente)
-            if (e.ctrlKey && e.key.toLowerCase() === 'u') {
-                e.preventDefault();
-                return false;
-            }
-            // Bloquear Ctrl+Shift+I / Ctrl+Shift+J / Ctrl+Shift+C (Herramientas de Desarrollador)
-            if (e.ctrlKey && e.shiftKey && ['i', 'j', 'c'].includes(e.key.toLowerCase())) {
-                e.preventDefault();
-                return false;
-            }
-            // Bloquear Ctrl+S (Guardar página)
-            if (e.ctrlKey && e.key.toLowerCase() === 's') {
-                e.preventDefault();
-                return false;
-            }
+            if (e.key === 'F12') { e.preventDefault(); return false; }
+            if (e.ctrlKey && e.key.toLowerCase() === 'u') { e.preventDefault(); return false; }
+            if (e.ctrlKey && e.shiftKey && ['i', 'j', 'c'].includes(e.key.toLowerCase())) { e.preventDefault(); return false; }
+            if (e.ctrlKey && e.key.toLowerCase() === 's') { e.preventDefault(); return false; }
         });
 
         // ==========================================
-        // LÓGICA DE CARGA DE TICKETS Y SORTEO
+        // LÓGICA DE CARGA Y ACTUALIZACIÓN AUTOMÁTICA
         // ==========================================
-
         const API_URL = "https://script.google.com/macros/s/AKfycbzbbGiq4txDkhac4hp0h27Cy35NPeff91n1UrtSaZF7j0Bmdq2WMKi54QISa5bZjUoS/exec";
+        let idsArray = [];
+        let modalYaMostrado = false;
 
-        window.onload = async function() {
+        window.onload = function() {
             const params = new URLSearchParams(window.location.search);
             const ticketsParam = params.get('tickets') || params.get('ticket');
 
@@ -203,38 +360,51 @@
                 return;
             }
 
-            let idsArray = ticketsParam.split(',').map(s => s.trim()).filter(Boolean);
-            await consultarEstadoTickets(idsArray);
+            idsArray = ticketsParam.split(',').map(s => s.trim()).filter(Boolean);
+            
+            // Carga inicial
+            consultarEstadoTickets(idsArray);
+
+            // Actualización automática (Polling cada 8 segundos)
+            setInterval(() => {
+                consultarEstadoTickets(idsArray, true);
+            }, 8000);
         };
 
-        async function consultarEstadoTickets(idsArray) {
+        async function consultarEstadoTickets(tickets, esAutoRefresh = false) {
             try {
                 const response = await fetch(API_URL, {
                     method: "POST",
                     headers: { "Content-Type": "text/plain;charset=utf-8" },
-                    body: JSON.stringify({ accion: "consultarTicketPublico", tickets: idsArray })
+                    body: JSON.stringify({ accion: "consultarTicketPublico", tickets: tickets })
                 });
                 const data = await response.json();
 
                 if (data && data.exito && data.tickets && data.tickets.length > 0) {
-                    renderizarResultadoPublico(data.tickets, data.animalesSorteo || []);
-                } else {
+                    renderizarResultadoPublico(data.tickets, data.animalesSorteo || [], esAutoRefresh);
+                } else if (!esAutoRefresh) {
                     document.getElementById('bannerGeneral').style.background = '#e74c3c';
                     document.getElementById('bannerGeneral').innerText = '❌ Tickets no encontrados';
                     document.getElementById('mensajeCarga').innerHTML = 'Los tickets consultados no existen o expiraron.';
                 }
             } catch (error) {
-                console.error(error);
-                document.getElementById('bannerGeneral').style.background = '#e74c3c';
-                document.getElementById('bannerGeneral').innerText = '⚠️ Error de conexión';
-                document.getElementById('mensajeCarga').innerHTML = 'No se pudo conectar con el servidor de lotería.';
+                console.error("Error al actualizar estado:", error);
             }
         }
 
-        function renderizarResultadoPublico(tickets, animalesSorteo) {
+        function renderizarResultadoPublico(tickets, animalesSorteo, esAutoRefresh) {
             const banner = document.getElementById('bannerGeneral');
             const contenedor = document.getElementById('contenedorTickets');
+            
+            let scrollPos = window.scrollY;
             contenedor.innerHTML = "";
+
+            // Activar clase CSS horizontal en PC si hay más de 1 ticket
+            if (tickets.length > 1) {
+                contenedor.classList.add('multiples-tickets');
+            } else {
+                contenedor.classList.remove('multiples-tickets');
+            }
 
             let ticketsGanadores = tickets.filter(t => (t.estado || '').toUpperCase().includes('GANADOR'));
             let hayGanadores = ticketsGanadores.length > 0;
@@ -244,12 +414,14 @@
                 banner.style.color = '#78281f';
                 banner.innerHTML = '🎉 ¡FELICIDADES! ¡TIENES TICKET(S) GANADOR(ES)! 🎉';
 
-                // Detectar modalidad exacta si viene del backend (ej: t.modalidad o t.premioDetalle)
                 let modalidades = ticketsGanadores.map(t => t.modalidad || t.premioDetalle).filter(Boolean);
                 let detalleModalidad = modalidades.length > 0 ? ` Modalidad ganadora: <b>${modalidades.join(', ')}</b>.` : '';
                 
-                document.getElementById('textoModalGanador').innerHTML = `¡Felicidades! Tu(s) ticket(s) han ganado.${detalleModalidad} ¡Acérquese a cobrar su premio!`;
-                document.getElementById('modalGanador').classList.add('activo');
+                if (!modalYaMostrado) {
+                    document.getElementById('textoModalGanador').innerHTML = `¡Felicidades! Tu(s) ticket(s) han ganado.${detalleModalidad} ¡Acérquese a cobrar su premio!`;
+                    document.getElementById('modalGanador').classList.add('activo');
+                    modalYaMostrado = true;
+                }
             } else {
                 banner.style.background = '#27ae60';
                 banner.innerHTML = '🎲 Sorteo Activo - ¡Mucha Suerte!';
@@ -280,23 +452,43 @@
                 tCols += '</tr></table>';
 
                 let infoModalidadTicket = t.modalidad ? `<div style="font-size: 11px; color: #27ae60; font-weight: bold; margin-top: 4px;">🎯 Modalidad: ${t.modalidad}</div>` : '';
+                let valorPremio = t.premio || t.montoPremio || t.premioMonto || null;
+                let infoMontoPremio = valorPremio ? `<div style="font-size: 12px; background: #e8f8f5; border: 1px solid #27ae60; color: #117a65; padding: 6px; border-radius: 5px; font-weight: bold; margin-top: 6px;">💰 Monto del Premio: ${valorPremio}</div>` : '';
 
                 contenedor.innerHTML += `
                     <div class="ticket-box">
-                        <div class="ticket-header">
-                            <span>🎟️ ${t.idTicket || t.ticket}</span>
-                            <span class="badge-estado ${claseBadge}">${t.estado || 'Pendiente'}</span>
+                        <div>
+                            <div class="ticket-header">
+                                <span>🎟️ ${t.idTicket || t.ticket}</span>
+                                <span class="badge-estado ${claseBadge}">${t.estado || 'Pendiente'}</span>
+                            </div>
+                            <div style="font-size: 11px; color: #555; margin-bottom: 5px;">📅 ${t.fecha || 'S/F'} | Vendedor: ${t.vendedor || 'Sistema'}</div>
+                            ${tCols}
                         </div>
-                        <div style="font-size: 11px; color: #555; margin-bottom: 5px;">📅 ${t.fecha || 'S/F'} | Vendedor: ${t.vendedor || 'Sistema'}</div>
-                        ${tCols}
-                        ${infoModalidadTicket}
+                        <div>
+                            ${infoModalidadTicket}
+                            ${infoMontoPremio}
+                        </div>
                     </div>
                 `;
             });
+
+            if (esAutoRefresh) {
+                window.scrollTo(0, scrollPos);
+            }
         }
 
-        function cerrarModal() {
+        // Control de Popups
+        function cerrarModalGanador() {
             document.getElementById('modalGanador').classList.remove('activo');
+        }
+
+        function abrirModalModalidades() {
+            document.getElementById('modalModalidades').classList.add('activo');
+        }
+
+        function cerrarModalModalidades() {
+            document.getElementById('modalModalidades').classList.remove('activo');
         }
     </script>
 </body>
