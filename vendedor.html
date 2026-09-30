@@ -297,7 +297,7 @@
         </div>
 
         <div id="alertaGanadorPanel" class="alerta-ganador-animada">
-            <h3 style="margin-bottom: 4px;">🎉 ¡TICKET(S) GANADOR(ES) PROPIO(S)! 🎉</h3>
+            <h3 style="margin-bottom: 4px;">🎉 ¡TICKET(S) GANADOR(ES) PROPIO(S)![cite: 10] 🎉</h3>
             <p id="textoDetalleGanador" style="font-size: 12px; margin-top: 4px;"></p>
         </div>
 
@@ -465,7 +465,6 @@
             if (sesionGuardada) {
                 try {
                     const vendedor = JSON.parse(sesionGuardada);
-                    // Normalizar campos para asegurar que siempre existan propiedades válidas
                     const idValido = vendedor.idVendedor || vendedor.id || vendedor.usuario || vendedor.nombre;
                     const nombreValido = vendedor.nombre || vendedor.vendedor || vendedor.usuario;
 
@@ -473,7 +472,6 @@
                         let p = Number(vendedor.precioCarton || vendedor.precioTicket || vendedor.precio || vendedor.costoCarton || 0);
                         if (p > 0) precioCartonActual = p;
                         
-                        // Cargar panel directamente si hay sesión local válida (evitando cierres falsos por cortes de red)
                         mostrarPanelVentas({
                             idVendedor: idValido,
                             nombre: nombreValido,
@@ -625,7 +623,6 @@
                     let p = Number(data.precioCarton || data.precioTicket || data.precio || data.costoCarton || 0);
                     if (p > 0) precioCartonActual = p;
                     
-                    // Asegurar estandarización del objeto de sesión
                     const datosSesion = {
                         idVendedor: data.idVendedor || data.id || usuario,
                         nombre: data.nombre || data.vendedor || usuario,
@@ -827,7 +824,7 @@
                             let idT = g.idTicket || g.IdTicket || g.IDTICKET || g.ticket || g.Ticket || '';
                             textoInfo += `Sorteo: <strong>${sName}</strong> | Vendedor: <strong>${vNom}</strong> | Ticket: <span style="text-decoration:underline; cursor:pointer;" onclick="abrirModalTicketPorId('${idT}')">${idT}</span> (${modalGana}) | Premio: <strong style="color: #f1c40f;">Bs. ${montoPremio}</strong><br>`;
                         });
-                        document.getElementById("textoInformativoSorteo").innerHTML = `🏆 ¡Ya hubo ganador(es) en este sorteo!<br>` + textoInfo;
+                        document.getElementById("textoInformativoSorteo").innerHTML = `🏆 ¡Ya hubo ganador(es) en este sorteo![cite: 10, 11]<br>` + textoInfo;
                         alertaInformativa.style.display = "block";
                     } else {
                         alertaInformativa.style.display = "none";
@@ -1080,7 +1077,6 @@
                 let ticketsDelSorteo = gruposSorteos[sorteoNombre];
                 let estaAbierto = index === 0 ? 'open' : '';
 
-                // Agrupamos por fecha exacta para consolidar tandas de venta múltiple
                 let tandasMap = {};
                 ticketsDelSorteo.forEach(t => {
                     let f = t.fecha || t.Fecha || t.FECHA || '';
@@ -1093,22 +1089,33 @@
                     let listaIdsTanda = itemsTanda.map(item => item.idTicket || item.IdTicket || item.IDTICKET || item.ticket || item.Ticket || '').filter(Boolean);
                     let idsUnicosTanda = [...new Set(listaIdsTanda)].join(', ');
                     let idPrincipal = listaIdsTanda[0] || '';
-                    let estadoT = itemsTanda[0].estado || itemsTanda[0].Estado || itemsTanda[0].ESTADO || 'Pendiente';
 
-                    // URL base dinámica apuntando a ver-ticket.html incluyendo TODOS los tickets de la tanda separados por coma sin espacios extra
+                    // SOLUCIÓN CLAVE AQUÍ: Validamos si CUALQUIERA de los tickets agrupados en esta tanda es GANADOR
+                    let algunGanador = itemsTanda.some(item => {
+                        let st = ((item.estado || item.Estado || item.ESTADO) || "").toUpperCase();
+                        return st.includes("GANADOR");
+                    });
+
+                    let algunPendiente = itemsTanda.some(item => {
+                        let st = ((item.estado || item.Estado || item.ESTADO) || "").toUpperCase();
+                        return st.includes("PENDIENTE");
+                    });
+
+                    let estadoT = "NO GANÓ";
+                    let claseBadge = "badge-no-ganado";
+
+                    if (algunGanador) {
+                        estadoT = "GANADOR";
+                        claseBadge = "badge-ganador";
+                    } else if (algunPendiente) {
+                        estadoT = "Pendiente";
+                        claseBadge = "badge-pendiente";
+                    }
+
                     let urlBaseWeb = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
                     let linkConsultaTicket = `${urlBaseWeb}ver-ticket.html?ticket=${idsUnicosTanda}`;
 
                     const mensajeWs = encodeURIComponent(`🎰 *BINGO ANIMALITOS* 🎰\n¡Hola! Tu(s) ticket(s) han sido generado(s) con éxito.\n\n🎟️ *Ticket(s):* ${idsUnicosTanda}\n🎲 *Sorteo:* ${sorteoNombre}\n📅 *Fecha:* ${fechaT}\n\nPuedes ver tu(s) cartón(es) interactivo(s) y seguir los resultados en tiempo real ingresando al siguiente enlace:\n👉 ${linkConsultaTicket}\n\n¡Mucha Suerte! 🍀`);
-                    
-                    let estadoUpper = estadoT.toUpperCase();
-                    let claseBadge = "badge-pendiente";
-                    
-                    if (estadoUpper.includes("GANADOR")) {
-                        claseBadge = "badge-ganador";
-                    } else if (estadoUpper.includes("NO GANÓ") || estadoUpper.includes("NO GAN") || estadoUpper.includes("PERDIÓ")) {
-                        claseBadge = "badge-no-ganado";
-                    }
 
                     return `
                         <tr>
@@ -1125,7 +1132,7 @@
 
                 return `
                     <details class="acordeon-sorteo" ${estaAbierto}>
-                        <summary>🎟️️ ${sorteoNombre} (${ticketsDelSorteo.length} tickets)</summary>
+                        <summary>🎟 ${sorteoNombre} (${ticketsDelSorteo.length} tickets)</summary>
                         <div class="acordeon-contenido">
                             <table class="tabla-tickets">
                                 <thead>
