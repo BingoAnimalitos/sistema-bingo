@@ -108,17 +108,35 @@ function consultarTicketPublico(data) {
       let coincide = idsArray.some(idBuscado => idFila.toLowerCase() === idBuscado.toLowerCase());
       
       if (coincide) {
+        let estadoTicket = String(datosTickets[i][5] || "ACTIVO").trim();
+        let modalidadTicket = String(datosTickets[i][7] || "");
         let montoTicket = parseFloat(datosTickets[i][8]) || PRECIO_TICKET_DEFECTO;
+        
+        let premioAsignado = 0;
+        if (estadoTicket.includes("GANADOR")) {
+          const sheetSorteos = ss.getSheetByName(HOJA_SORTEOS);
+          if (sheetSorteos) {
+            let datosSorteos = sheetSorteos.getDataRange().getDisplayValues();
+            for (let s = 1; s < datosSorteos.length; s++) {
+              if (String(datosSorteos[s][4]).trim() === idFila) {
+                premioAsignado = parseFloat(datosSorteos[s][5]) || 0;
+                break;
+              }
+            }
+          }
+        }
+
         ticketsEncontrados.push({
           idTicket: idFila,
           fecha: String(datosTickets[i][1] || ""),
           vendedor: String(datosTickets[i][2] || ""),
           loteria: String(datosTickets[i][3] || "Lotto Activo y La Granjita"),
           numeros: String(datosTickets[i][4] || "").split(", "),
-          estado: String(datosTickets[i][5] || "ACTIVO"),
+          estado: estadoTicket,
           sorteo: String(datosTickets[i][6] || ""),
-          modalidad: String(datosTickets[i][7] || ""),
-          monto: montoTicket
+          modalidad: modalidadTicket,
+          monto: montoTicket,
+          premio: premioAsignado
         });
       }
     }
