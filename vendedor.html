@@ -137,6 +137,11 @@
         .modal-pagomovil-contenido { background: white; width: 360px; max-width: 90%; padding: 25px; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.3); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: left; }
         .modal-pagomovil-contenido h3 { text-align: center; color: #2c3e50; margin-bottom: 15px; font-size: 16px; }
 
+        /* MODAL DE CUADRE DE CAJA / LIQUIDACIÓN */
+        #modalCuadreCaja { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 3000; justify-content: center; align-items: center; }
+        .modal-cuadre-contenido { background: white; width: 380px; max-width: 90%; padding: 25px; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.3); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: left; }
+        .modal-cuadre-contenido h3 { text-align: center; color: #2980b9; margin-bottom: 15px; font-size: 17px; }
+
         /* ESTILOS DE LETRA NEGRITA Y VISIBILIDAD REFORZADA PARA LOS CARTONES */
         .tabla-modal-carton { width: 100%; border-collapse: collapse; margin: 10px 0; table-layout: fixed; }
         .tabla-modal-carton td { border: 1.5px solid #000; height: 28px; vertical-align: middle; text-align: center; font-size: 12px; font-weight: 900 !important; color: #000; }
@@ -176,7 +181,7 @@
         @media print {
             @page { size: 58mm auto; margin: 0mm; }
             body { background: white; padding: 0; margin: 0; }
-            .no-print, #pote-flotante, #widget-podio-flotante, #modalTicket, #modalPagoMovil { display: none !important; }
+            .no-print, #pote-flotante, #widget-podio-flotante, #modalTicket, #modalPagoMovil, #modalCuadreCaja { display: none !important; }
             
             #area-impresion {
                 display: block !important;
@@ -237,7 +242,7 @@
         </div>
     </div>
 
-    <!-- MODAL PAGO MÓVIL Y DATOS BANCARIOS DE LA BANCA -->
+    <!-- MODAL PAGO MÓVIL Y DATOS BANCARIOS DE LA BANCA (VENTA) -->
     <div id="modalPagoMovil" class="no-print">
         <div class="modal-pagomovil-contenido">
             <h3>📱 Datos de Pago Móvil</h3>
@@ -283,6 +288,30 @@
 
             <button onclick="confirmarPagoMovilEImprimir()" style="background: #27ae60; margin-top: 0; padding: 10px;">Continuar con la Impresión</button>
             <button onclick="cancelarPagoMovil()" style="background: #e74c3c; margin-top: 5px; padding: 8px;">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- MODAL POPUP PARA CUADRE DE CAJA Y DATOS BANCARIOS DEL ADMIN -->
+    <div id="modalCuadreCaja" class="no-print">
+        <div class="modal-cuadre-contenido">
+            <h3>💼 Cuadre de Caja / Liquidación</h3>
+            <p style="font-size: 12px; color: #555; margin-bottom: 12px; text-align: center;">Realice el pago o transferencia del neto a entregar a las cuentas del administrador:</p>
+            
+            <div style="background: #f8f9fa; border: 1px solid #cbd5e1; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 13px; position: relative;">
+                <div style="margin-bottom: 4px;"><strong>Banco:</strong> 0134 Banesco</div>
+                <div style="margin-bottom: 4px;"><strong>Cédula:</strong> 19466062</div>
+                <div style="margin-bottom: 4px;"><strong>Teléfono:</strong> 04149443028</div>
+                <div style="margin-top: 8px; padding-top: 6px; border-top: 1px dashed #cbd5e1;">
+                    <strong>Neto a Entregar:</strong> <span id="lblNetoPopupCuadre" style="color: #e74c3c; font-weight: bold; font-size: 14px;">Bs. 0.00</span>
+                </div>
+                
+                <!-- BOTÓN INTEGRADO PARA COPIAR LOS DATOS BANCARIOS COMPLETOS -->
+                <button onclick="copiarDatosCuadreCompleto()" style="background: #2980b9; padding: 8px 10px; font-size: 12px; margin-top: 10px; width: 100%; border-radius: 6px;">📋 Copiar Datos Bancarios y Neto</button>
+                <div id="alertaCopiadoCuadre" style="display:none; text-align:center; color: #27ae60; font-size: 11px; font-weight: bold; margin-top: 6px;">¡Datos copiados al portapapeles con éxito!</div>
+            </div>
+
+            <button onclick="enviarCuadreWhatsApp()" style="background: #25D366; margin-top: 0; padding: 11px; font-weight: bold;">💬 Notificar Cuadre por WhatsApp</button>
+            <button onclick="cerrarCuadreCajaModal()" style="background: #7f8c8d; margin-top: 8px; padding: 9px;">Cerrar</button>
         </div>
     </div>
 
@@ -334,7 +363,7 @@
                 <span style="font-size: 12px; font-weight: bold;">NETO A ENTREGAR:</span>
                 <h4 id="neto-entregar">Bs. 0.00</h4>
                 
-                <!-- NUEVO BOTÓN DE CUADRE DE CAJA -->
+                <!-- BOTÓN DE CUADRE DE CAJA QUE ABRE EL POPUP -->
                 <button onclick="realizarCuadreCaja()" style="background: #2980b9; margin-top: 12px; padding: 10px; font-size: 14px; border-radius: 6px;">💼 Solicitar Cuadre de Caja / Liquidar</button>
             </div>
 
@@ -836,13 +865,36 @@
             }).catch(err => console.error("Error cargando estadísticas", err));
         }
 
-        // FUNCIÓN DEL NUEVO BOTÓN DE CUADRE DE CAJA
+        // FUNCIONES ACTUALIZADAS PARA EL POPUP DE CUADRE DE CAJA
         function realizarCuadreCaja() {
+            const netoEntregarTxt = document.getElementById('neto-entregar').innerText;
+            document.getElementById('lblNetoPopupCuadre').innerText = netoEntregarTxt;
+            document.getElementById('alertaCopiadoCuadre').style.display = 'none';
+            document.getElementById('modalCuadreCaja').style.display = 'flex';
+        }
+
+        function cerrarCuadreCajaModal() {
+            document.getElementById('modalCuadreCaja').style.display = 'none';
+        }
+
+        function copiarDatosCuadreCompleto() {
+            const netoEntregarTxt = document.getElementById('neto-entregar').innerText;
+            let textoCopiar = `💼 DATOS BANCARIOS ADMIN\nBanco: 0134 Banesco\nCédula: 19466062\nTeléfono: 04149443028\nNeto a Entregar: ${netoEntregarTxt}`;
+            
+            navigator.clipboard.writeText(textoCopiar).then(() => {
+                let alerta = document.getElementById("alertaCopiadoCuadre");
+                alerta.style.display = "block";
+                setTimeout(() => {
+                    alerta.style.display = "none";
+                }, 3000);
+            }).catch(err => {
+                alert("No se pudo copiar automáticamente. Por favor selecciónalos manualmente.");
+            });
+        }
+
+        function enviarCuadreWhatsApp() {
             const sesionGuardada = localStorage.getItem("sesionVendedor");
-            if (!sesionGuardada) {
-                alert("Sesión no válida.");
-                return;
-            }
+            if (!sesionGuardada) return;
             const vendedorData = JSON.parse(sesionGuardada);
             const totalVendidoTxt = document.getElementById('total-vendido').innerText;
             const comisionTxt = document.getElementById('monto-comision').innerText;
@@ -856,11 +908,11 @@
                 `💰 *Ventas Totales:* ${totalVendidoTxt}\n` +
                 `🎁 *Comisión:* ${comisionTxt}\n` +
                 `💵 *Neto a Entregar:* ${netoEntregarTxt}\n\n` +
-                `¡Hola Administrador! Solicito realizar el cierre y liquidación de mi caja.`
+                `¡Hola Administrador! He verificado los datos bancarios y solicito realizar el cierre y liquidación de mi caja.`
             );
 
-            // Abre WhatsApp con el resumen de la liquidación dirigido al admin o grupo de control
             window.open(`https://wa.me/?text=${mensajeWhatsAppAdmin}`, '_blank');
+            cerrarCuadreCajaModal();
         }
 
         function filtrarHistorial(rango, btnElement) {
