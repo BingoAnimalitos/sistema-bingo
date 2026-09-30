@@ -388,7 +388,6 @@
                 banner.innerHTML = '🎉 ¡FELICIDADES! ¡TIENES TICKET(S) GANADOR(ES)! 🎉';
 
                 let infoPremiosModal = ticketsGanadores.map(t => {
-                    // Detecta la modalidad y el premio desde distintas propiedades posibles del backend
                     let mod = t.modalidad || t.premioDetalle || 'Línea';
                     let prem = t.premio || t.montoPremio || t.premioMonto || t.valorPremio || '';
                     return prem ? `${mod} (Premio: ${prem})` : mod;
@@ -430,7 +429,6 @@
                 });
                 tCols += '</tr></table>';
 
-                // --- AQUÍ SE MUESTRA EL PREMIO Y LA MODALIDAD EN CADA TICKET ---
                 let valorPremio = t.premio || t.montoPremio || t.premioMonto || t.valorPremio || null;
                 let nombreModalidad = t.modalidad || t.premioDetalle || null;
 
