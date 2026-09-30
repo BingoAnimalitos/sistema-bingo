@@ -243,7 +243,6 @@
             <h3>📱 Datos de Pago Móvil</h3>
             <p style="font-size: 12px; color: #666; margin-bottom: 12px; text-align: center;">Realice el pago a los siguientes datos de la banca y luego complete el registro:</p>
             
-            <!-- TARJETA INFORMATIVA DE DATOS BANCARIOS DE LA BANCA CON BOTÓN DE COPIADO -->
             <div style="background: #f8f9fa; border: 1px solid #cbd5e1; padding: 10px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; position: relative;">
                 <div style="margin-bottom: 3px;"><strong>Banco:</strong> 0134 Banesco</div>
                 <div style="margin-bottom: 3px;"><strong>Cédula:</strong> 19466062</div>
@@ -334,6 +333,9 @@
                 <hr style="border: 0; border-top: 1px dashed #ccc; margin: 8px 0;">
                 <span style="font-size: 12px; font-weight: bold;">NETO A ENTREGAR:</span>
                 <h4 id="neto-entregar">Bs. 0.00</h4>
+                
+                <!-- NUEVO BOTÓN DE CUADRE DE CAJA -->
+                <button onclick="realizarCuadreCaja()" style="background: #2980b9; margin-top: 12px; padding: 10px; font-size: 14px; border-radius: 6px;">💼 Solicitar Cuadre de Caja / Liquidar</button>
             </div>
 
             <div class="form-group">
@@ -420,7 +422,6 @@
     <div id="area-impresion"></div>
 
     <script>
-        // CAPAS DE SEGURIDAD AVANZADAS INTEGRADAS
         document.addEventListener('contextmenu', event => event.preventDefault());
 
         document.addEventListener('keydown', event => {
@@ -434,15 +435,6 @@
                 return false;
             }
         });
-
-        setInterval(() => {
-            const t0 = performance.now();
-            debugger;
-            const t1 = performance.now();
-            if (t1 - t0 > 100) {
-                document.body.innerHTML = "<h2 style='text-align:center; margin-top:20vh; color:#e74c3c;'>⚠️ Acceso Bloqueado por Medidas de Seguridad</h2>";
-            }
-        }, 1000);
 
         const API_URL = "https://script.google.com/macros/s/AKfycbzbbGiq4txDkhac4hp0h27Cy35NPeff91n1UrtSaZF7j0Bmdq2WMKi54QISa5bZjUoS/exec";
         
@@ -469,7 +461,6 @@
         let fechaHastaCustom = '';
         let precioCartonActual = 100;
 
-        // VERIFICACIÓN DE SESIÓN SEGURA AL CARGAR LA PÁGINA
         window.onload = async function() {
             await cargarParametrosSistemaVendedor();
             
@@ -843,6 +834,33 @@
                     }
                 }
             }).catch(err => console.error("Error cargando estadísticas", err));
+        }
+
+        // FUNCIÓN DEL NUEVO BOTÓN DE CUADRE DE CAJA
+        function realizarCuadreCaja() {
+            const sesionGuardada = localStorage.getItem("sesionVendedor");
+            if (!sesionGuardada) {
+                alert("Sesión no válida.");
+                return;
+            }
+            const vendedorData = JSON.parse(sesionGuardada);
+            const totalVendidoTxt = document.getElementById('total-vendido').innerText;
+            const comisionTxt = document.getElementById('monto-comision').innerText;
+            const netoEntregarTxt = document.getElementById('neto-entregar').innerText;
+            const sorteoActualTxt = document.getElementById('lblSorteoActualVentas').innerText;
+
+            let mensajeWhatsAppAdmin = encodeURIComponent(
+                `💼 *SOLICITUD DE CUADRE DE CAJA* 💼\n\n` +
+                `👤 *Vendedor:* ${vendedorData.nombre}\n` +
+                `🎲 *${sorteoActualTxt}*\n\n` +
+                `💰 *Ventas Totales:* ${totalVendidoTxt}\n` +
+                `🎁 *Comisión:* ${comisionTxt}\n` +
+                `💵 *Neto a Entregar:* ${netoEntregarTxt}\n\n` +
+                `¡Hola Administrador! Solicito realizar el cierre y liquidación de mi caja.`
+            );
+
+            // Abre WhatsApp con el resumen de la liquidación dirigido al admin o grupo de control
+            window.open(`https://wa.me/?text=${mensajeWhatsAppAdmin}`, '_blank');
         }
 
         function filtrarHistorial(rango, btnElement) {
@@ -1291,7 +1309,6 @@
                     claseCelda = "celda-marcada-sorteo";
                 }
 
-                // Asegurando la negrita en cada celda del modal
                 tablaHtml += `<td class="${claseCelda}" style="font-weight: 900 !important;"><b>${numLimpio}</b></td>`;
             });
             tablaHtml += '</tr></table>';
@@ -1335,7 +1352,6 @@
                 return;
             }
 
-            // Calcular el monto total a pagar basado en los cartones seleccionados
             let cantidadCartones = parseInt(document.getElementById("cantidadCartones").value) || 1;
             let montoTotalPagar = cantidadCartones * precioCartonActual;
             document.getElementById("lblMontoPopupBanca").innerText = `Bs. ${montoTotalPagar.toFixed(2)}`;
