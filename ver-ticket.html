@@ -387,7 +387,6 @@
                 banner.style.color = '#78281f';
                 banner.innerHTML = '🎉 ¡FELICIDADES! ¡TIENES TICKET(S) GANADOR(ES)! 🎉';
 
-                // Recopilar modalidades y premios para el popup general
                 let infoPremiosModal = ticketsGanadores.map(t => {
                     let mod = t.modalidad || t.premioDetalle || 'Línea';
                     let prem = t.premio || t.montoPremio || t.premioMonto || t.valorPremio || '';
@@ -430,8 +429,14 @@
                 });
                 tCols += '</tr></table>';
 
-                // Capturar el premio desde cualquier variante posible devuelta por el backend
+                // CORRECCIÓN CLAVE: Buscar el valor del premio con todas las posibles variantes de nombres
                 let valorPremio = t.premio || t.montoPremio || t.premioMonto || t.valorPremio || null;
+                
+                // Si el valor del premio viene plano (ej: "793" o "Bs. 793"), aseguramos el formato visual idéntico al del vendedor
+                if (valorPremio && !valorPremio.toString().toUpperCase().includes('BS')) {
+                    valorPremio = 'Bs. ' + valorPremio;
+                }
+
                 let infoModalidadTicket = t.modalidad ? `<div style="font-size: 11px; color: #27ae60; font-weight: bold; margin-top: 4px;">🎯 Modalidad: ${t.modalidad}</div>` : '';
                 let infoMontoPremio = valorPremio ? `<div style="font-size: 13px; background: #e8f8f5; border: 1.5px solid #27ae60; color: #117a65; padding: 8px; border-radius: 6px; font-weight: bold; margin-top: 6px; text-align: center;">💰 ¡PREMIO GANADO: ${valorPremio}!</div>` : '';
 
