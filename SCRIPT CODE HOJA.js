@@ -10,7 +10,7 @@ const HOJA_VENDEDORES = "VENDEDORES";
 const HOJA_HISTORIAL = "HISTORIAL_SORTEOS";
 const HOJA_PAGOS_MOVIL = "PagosMovil";
 const HOJA_ADMINISTRADORES = "ADMINISTRADORES";
-const HOJA_HISTORIAL_CAJAS = "HISTORIAL_CAJAS"; // <-- Nueva pestaña agregada
+const HOJA_HISTORIAL_CAJAS = "HISTORIAL_CAJAS"; // <-- Pestaña agregada
 const PRECIO_TICKET_DEFECTO = 100;
 const DOMINIO_PERMITIDO = "https://bingoanimalitos.github.io";
 
@@ -65,6 +65,43 @@ function doPost(e) {
     if (accion === "obtenerPagosMoviles") return responderJSON(obtenerPagosMovilesAdmin());
     if (accion === "aprobarPagoMovil") return responderJSON(aprobarPagoMovilAdmin(data));
 
+    // --- ACCIÓN: REGISTRAR CUADRE DE CAJA ---
+    if (accion === "registrarCuadre") {
+        var ss = SpreadsheetApp.getActiveSpreadsheet();
+        var hojaCuadres = ss.getSheetByName(HOJA_HISTORIAL_CAJAS);
+        
+        if (!hojaCuadres) {
+          hojaCuadres = ss.insertSheet(HOJA_HISTORIAL_CAJAS);
+          // Creamos las cabeceras incluyendo "Referencia" antes de "Estatus"
+          hojaCuadres.appendRow(["Fecha_Hora", "ID_Vendedor", "Nombre", "Total_Vendido", "Comision", "Neto_Entregado", "Referencia", "Estatus"]);
+        }
+
+        var fechaHora = new Date().toLocaleString();
+        var idVendedor = data.idVendedor || "";
+        var nombre = data.nombre || "";
+        var totalVendido = parseFloat(data.totalVendido) || 0;
+        var comision = parseFloat(data.comision) || 0;
+        var netoEntregado = parseFloat(data.netoEntregado) || 0;
+        var referencia = data.referencia || data.ref || "N/A"; // Captura de la referencia de pago/entrega
+        var estatus = "Pendiente";
+
+        hojaCuadres.appendRow([
+            fechaHora,
+            idVendedor,
+            nombre,
+            totalVendido,
+            comision,
+            netoEntregado,
+            referencia,
+            estatus
+        ]);
+
+        return responderJSON({
+            exito: true,
+            mensaje: "Cuadre registrado con éxito en el historial."
+        });
+    }
+
     return responderJSON({ exito: false, mensaje: "Acción no válida" });
   } catch (err) {
     return responderJSON({ exito: false, mensaje: "Error: " + err.toString() });
@@ -113,7 +150,6 @@ function consultarTicketPublico(data) {
         
         let premioAsignado = 0;
         
-        // 1. Buscar en la hoja RESULTADOS si el ticket ganó
         const sheetSorteos = ss.getSheetByName(HOJA_SORTEOS);
         if (sheetSorteos) {
           let datosSorteos = sheetSorteos.getDataRange().getDisplayValues();
@@ -125,7 +161,6 @@ function consultarTicketPublico(data) {
           }
         }
 
-        // 2. Si no se encontró en resultados, buscar en PagosMovil por si ya está registrado
         if (premioAsignado === 0) {
           const sheetPagos = ss.getSheetByName(HOJA_PAGOS_MOVIL);
           if (sheetPagos && sheetPagos.getLastRow() > 1) {
@@ -139,7 +174,6 @@ function consultarTicketPublico(data) {
           }
         }
 
-        // Si el estado indica ganador pero el premio seguía en 0, tomar el premio por ganador global del control de juego
         if (estadoTicket.includes("GANADOR") && premioAsignado === 0) {
           const sheetControl = ss.getSheetByName(HOJA_CONTROL);
           if (sheetControl && sheetControl.getLastRow() > 1) {
@@ -1127,20 +1161,22 @@ function obtenerHistorialSorteos() {
 }
 
 // ==========================================
-// NUEVA FUNCIÓN PARA GESTIONAR HISTORIAL_CAJAS
+// FUNCIÓN PARA GESTIONAR HISTORIAL_CAJAS (Panel de Administración)
 // ==========================================
 function obtenerHistorialCajasAdmin() {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     let hojaCajas = ss.getSheetByName(HOJA_HISTORIAL_CAJAS);
+    
     if (!hojaCajas) {
       hojaCajas = ss.insertSheet(HOJA_HISTORIAL_CAJAS);
-      hojaCajas.appendRow(["Fecha_Hora", "ID_Vendedor", "Nombre", "Total_Vendido", "Comision", "Neto_Entregado", "Estatus"]);
+      hojaCajas.appendRow(["Fecha_Hora", "ID_Vendedor", "Nombre", "Total_Vendido", "Comision", "Neto_Entregado", "Referencia", "Estatus"]);
     }
 
     const datos = hojaCajas.getDataRange().getDisplayValues();
     let registrosCajas = [];
 
+    // Empezamos desde i = 1 para saltar la fila de títulos (cabeceras)
     for (let i = 1; i < datos.length; i++) {
       if (datos[i][0]) {
         registrosCajas.push({
@@ -1150,11 +1186,13 @@ function obtenerHistorialCajasAdmin() {
           totalVendido: parseFloat(datos[i][3]) || 0,
           comision: parseFloat(datos[i][4]) || 0,
           netoEntregado: parseFloat(datos[i][5]) || 0,
-          estatus: String(datos[i][6] || "ACTIVO")
+          referencia: String(datos[i][6] || "N/A"), // Lectura de la columna de Referencia
+          estatus: String(datos[i][7] || "Pendiente") // Lectura de la columna de Estatus
         });
       }
     }
 
+    // Retorna los registros invirtiendo el orden para ver los más recientes primero
     return { exito: true, historialCajas: registrosCajas.reverse() };
   } catch (err) {
     return { exito: false, mensaje: err.toString() };

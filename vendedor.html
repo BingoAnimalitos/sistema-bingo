@@ -249,7 +249,7 @@
             <p style="font-size: 12px; color: #666; margin-bottom: 12px; text-align: center;">Realice el pago a los siguientes datos de la banca y luego complete el registro:</p>
             
             <div style="background: #f8f9fa; border: 1px solid #cbd5e1; padding: 10px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; position: relative;">
-                <div style="margin-bottom: 3px;"><strong>Banco:</strong> 0134 Banesco</div>
+                <div style="margin-bottom: 3px;"><strong>Banco:</strong> (0134) Banesco</div>
                 <div style="margin-bottom: 3px;"><strong>Cédula:</strong> 19466062</div>
                 <div style="margin-bottom: 3px;"><strong>Teléfono:</strong> 04149443028</div>
                 <div style="margin-bottom: 5px;"><strong>Monto a Pagar:</strong> <span id="lblMontoPopupBanca" style="color: #27ae60; font-weight: bold;">Bs. 0.00</span></div>
@@ -297,8 +297,8 @@
             <h3>💼 Cuadre de Caja / Liquidación</h3>
             <p style="font-size: 12px; color: #555; margin-bottom: 12px; text-align: center;">Realice el pago o transferencia del neto a entregar a las cuentas del administrador:</p>
             
-            <div style="background: #f8f9fa; border: 1px solid #cbd5e1; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 13px; position: relative;">
-                <div style="margin-bottom: 4px;"><strong>Banco:</strong> 0134 Banesco</div>
+            <div style="background: #f8f9fa; border: 1px solid #cbd5e1; padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; position: relative;">
+                <div style="margin-bottom: 4px;"><strong>Banco:</strong> (0134) Banesco</div>
                 <div style="margin-bottom: 4px;"><strong>Cédula:</strong> 19466062</div>
                 <div style="margin-bottom: 4px;"><strong>Teléfono:</strong> 04149443028</div>
                 <div style="margin-top: 8px; padding-top: 6px; border-top: 1px dashed #cbd5e1;">
@@ -308,6 +308,12 @@
                 <!-- BOTÓN INTEGRADO PARA COPIAR LOS DATOS BANCARIOS COMPLETOS -->
                 <button onclick="copiarDatosCuadreCompleto()" style="background: #2980b9; padding: 8px 10px; font-size: 12px; margin-top: 10px; width: 100%; border-radius: 6px;">📋 Copiar Datos Bancarios y Neto</button>
                 <div id="alertaCopiadoCuadre" style="display:none; text-align:center; color: #27ae60; font-size: 11px; font-weight: bold; margin-top: 6px;">¡Datos copiados al portapapeles con éxito!</div>
+            </div>
+
+            <!-- CAMPO NUMÉRICO PARA EL NÚMERO DE REFERENCIA DEL PAGO DEL CUADRE -->
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label style="font-size: 12px; font-weight: bold; color: #2c3e50;">Número de Referencia del Pago:</label>
+                <input type="text" id="txtReferenciaCuadre" placeholder="Ej. 12345678" style="padding: 8px; font-size: 14px;">
             </div>
 
             <button onclick="enviarCuadreWhatsApp()" style="background: #25D366; margin-top: 0; padding: 11px; font-weight: bold;">💬 Notificar Cuadre por WhatsApp</button>
@@ -865,10 +871,62 @@
             }).catch(err => console.error("Error cargando estadísticas", err));
         }
 
-        // FUNCIONES ACTUALIZADAS PARA EL POPUP DE CUADRE DE CAJA
+        // --- FUNCIÓN DE CUADRE DE CAJA Y WHATSAPP INTEGRADA ---
+        async function enviarCuadreWhatsApp() {
+            const sesionGuardada = localStorage.getItem("sesionVendedor");
+            if (!sesionGuardada) return;
+            const vendedorData = JSON.parse(sesionGuardada);
+            
+            // Capturar los valores numéricos y de texto limpios
+            const totalVendidoTxt = document.getElementById('total-vendido')?.innerText || "0";
+            const comisionTxt = document.getElementById('monto-comision')?.innerText || "0";
+            const netoEntregarTxt = document.getElementById('neto-entregar')?.innerText || "0";
+            const sorteoActualTxt = document.getElementById('lblSorteoActualVentas')?.innerText || "Sorteo actual";
+            const referenciaPago = document.getElementById('txtReferenciaCuadre')?.value.trim() || "No especificada";
+
+            // 1. Enviar los datos al backend para guardarlos en HISTORIAL_CAJAS
+            try {
+                await fetch(API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify({
+                        accion: "registrarCuadre",
+                        idVendedor: vendedorData.idVendedor,
+                        nombre: vendedorData.nombre,
+                        totalVendido: totalVendidoTxt,
+                        comision: comisionTxt,
+                        netoEntregar: netoEntregarTxt,
+                        referencia: referenciaPago
+                    })
+                });
+            } catch (error) {
+                console.error("Error al registrar el cuadre en la hoja:", error);
+            }
+
+            // 2. Abrir WhatsApp con el mensaje estructurado para el administrador
+            let mensajeWhatsAppAdmin = encodeURIComponent(
+                `💼 *SOLICITUD DE CUADRE DE CAJA* 💼\n\n` +
+                `👤 *Vendedor:* ${vendedorData.nombre}\n` +
+                `🎲 *${sorteoActualTxt}*\n\n` +
+                `💰 *Ventas Totales:* ${totalVendidoTxt}\n` +
+                `🎁 *Comisión:* ${comisionTxt}\n` +
+                `💵 *Neto a Entregar:* ${netoEntregarTxt}\n` +
+                `🔢 *Nº de Referencia:* ${referenciaPago}\n\n` +
+                `¡Hola Administrador! He realizado el pago/transferencia y registrado el cierre de mi caja.`
+            );
+
+            window.open(`https://wa.me/?text=${mensajeWhatsAppAdmin}`, '_blank');
+            
+            // Asegurar de que la función de cierre del modal exista antes de llamarla
+            if (typeof cerrarCuadreCajaModal === "function") {
+                cerrarCuadreCajaModal();
+            }
+        }
+
         function realizarCuadreCaja() {
             const netoEntregarTxt = document.getElementById('neto-entregar').innerText;
             document.getElementById('lblNetoPopupCuadre').innerText = netoEntregarTxt;
+            document.getElementById('txtReferenciaCuadre').value = '';
             document.getElementById('alertaCopiadoCuadre').style.display = 'none';
             document.getElementById('modalCuadreCaja').style.display = 'flex';
         }
@@ -879,7 +937,7 @@
 
         function copiarDatosCuadreCompleto() {
             const netoEntregarTxt = document.getElementById('neto-entregar').innerText;
-            let textoCopiar = `💼 DATOS BANCARIOS ADMIN\nBanco: 0134 Banesco\nCédula: 19466062\nTeléfono: 04149443028\nNeto a Entregar: ${netoEntregarTxt}`;
+            let textoCopiar = `💼 DATOS BANCARIOS ADMIN\nBanco: (0134) Banesco\nCédula: 19466062\nTeléfono: 04149443028\nNeto a Entregar: ${netoEntregarTxt}`;
             
             navigator.clipboard.writeText(textoCopiar).then(() => {
                 let alerta = document.getElementById("alertaCopiadoCuadre");
@@ -890,29 +948,6 @@
             }).catch(err => {
                 alert("No se pudo copiar automáticamente. Por favor selecciónalos manualmente.");
             });
-        }
-
-        function enviarCuadreWhatsApp() {
-            const sesionGuardada = localStorage.getItem("sesionVendedor");
-            if (!sesionGuardada) return;
-            const vendedorData = JSON.parse(sesionGuardada);
-            const totalVendidoTxt = document.getElementById('total-vendido').innerText;
-            const comisionTxt = document.getElementById('monto-comision').innerText;
-            const netoEntregarTxt = document.getElementById('neto-entregar').innerText;
-            const sorteoActualTxt = document.getElementById('lblSorteoActualVentas').innerText;
-
-            let mensajeWhatsAppAdmin = encodeURIComponent(
-                `💼 *SOLICITUD DE CUADRE DE CAJA* 💼\n\n` +
-                `👤 *Vendedor:* ${vendedorData.nombre}\n` +
-                `🎲 *${sorteoActualTxt}*\n\n` +
-                `💰 *Ventas Totales:* ${totalVendidoTxt}\n` +
-                `🎁 *Comisión:* ${comisionTxt}\n` +
-                `💵 *Neto a Entregar:* ${netoEntregarTxt}\n\n` +
-                `¡Hola Administrador! He verificado los datos bancarios y solicito realizar el cierre y liquidación de mi caja.`
-            );
-
-            window.open(`https://wa.me/?text=${mensajeWhatsAppAdmin}`, '_blank');
-            cerrarCuadreCajaModal();
         }
 
         function filtrarHistorial(rango, btnElement) {
@@ -1419,7 +1454,7 @@
             let cantidadCartones = parseInt(document.getElementById("cantidadCartones").value) || 1;
             let montoTotalPagar = cantidadCartones * precioCartonActual;
             
-            let textoCopiar = `Banco: 0134 Banesco\nCédula: 19466062\nTeléfono: 04149443028\nMonto: Bs. ${montoTotalPagar.toFixed(2)}`;
+            let textoCopiar = `Banco: (0134) Banesco\nCédula: 19466062\nTeléfono: 04149443028\nMonto: Bs. ${montoTotalPagar.toFixed(2)}`;
             
             navigator.clipboard.writeText(textoCopiar).then(() => {
                 let alerta = document.getElementById("alertaCopiado");
