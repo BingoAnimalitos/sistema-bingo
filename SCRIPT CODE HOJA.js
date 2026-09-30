@@ -101,10 +101,8 @@ function consultarTicketPublico(data) {
     const datosTickets = sheetTickets.getDataRange().getDisplayValues();
     let ticketsEncontrados = [];
 
-    // Recorremos la hoja buscando coincidencias con cualquiera de los IDs solicitados
     for (let i = 1; i < datosTickets.length; i++) {
       let idFila = String(datosTickets[i][0] || "").trim();
-      
       let coincide = idsArray.some(idBuscado => idFila.toLowerCase() === idBuscado.toLowerCase());
       
       if (coincide) {
@@ -1255,7 +1253,7 @@ function crearVendedorAdmin(data) {
   try {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var hoja = ss.getSheetByName(HOJA_VENDEDORES);
-    if (!hoja) return { exito: false, mensaje: "Hoja VENDEDORES no encontrada" };
+    if (!hoja) return { exito: false, mensaje: "Hoja VENDEDORES não encontrada" };
 
     var datos = hoja.getDataRange().getDisplayValues();
     var idNuevo = data.idVendedor;
