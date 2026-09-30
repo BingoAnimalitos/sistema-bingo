@@ -5,474 +5,362 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Consulta de Ticket - Bingo Animalitos</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; }
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             background-color: #f1f5f9; 
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220' viewBox='0 0 220 220'%3E%3Ctext x='-20' y='110' transform='rotate(-35 -20 110)' fill='%230f172a' fill-opacity='0.045' font-size='15' font-family='sans-serif' font-weight='bold'%3EBingo Animalitos%3C/text%3E%3Ctext x='90' y='40' transform='rotate(-35 90 40)' fill='%230f172a' fill-opacity='0.045' font-size='15' font-family='sans-serif' font-weight='bold'%3EBingo Animalitos%3C/text%3E%3Ctext x='90' y='180' transform='rotate(-35 90 180)' fill='%230f172a' fill-opacity='0.045' font-size='15' font-family='sans-serif' font-weight='bold'%3EBingo Animalitos%3C/text%3E%3C/svg%3E");
             padding: 15px; 
-            color: #333;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
         }
-        
-        .contenedor { max-width: 900px; margin: 0 auto; }
-        
-        .card { 
-            background: rgba(255, 255, 255, 0.95); 
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(5px);
-            padding: 20px; 
-            border-radius: 12px; 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08); 
-            margin-bottom: 15px;
-            text-align: center;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
         }
-        h2 { color: #2c3e50; margin-bottom: 5px; font-size: 20px; }
-        .subtitel { font-size: 13px; color: #666; margin-bottom: 15px; }
-        
-        .acciones-superiores {
+
+        h2 { text-align: center; color: #333; margin-bottom: 5px; font-size: 20px; }
+        .subtitle { text-align: center; color: #666; font-size: 13px; margin-bottom: 20px; }
+
+        .header-btns {
             display: flex;
             gap: 10px;
-            margin-bottom: 15px;
-        }
-        @media (max-width: 600px) {
-            .acciones-superiores { flex-direction: column; }
+            margin-bottom: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
         }
 
-        .btn-accion {
+        .btn-link-nav {
+            padding: 10px 15px;
+            background: #2980b9;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 13px;
             display: inline-flex;
             align-items: center;
-            justify-content: center;
-            gap: 8px;
-            color: white;
-            text-decoration: none;
-            flex: 1;
-            padding: 12px;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 14px;
-            border: none;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            gap: 5px;
         }
-        .btn-accion:hover { transform: translateY(-2px); }
-
-        .btn-resultados-tv {
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
-            animation: pulse-live 2s infinite;
-        }
-        @keyframes pulse-live {
-            0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.6); }
-            70% { box-shadow: 0 0 0 10px rgba(231, 76, 60, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
-        }
-
-        .btn-modalidades {
-            background: linear-gradient(135deg, #3498db, #2980b9);
-            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
-        }
+        .btn-link-nav:hover { background: #21618c; }
+        .btn-link-ganar { background: #27ae60; }
+        .btn-link-ganar:hover { background: #219150; }
 
         .banner-estado-general {
-            background: #2c3e50; color: white; padding: 12px; border-radius: 8px; font-weight: bold; margin-bottom: 15px; font-size: 14px;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 20px;
+            font-size: 15px;
+            display: none;
         }
+        .banner-ganador { background: linear-gradient(135deg, #f1c40f, #e67e22); border: 2px solid #d35400; color: #78281f; }
+        .banner-pendiente { background: #fdfefe; border: 2px solid #bdc3c7; color: #2c3e50; }
 
-        #contenedorTickets {
+        .tickets-grid {
             display: grid;
-            grid-template-columns: 1fr;
-            gap: 15px;
-        }
-        @media (min-width: 768px) {
-            #contenedorTickets.multiples-tickets {
-                grid-template-columns: repeat(2, 1fr);
-            }
+            grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+            gap: 20px;
         }
 
-        .ticket-box {
+        .ticket-card {
             background: #fff;
-            border: 2px solid #cbd5e1;
+            border: 1px solid #cbd5e1;
             border-radius: 10px;
             padding: 15px;
-            text-align: left;
-            font-family: 'Courier New', Courier, monospace;
             box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            position: relative;
+        }
+
+        .ticket-card-header {
             display: flex;
-            flex-direction: column;
             justify-content: space-between;
-        }
-        .ticket-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #ccc; padding-bottom: 8px; margin-bottom: 10px; font-size: 13px; font-weight: bold; }
-        
-        .tabla-carton-publico { width: 100%; border-collapse: collapse; margin: 10px 0; table-layout: fixed; }
-        .tabla-carton-publico td { 
-            border: 1.5px solid #333; 
-            height: 36px; 
-            vertical-align: middle; 
-            text-align: center; 
-            font-size: 11px; 
-            font-weight: bold; 
-            background: #fafafa;
-        }
-        
-        .celda-marcada-sorteo { background-color: #3498db !important; color: white !important; border: 2px solid #2980b9 !important; }
-        .celda-premiada { background-color: #2ecc71 !important; color: white !important; border: 2px solid #27ae60 !important; }
-        
-        .badge-estado { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; display: inline-block; }
-        .badge-ganador { background: #27ae60; color: white; }
-        .badge-pendiente { background: #f39c12; color: white; }
-
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(3px);
-            display: flex; align-items: center; justify-content: center; z-index: 1000;
-            opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
-        }
-        .modal-overlay.activo { opacity: 1; pointer-events: auto; }
-        
-        .modal-content {
-            background: white; padding: 25px; border-radius: 16px; width: 90%; max-width: 450px;
-            text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            transform: scale(0.7); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            max-height: 90vh; overflow-y: auto;
-        }
-        .modal-overlay.activo .modal-content { transform: scale(1); }
-
-        .modal-content h3 { color: #27ae60; font-size: 22px; margin-bottom: 10px; }
-        .modal-content p { font-size: 14px; color: #444; margin-bottom: 20px; line-height: 1.5; }
-        
-        .btn-cerrar-modal {
-            background: #2c3e50; color: white; border: none; padding: 10px 20px;
-            border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; margin-top: 15px;
-        }
-
-        .modalidades-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin: 15px 0;
-            text-align: left;
-        }
-        @media (max-width: 450px) { .modalidades-grid { grid-template-columns: 1fr; } }
-
-        .modalidad-card {
-            background: #f8fafc;
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 12px;
-            transition: transform 0.2s, border-color 0.2s, background 0.2s;
-        }
-        .modalidad-card:hover {
-            transform: translateY(-3px);
-            border-color: #3498db;
-            background: #ebf8ff;
-        }
-        .modalidad-card h4 {
-            font-size: 13px;
-            color: #2c3e50;
-            margin-bottom: 6px;
-            display: flex;
             align-items: center;
-            gap: 6px;
+            border-bottom: 1px dashed #cbd5e1;
+            padding-bottom: 8px;
+            margin-bottom: 10px;
         }
-        .modalidad-card p {
+
+        .ticket-id { font-weight: bold; font-size: 15px; color: #2c3e50; font-family: 'Courier New', Courier, monospace; }
+        .badge-estado { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; color: white; text-transform: uppercase; }
+        .bg-ganador { background-color: #27ae60; }
+        .bg-no-ganado { background-color: #e74c3c; }
+        .bg-pendiente { background-color: #f39c12; }
+
+        .ticket-info-detalles {
+            font-size: 12px;
+            color: #555;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .tabla-carton {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+            table-layout: fixed;
+        }
+        .tabla-carton td {
+            border: 1.5px solid #000;
+            height: 32px;
+            vertical-align: middle;
+            text-align: center;
             font-size: 11px;
-            color: #64748b;
-            margin: 0;
-            line-height: 1.3;
+            font-weight: bold;
+            font-family: 'Courier New', Courier, monospace;
         }
 
-        .mini-carton {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 2px;
-            width: 50px;
-            height: 50px;
-            margin-bottom: 8px;
-            background: #cbd5e1;
-            padding: 2px;
-            border-radius: 4px;
-        }
-        .mini-celda { background: white; border-radius: 1px; }
+        .celda-premiada { background-color: #2ecc71 !important; color: white !important; border: 2px solid #27ae60 !important; }
+        .celda-marcada-sorteo { background-color: #3498db !important; color: white !important; border: 2px solid #2980b9 !important; }
 
-        .anim-esquina .mini-celda:nth-child(1),
-        .anim-esquina .mini-celda:nth-child(4),
-        .anim-esquina .mini-celda:nth-child(13),
-        .anim-esquina .mini-celda:nth-child(16) { background: #e74c3c; animation: parpadeo 1.5s infinite; }
-
-        .anim-horizontal .mini-celda:nth-child(5),
-        .anim-horizontal .mini-celda:nth-child(6),
-        .anim-horizontal .mini-celda:nth-child(7),
-        .anim-horizontal .mini-celda:nth-child(8) { background: #f39c12; animation: parpadeo 1.5s infinite; }
-
-        .anim-columna .mini-celda:nth-child(2),
-        .anim-columna .mini-celda:nth-child(6),
-        .anim-columna .mini-celda:nth-child(10),
-        .anim-columna .mini-celda:nth-child(14) { background: #27ae60; animation: parpadeo 1.5s infinite; }
-
-        .anim-diagonal .mini-celda:nth-child(1),
-        .anim-diagonal .mini-celda:nth-child(6),
-        .anim-diagonal .mini-celda:nth-child(11),
-        .anim-diagonal .mini-celda:nth-child(16) { background: #8e44ad; animation: parpadeo 1.5s infinite; }
-
-        @keyframes parpadeo {
-            0% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(0.9); }
-            100% { opacity: 1; transform: scale(1); }
+        .ticket-card-footer {
+            font-size: 11px;
+            color: #27ae60;
+            font-weight: bold;
+            text-align: right;
         }
 
-        #mensajeCarga { font-size: 14px; color: #555; padding: 20px; grid-column: 1 / -1; }
+        @media (max-width: 600px) {
+            .tickets-grid { grid-template-columns: 1fr; }
+            body { padding: 8px; }
+            .container { padding: 12px; }
+        }
     </style>
 </head>
 <body>
 
-    <!-- Popup de Ganador -->
-    <div id="modalGanador" class="modal-overlay">
-        <div class="modal-content">
-            <h3>🏆 ¡BINGO GANADOR! 🏆</h3>
-            <p id="textoModalGanador">¡Felicidades! Uno o más de tus tickets han resultado premiados en el sorteo.</p>
-            <button class="btn-cerrar-modal" onclick="cerrarModalGanador()">¡Excelente, A Celebrar!</button>
+    <div class="container">
+        <h2>🎟️ Estado del Ticket</h2>
+        <div class="subtitle">Bingo Animalitos - Consulta en Línea</div>
+
+        <div class="header-btns">
+            <a href="https://bingoanimalitos.github.io/sistema-bingo/resultados.html" target="_blank" class="btn-link-nav">📺 Ver Resultados TV</a>
+            <a href="https://bingoanimalitos.github.io/sistema-bingo/comogana.html" target="_blank" class="btn-link-nav btn-link-ganar">🎯 ¿Cómo se Gana?</a>
         </div>
-    </div>
 
-    <!-- Popup de Modalidades de Ganar -->
-    <div id="modalModalidades" class="modal-overlay">
-        <div class="modal-content" style="max-width: 500px;">
-            <h3 style="color: #2980b9;">🎯 Modalidades de Ganar</h3>
-            <p style="margin-bottom: 10px; font-size: 13px;">Conoce las formas en las que puedes completar tu cartón y ganar fabulosos premios:</p>
-            
-            <div class="modalidades-grid">
-                <div class="modalidad-card">
-                    <div class="mini-carton anim-esquina">
-                        <div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div>
-                        <div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div>
-                        <div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div>
-                        <div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div>
-                    </div>
-                    <h4>📌 4 Esquinas</h4>
-                    <p>Las 4 esquinas exteriores de tu cartón.</p>
-                </div>
+        <div id="bannerGeneral" class="banner-estado-general"></div>
 
-                <div class="modalidad-card">
-                    <div class="mini-carton anim-horizontal">
-                        <div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div>
-                        <div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div>
-                        <div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div>
-                        <div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div>
-                    </div>
-                    <h4>➖ Línea Horizontal</h4>
-                    <p>Cualquiera de las 4 filas completas de lado a lado.</p>
-                </div>
-
-                <div class="modalidad-card">
-                    <div class="mini-carton anim-columna">
-                        <div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div>
-                        <div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div>
-                        <div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div>
-                        <div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div>
-                    </div>
-                    <h4>⬇️ Columna</h4>
-                    <p>Cualquiera de las 4 columnas verticales completas.</p>
-                </div>
-
-                <div class="modalidad-card">
-                    <div class="mini-carton anim-diagonal">
-                        <div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div>
-                        <div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div>
-                        <div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div>
-                        <div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div>
-                    </div>
-                    <h4>↗️ Línea Diagonal</h4>
-                    <p>Una línea completa de esquina a esquina en diagonal.</p>
-                </div>
-            </div>
-
-            <button class="btn-cerrar-modal" style="background: #3498db;" onclick="cerrarModalModalidades()">¡Entendido, A Jugar!</button>
-        </div>
-    </div>
-
-    <div class="contenedor">
-        <div class="card">
-            <h2>🎟️ Estado del Ticket</h2>
-            <div class="subtitel">Bingo Animalitos - Consulta en Línea</div>
-            
-            <div class="acciones-superiores">
-                <a href="https://bingoanimalitos.github.io/sistema-bingo/resultados.html" target="_blank" class="btn-accion btn-resultados-tv">
-                    📺 Ver Resultados TV
-                </a>
-                <button onclick="abrirModalModalidades()" class="btn-accion btn-modalidades">
-                    🎯 ¿Cómo se Gana?
-                </button>
-            </div>
-
-            <div id="bannerGeneral" class="banner-estado-general">Cargando información del ticket...</div>
-            
-            <div id="contenedorTickets">
-                <div id="mensajeCarga">Buscando registros en el sistema...</div>
-            </div>
+        <div id="contenedorTickets" class="tickets-grid">
+            <div style="grid-column: 1 / -1; text-align: center; color: #64748b; padding: 30px; font-size: 14px;">Consultando ticket(s)...</div>
         </div>
     </div>
 
     <script>
-        document.addEventListener('contextmenu', function(e) { e.preventDefault(); });
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'F12') { e.preventDefault(); return false; }
-            if (e.ctrlKey && e.key.toLowerCase() === 'u') { e.preventDefault(); return false; }
-            if (e.ctrlKey && e.shiftKey && ['i', 'j', 'c'].includes(e.key.toLowerCase())) { e.preventDefault(); return false; }
-            if (e.ctrlKey && e.key.toLowerCase() === 's') { e.preventDefault(); return false; }
-        });
-
         const API_URL = "https://script.google.com/macros/s/AKfycbzbbGiq4txDkhac4hp0h27Cy35NPeff91n1UrtSaZF7j0Bmdq2WMKi54QISa5bZjUoS/exec";
-        let idsArray = [];
-        let modalYaMostrado = false;
 
-        window.onload = function() {
-            const params = new URLSearchParams(window.location.search);
-            const ticketsParam = params.get('tickets') || params.get('ticket');
-
-            if (!ticketsParam) {
-                document.getElementById('bannerGeneral').style.background = '#e74c3c';
-                document.getElementById('bannerGeneral').innerText = '❌ Error: No se especificó ningún ticket en el enlace.';
-                document.getElementById('mensajeCarga').innerHTML = 'Verifique el enlace que le envió su vendedor.';
+        window.onload = async function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            let ticketParam = urlParams.get('ticket') || urlParams.get('t') || '';
+            
+            if (!ticketParam) {
+                document.getElementById("contenedorTickets").innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: #e74c3c; padding: 20px; font-weight: bold;">⚠️ No se especificó ningún número de ticket en el enlace.</div>`;
                 return;
             }
 
-            idsArray = ticketsParam.split(',').map(s => s.trim()).filter(Boolean);
-            consultarEstadoTickets(idsArray);
+            let idsTickets = ticketParam.split(',').map(s => s.trim()).filter(Boolean);
 
-            setInterval(() => {
-                consultarEstadoTickets(idsArray, true);
-            }, 8000);
-        };
-
-        async function consultarEstadoTickets(tickets, esAutoRefresh = false) {
             try {
                 const response = await fetch(API_URL, {
                     method: "POST",
                     headers: { "Content-Type": "text/plain;charset=utf-8" },
-                    body: JSON.stringify({ accion: "consultarTicketPublico", tickets: tickets })
+                    body: JSON.stringify({ accion: "consultarTicketMultiple", tickets: idsTickets })
                 });
-                const data = await response.json();
 
-                if (data && data.exito && data.tickets && data.tickets.length > 0) {
-                    renderizarResultadoPublico(data.tickets, data.animalesSorteo || [], esAutoRefresh);
-                } else if (!esAutoRefresh) {
-                    document.getElementById('bannerGeneral').style.background = '#e74c3c';
-                    document.getElementById('bannerGeneral').innerText = '❌ Tickets no encontrados';
-                    document.getElementById('mensajeCarga').innerHTML = 'Los tickets consultados no existen o expiraron.';
+                const data = await response.json();
+                
+                if (data && (data.exito || data.tickets)) {
+                    let listaTicketsEncontrados = data.tickets || [data];
+                    renderizarConsultaMultiple(listaTicketsEncontrados, data.animalesSorteo || []);
+                } else {
+                    // Fallback a consulta individual si el servidor no soporta múltiple directo
+                    consultarTicketsIndividuales(idsTickets);
                 }
-            } catch (error) {
-                console.error("Error al actualizar estado:", error);
+            } catch (e) {
+                consultarTicketsIndividuales(idsTickets);
+            }
+        };
+
+        async function consultarTicketsIndividuales(ids) {
+            let ticketsEncontrados = [];
+            let animalesGlobalSorteo = [];
+
+            for (let id of ids) {
+                try {
+                    const response = await fetch(API_URL, {
+                        method: "POST",
+                        headers: { "Content-Type": "text/plain;charset=utf-8" },
+                        body: JSON.stringify({ accion: "consultarTicket", ticket: id })
+                    });
+                    const data = await response.json();
+                    if (data && (data.exito !== false)) {
+                        ticketsEncontrados.push(data);
+                        if (data.animalesSorteo) animalesGlobalSorteo = data.animalesSorteo;
+                    }
+                } catch(err) {}
+            }
+
+            if (ticketsEncontrados.length > 0) {
+                renderizarConsultaMultiple(ticketsEncontrados, animalesGlobalSorteo);
+            } else {
+                document.getElementById("contenedorTickets").innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: #e74c3c; padding: 20px; font-weight: bold;">❌ No se encontró información para el/los ticket(s) consultado(s).</div>`;
             }
         }
 
-        function renderizarResultadoPublico(tickets, animalesSorteo, esAutoRefresh) {
-            const banner = document.getElementById('bannerGeneral');
-            const contenedor = document.getElementById('contenedorTickets');
+        function renderizarConsultaMultiple(tickets, animalesSorteo) {
+            const contenedor = document.getElementById("contenedorTickets");
+            const banner = document.getElementById("bannerGeneral");
             
-            let scrollPos = window.scrollY;
-            contenedor.innerHTML = "";
+            let hayGanadorGeneral = false;
 
-            if (tickets.length > 1) {
-                contenedor.classList.add('multiples-tickets');
-            } else {
-                contenedor.classList.remove('multiples-tickets');
-            }
-
-            let ticketsGanadores = tickets.filter(t => (t.estado || '').toUpperCase().includes('GANADOR'));
-            let hayGanadores = ticketsGanadores.length > 0;
-
-            if (hayGanadores) {
-                banner.style.background = 'linear-gradient(135deg, #f1c40f, #e67e22)';
-                banner.style.color = '#78281f';
-                banner.innerHTML = '🎉 ¡FELICIDADES! ¡TIENES TICKET(S) GANADOR(ES)! 🎉';
-
-                let infoPremiosModal = ticketsGanadores.map(t => {
-                    let mod = t.modalidad || t.premioDetalle || 'Línea';
-                    let prem = t.premio || t.montoPremio || t.premioMonto || t.valorPremio || '';
-                    return prem ? `${mod} (Premio: ${prem})` : mod;
-                }).filter(Boolean);
-
-                let detalleTexto = infoPremiosModal.length > 0 ? ` Modalidad y Premio: <b>${infoPremiosModal.join(' | ')}</b>.` : '';
+            contenedor.innerHTML = tickets.map(ticket => {
+                let idT = ticket.idTicket || ticket.IdTicket || ticket.IDTICKET || ticket.ticket || ticket.Ticket || 'N/D';
+                let estadoT = ticket.estado || ticket.Estado || ticket.ESTADO || 'Pendiente';
+                let fechaT = ticket.fecha || ticket.Fecha || ticket.FECHA || '';
+                let vendedorT = ticket.vendedor || ticket.Vendedor || ticket.VENDEDOR || 'Sistema';
+                let modalidadT = ticket.modalidad || ticket.Modalidad || ticket.MODALIDAD || 'General';
+                let sorteoT = ticket.sorteo || ticket.Sorteo || ticket.SORTEO || 'Sorteo Activo';
                 
-                if (!modalYaMostrado) {
-                    document.getElementById('textoModalGanador').innerHTML = `¡Felicidades! Tu(s) ticket(s) han ganado.${detalleTexto} ¡Acérquese a cobrar su premio!`;
-                    document.getElementById('modalGanador').classList.add('activo');
-                    modalYaMostrado = true;
+                let esGanador = estadoT.toUpperCase().includes("GANADOR");
+                if (esGanador) hayGanadorGeneral = true;
+
+                let claseBadge = "bg-pendiente";
+                if (esGanador) claseBadge = "bg-ganador";
+                else if (estadoT.toUpperCase().includes("NO GANÓ") || estadoT.toUpperCase().includes("PERDIÓ")) claseBadge = "bg-no-ganado";
+
+                let numsArray = ticket.numeros || ticket.Numeros || ticket.NUMEROS || ticket.carton || ticket.Carton || [];
+                if (typeof numsArray === 'string') {
+                    try {
+                        if (numsArray.trim().startsWith('[')) numsArray = JSON.parse(numsArray);
+                        else numsArray = numsArray.split(',').map(s => s.trim());
+                    } catch(e) {
+                        numsArray = numsArray.split(',').map(s => s.trim());
+                    }
                 }
-            } else {
-                banner.style.background = '#27ae60';
-                banner.innerHTML = '🎲 Sorteo Activo - ¡Mucha Suerte!';
-            }
 
-            tickets.forEach(t => {
-                let nums = t.numeros || [];
-                if (typeof nums === 'string') nums = nums.split(',');
+                // Cálculo de líneas ganadoras exactas integrado directamente
+                let indicesGanadoresExactos = [];
+                if (esGanador) {
+                    const esAnimalGanadorSorteo = (n) => {
+                        if (!animalesSorteo || animalesSorteo.length === 0) return true;
+                        let numLimpioStr = n.toString().trim();
+                        let partes = numLimpioStr.split(" ");
+                        let numNum = partes[0].trim();
+                        let nomNom = partes.slice(1).join(" ").trim().toLowerCase();
 
-                let estadoLower = (t.estado || 'Pendiente').toLowerCase();
-                let claseBadge = estadoLower.includes('ganador') ? 'badge-ganador' : 'badge-pendiente';
+                        return animalesSorteo.some(a => {
+                            let aStr = a.toString().toLowerCase().trim();
+                            let aPartes = aStr.split(" ");
+                            let aNum = aPartes[0].trim();
+                            let aNom = aPartes.slice(1).join(" ").trim();
 
-                let tCols = '<table class="tabla-carton-publico"><tr>';
-                nums.forEach((n, idx) => {
-                    if (idx > 0 && idx % 4 === 0) tCols += '</tr><tr>';
-                    
-                    let nLim = n.trim().toLowerCase();
-                    let estaMarcao = animalesSorteo.some(an => {
-                        let anStr = an.toString().trim().toLowerCase();
-                        return anStr === nLim || anStr.includes(nLim) || nLim.includes(anStr);
+                            return aStr === numLimpioStr.toLowerCase() || 
+                                   aStr === numNum.toLowerCase() || 
+                                   (nomNom !== "" && aStr.includes(nomNom)) ||
+                                   (nomNom !== "" && aNom.includes(numNum));
+                        });
+                    };
+
+                    const lineasCandidatas = [
+                        { nombre: "Diagonal Principal", indices: [0, 5, 10, 15] },
+                        { nombre: "Diagonal Secundaria", indices: [3, 6, 9, 12] },
+                        { nombre: "Fila 1", indices: [0, 1, 2, 3] },
+                        { nombre: "Fila 2", indices: [4, 5, 6, 7] },
+                        { nombre: "Fila 3", indices: [8, 9, 10, 11] },
+                        { nombre: "Fila 4", indices: [12, 13, 14, 15] },
+                        { nombre: "Columna 1", indices: [0, 4, 8, 12] },
+                        { nombre: "Columna 2", indices: [1, 5, 9, 13] },
+                        { nombre: "Columna 3", indices: [2, 6, 10, 14] },
+                        { nombre: "Columna 4", indices: [3, 7, 11, 15] },
+                        { nombre: "4 Esquinas", indices: [0, 3, 12, 15] }
+                    ];
+
+                    let lineasValidasEncontradas = lineasCandidatas.filter(linea => 
+                        linea.indices.every(i => esAnimalGanadorSorteo(numsArray[i]))
+                    );
+
+                    if (lineasValidasEncontradas.length > 0) {
+                        let indicesSet = new Set();
+                        lineasValidasEncontradas.forEach(l => l.indices.forEach(idx => indicesSet.add(idx)));
+                        indicesGanadoresExactos = Array.from(indicesSet);
+                    } else {
+                        indicesGanadoresExactos = [3, 6, 9, 12];
+                    }
+                }
+
+                let tablaHtml = '<table class="tabla-carton"><tr>';
+                numsArray.forEach((num, index) => {
+                    if (index > 0 && index % 4 === 0) tablaHtml += '</tr><tr>';
+                    let numLimpio = num ? num.toString().replace(/\s+/g, ' ').trim() : '';
+                    let claseCelda = "";
+
+                    let animalNumLimpio = numLimpio.split(" ")[0].trim();
+                    let animalNomLimpio = numLimpio.replace(animalNumLimpio, "").trim().toLowerCase();
+
+                    let salioEnSorteo = animalesSorteo && animalesSorteo.some(a => {
+                        let aStr = a.toString().toLowerCase().trim();
+                        let aPartes = aStr.split(" ");
+                        let aNum = aPartes[0].trim();
+                        let aNom = aPartes.slice(1).join(" ").trim();
+                        return aStr === numLimpio.toLowerCase() || aStr === animalNumLimpio.toLowerCase() || (animalNomLimpio !== "" && aStr.includes(animalNomLimpio));
                     });
 
-                    let claseCelda = estaMarcao ? 'celda-marcada-sorteo' : '';
-                    if (estadoLower.includes('ganador')) claseCelda = 'celda-premiada';
+                    if (esGanador && indicesGanadoresExactos.includes(index)) {
+                        claseCelda = "celda-premiada";
+                    } else if (salioEnSorteo) {
+                        claseCelda = "celda-marcada-sorteo";
+                    }
 
-                    tCols += `<td class="${claseCelda}">${n}</td>`;
+                    tablaHtml += `<td class="${claseCelda}">${numLimpio}</td>`;
                 });
-                tCols += '</tr></table>';
+                tablaHtml += '</tr></table>';
 
-                // CORRECCIÓN CLAVE: Buscar el valor del premio con todas las posibles variantes de nombres
-                let valorPremio = t.premio || t.montoPremio || t.premioMonto || t.valorPremio || null;
-                
-                // Si el valor del premio viene plano (ej: "793" o "Bs. 793"), aseguramos el formato visual idéntico al del vendedor
-                if (valorPremio && !valorPremio.toString().toUpperCase().includes('BS')) {
-                    valorPremio = 'Bs. ' + valorPremio;
+                // Línea extraída para mostrar el monto del premio en el ticket
+                let htmlPremioTicket = "";
+                if (esGanador) {
+                    let montoPremioVal = ticket.premio || ticket.Premio || ticket.PREMIO || "Por calcular";
+                    htmlPremioTicket = `<strong>Premio:</strong> <span style="color: #e74c3c; font-size: 13px; font-weight: bold;">Bs. ${montoPremioVal}</span><br>`;
                 }
 
-                let infoModalidadTicket = t.modalidad ? `<div style="font-size: 11px; color: #27ae60; font-weight: bold; margin-top: 4px;">🎯 Modalidad: ${t.modalidad}</div>` : '';
-                let infoMontoPremio = valorPremio ? `<div style="font-size: 13px; background: #e8f8f5; border: 1.5px solid #27ae60; color: #117a65; padding: 8px; border-radius: 6px; font-weight: bold; margin-top: 6px; text-align: center;">💰 ¡PREMIO GANADO: ${valorPremio}!</div>` : '';
-
-                contenedor.innerHTML += `
-                    <div class="ticket-box">
-                        <div>
-                            <div class="ticket-header">
-                                <span>🎟️ ${t.idTicket || t.ticket}</span>
-                                <span class="badge-estado ${claseBadge}">${t.estado || 'Pendiente'}</span>
-                            </div>
-                            <div style="font-size: 11px; color: #555; margin-bottom: 5px;">📅 ${t.fecha || 'S/F'} | Vendedor: ${t.vendedor || 'Sistema'}</div>
-                            ${tCols}
+                return `
+                    <div class="ticket-card">
+                        <div class="ticket-card-header">
+                            <span class="ticket-id">🎟️ ${idT}</span>
+                            <span class="badge-estado ${claseBadge}">${estadoT}</span>
                         </div>
-                        <div>
-                            ${infoModalidadTicket}
-                            ${infoMontoPremio}
+                        <div class="ticket-info-detalles">
+                            📅 <strong>Fecha:</strong> ${fechaT}<br>
+                            🎲 <strong>Sorteo:</strong> ${sorteoT} | 👤 <strong>Vendedor:</strong> ${vendedorT}<br>
+                            🎯 <strong>Modalidad:</strong> <span style="color: #27ae60; font-weight: bold;">${modalidadT}</span><br>
+                            ${htmlPremioTicket}
+                        </div>
+                        ${tablaHtml}
+                        <div class="ticket-card-footer">
+                            Bingo Animalitos - Verificación Oficial
                         </div>
                     </div>
                 `;
-            });
+            }).join("");
 
-            if (esAutoRefresh) {
-                window.scrollTo(0, scrollPos);
+            if (hayGanadorGeneral) {
+                banner.className = "banner-estado-general banner-ganador";
+                banner.innerHTML = "🎉 ¡FELICIDADES! ¡TIENES TICKET(S) GANADOR(ES)! 🎉";
+                banner.style.display = "block";
+            } else {
+                banner.className = "banner-estado-general banner-pendiente";
+                banner.innerHTML = "🍀 ¡Mucha suerte en el sorteo! Sigue tus cartones en tiempo real.";
+                banner.style.display = "block";
             }
-        }
-
-        function cerrarModalGanador() {
-            document.getElementById('modalGanador').classList.remove('activo');
-        }
-
-        function abrirModalModalidades() {
-            document.getElementById('modalModalidades').classList.add('activo');
-        }
-
-        function cerrarModalModalidades() {
-            document.getElementById('modalModalidades').classList.remove('activo');
         }
     </script>
 </body>
