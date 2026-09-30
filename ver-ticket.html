@@ -18,7 +18,6 @@
             user-select: none;
         }
         
-        /* Contenedor adaptativo: Ancho máximo mayor en PC para permitir distribución horizontal */
         .contenedor { max-width: 900px; margin: 0 auto; }
         
         .card { 
@@ -33,7 +32,6 @@
         h2 { color: #2c3e50; margin-bottom: 5px; font-size: 20px; }
         .subtitel { font-size: 13px; color: #666; margin-bottom: 15px; }
         
-        /* Contenedor de botones superiores */
         .acciones-superiores {
             display: flex;
             gap: 10px;
@@ -43,7 +41,6 @@
             .acciones-superiores { flex-direction: column; }
         }
 
-        /* Estilos de Botones */
         .btn-accion {
             display: inline-flex;
             align-items: center;
@@ -82,14 +79,12 @@
             background: #2c3e50; color: white; padding: 12px; border-radius: 8px; font-weight: bold; margin-bottom: 15px; font-size: 14px;
         }
 
-        /* Estructura Grid para Tickets (Horizontal en PC, Vertical en Móvil) */
         #contenedorTickets {
             display: grid;
-            grid-template-columns: 1fr; /* Por defecto móvil: una columna */
+            grid-template-columns: 1fr;
             gap: 15px;
         }
         @media (min-width: 768px) {
-            /* En pantallas de PC o tablets, si hay 2 o más tickets, se acomodan en 2 columnas lado a lado */
             #contenedorTickets.multiples-tickets {
                 grid-template-columns: repeat(2, 1fr);
             }
@@ -127,7 +122,6 @@
         .badge-ganador { background: #27ae60; color: white; }
         .badge-pendiente { background: #f39c12; color: white; }
 
-        /* Estilos de Popups (General y Modalidades) */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(3px);
@@ -152,7 +146,6 @@
             border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; margin-top: 15px;
         }
 
-        /* Estilos específicos para el Grid de Modalidades Animadas */
         .modalidades-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -189,7 +182,6 @@
             line-height: 1.3;
         }
 
-        /* Mini-representación visual en miniatura para cada modalidad */
         .mini-carton {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -201,11 +193,8 @@
             padding: 2px;
             border-radius: 4px;
         }
-        .mini-celda {
-            background: white;
-            border-radius: 1px;
-        }
-        /* Animación iluminada para las celdas de ejemplo */
+        .mini-celda { background: white; border-radius: 1px; }
+
         .anim-esquina .mini-celda:nth-child(1),
         .anim-esquina .mini-celda:nth-child(4),
         .anim-esquina .mini-celda:nth-child(13),
@@ -253,7 +242,6 @@
             <p style="margin-bottom: 10px; font-size: 13px;">Conoce las formas en las que puedes completar tu cartón y ganar fabulosos premios:</p>
             
             <div class="modalidades-grid">
-                <!-- 4 Esquinas -->
                 <div class="modalidad-card">
                     <div class="mini-carton anim-esquina">
                         <div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div>
@@ -265,7 +253,6 @@
                     <p>Las 4 esquinas exteriores de tu cartón.</p>
                 </div>
 
-                <!-- Horizontal -->
                 <div class="modalidad-card">
                     <div class="mini-carton anim-horizontal">
                         <div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div>
@@ -277,7 +264,6 @@
                     <p>Cualquiera de las 4 filas completas de lado a lado.</p>
                 </div>
 
-                <!-- Columna -->
                 <div class="modalidad-card">
                     <div class="mini-carton anim-columna">
                         <div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div>
@@ -289,7 +275,6 @@
                     <p>Cualquiera de las 4 columnas verticales completas.</p>
                 </div>
 
-                <!-- Línea Diagonal -->
                 <div class="modalidad-card">
                     <div class="mini-carton anim-diagonal">
                         <div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div><div class="mini-celda"></div>
@@ -311,7 +296,6 @@
             <h2>🎟️ Estado del Ticket</h2>
             <div class="subtitel">Bingo Animalitos - Consulta en Línea</div>
             
-            <!-- Botones Superiores (Resultados TV y Modalidades) -->
             <div class="acciones-superiores">
                 <a href="https://bingoanimalitos.github.io/sistema-bingo/resultados.html" target="_blank" class="btn-accion btn-resultados-tv">
                     📺 Ver Resultados TV
@@ -323,7 +307,6 @@
 
             <div id="bannerGeneral" class="banner-estado-general">Cargando información del ticket...</div>
             
-            <!-- Contenedor adaptativo de tickets -->
             <div id="contenedorTickets">
                 <div id="mensajeCarga">Buscando registros en el sistema...</div>
             </div>
@@ -331,9 +314,6 @@
     </div>
 
     <script>
-        // ==========================================
-        // CAPAS DE SEGURIDAD Y BLOQUEO DE INSPECCIÓN
-        // ==========================================
         document.addEventListener('contextmenu', function(e) { e.preventDefault(); });
         document.addEventListener('keydown', function(e) {
             if (e.key === 'F12') { e.preventDefault(); return false; }
@@ -342,9 +322,6 @@
             if (e.ctrlKey && e.key.toLowerCase() === 's') { e.preventDefault(); return false; }
         });
 
-        // ==========================================
-        // LÓGICA DE CARGA Y ACTUALIZACIÓN AUTOMÁTICA
-        // ==========================================
         const API_URL = "https://script.google.com/macros/s/AKfycbzbbGiq4txDkhac4hp0h27Cy35NPeff91n1UrtSaZF7j0Bmdq2WMKi54QISa5bZjUoS/exec";
         let idsArray = [];
         let modalYaMostrado = false;
@@ -361,11 +338,8 @@
             }
 
             idsArray = ticketsParam.split(',').map(s => s.trim()).filter(Boolean);
-            
-            // Carga inicial
             consultarEstadoTickets(idsArray);
 
-            // Actualización automática (Polling cada 8 segundos)
             setInterval(() => {
                 consultarEstadoTickets(idsArray, true);
             }, 8000);
@@ -399,7 +373,6 @@
             let scrollPos = window.scrollY;
             contenedor.innerHTML = "";
 
-            // Activar clase CSS horizontal en PC si hay más de 1 ticket
             if (tickets.length > 1) {
                 contenedor.classList.add('multiples-tickets');
             } else {
@@ -414,11 +387,17 @@
                 banner.style.color = '#78281f';
                 banner.innerHTML = '🎉 ¡FELICIDADES! ¡TIENES TICKET(S) GANADOR(ES)! 🎉';
 
-                let modalidades = ticketsGanadores.map(t => t.modalidad || t.premioDetalle).filter(Boolean);
-                let detalleModalidad = modalidades.length > 0 ? ` Modalidad ganadora: <b>${modalidades.join(', ')}</b>.` : '';
+                // Recopilar modalidades y premios para el popup general
+                let infoPremiosModal = ticketsGanadores.map(t => {
+                    let mod = t.modalidad || t.premioDetalle || 'Línea';
+                    let prem = t.premio || t.montoPremio || t.premioMonto || t.valorPremio || '';
+                    return prem ? `${mod} (Premio: ${prem})` : mod;
+                }).filter(Boolean);
+
+                let detalleTexto = infoPremiosModal.length > 0 ? ` Modalidad y Premio: <b>${infoPremiosModal.join(' | ')}</b>.` : '';
                 
                 if (!modalYaMostrado) {
-                    document.getElementById('textoModalGanador').innerHTML = `¡Felicidades! Tu(s) ticket(s) han ganado.${detalleModalidad} ¡Acérquese a cobrar su premio!`;
+                    document.getElementById('textoModalGanador').innerHTML = `¡Felicidades! Tu(s) ticket(s) han ganado.${detalleTexto} ¡Acérquese a cobrar su premio!`;
                     document.getElementById('modalGanador').classList.add('activo');
                     modalYaMostrado = true;
                 }
@@ -451,9 +430,10 @@
                 });
                 tCols += '</tr></table>';
 
+                // Capturar el premio desde cualquier variante posible devuelta por el backend
+                let valorPremio = t.premio || t.montoPremio || t.premioMonto || t.valorPremio || null;
                 let infoModalidadTicket = t.modalidad ? `<div style="font-size: 11px; color: #27ae60; font-weight: bold; margin-top: 4px;">🎯 Modalidad: ${t.modalidad}</div>` : '';
-                let valorPremio = t.premio || t.montoPremio || t.premioMonto || null;
-                let infoMontoPremio = valorPremio ? `<div style="font-size: 12px; background: #e8f8f5; border: 1px solid #27ae60; color: #117a65; padding: 6px; border-radius: 5px; font-weight: bold; margin-top: 6px;">💰 Monto del Premio: ${valorPremio}</div>` : '';
+                let infoMontoPremio = valorPremio ? `<div style="font-size: 13px; background: #e8f8f5; border: 1.5px solid #27ae60; color: #117a65; padding: 8px; border-radius: 6px; font-weight: bold; margin-top: 6px; text-align: center;">💰 ¡PREMIO GANADO: ${valorPremio}!</div>` : '';
 
                 contenedor.innerHTML += `
                     <div class="ticket-box">
@@ -478,7 +458,6 @@
             }
         }
 
-        // Control de Popups
         function cerrarModalGanador() {
             document.getElementById('modalGanador').classList.remove('activo');
         }
