@@ -237,11 +237,22 @@
         </div>
     </div>
 
+    <!-- MODAL PAGO MÓVIL Y DATOS BANCARIOS DE LA BANCA -->
     <div id="modalPagoMovil" class="no-print">
         <div class="modal-pagomovil-contenido">
             <h3>📱 Datos de Pago Móvil</h3>
-            <p style="font-size: 12px; color: #666; margin-bottom: 12px; text-align: center;">Ingrese los datos del cliente para validar el pago.</p>
+            <p style="font-size: 12px; color: #666; margin-bottom: 12px; text-align: center;">Realice el pago a los siguientes datos de la banca y luego complete el registro:</p>
             
+            <!-- TARJETA INFORMATIVA DE DATOS BANCARIOS DE LA BANCA CON BOTÓN DE COPIADO -->
+            <div style="background: #f8f9fa; border: 1px solid #cbd5e1; padding: 10px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; position: relative;">
+                <div style="margin-bottom: 3px;"><strong>Banco:</strong> 0134 Banesco</div>
+                <div style="margin-bottom: 3px;"><strong>Cédula:</strong> 19466062</div>
+                <div style="margin-bottom: 3px;"><strong>Teléfono:</strong> 04149443028</div>
+                <div style="margin-bottom: 5px;"><strong>Monto a Pagar:</strong> <span id="lblMontoPopupBanca" style="color: #27ae60; font-weight: bold;">Bs. 0.00</span></div>
+                <button onclick="copiarDatosBanca()" style="background: #2980b9; padding: 6px 10px; font-size: 11px; margin-top: 5px; width: 100%; border-radius: 4px;">📋 Copiar Datos Bancarios</button>
+                <div id="alertaCopiado" style="display:none; text-align:center; color: #27ae60; font-size: 11px; font-weight: bold; margin-top: 4px;">¡Datos copiados al portapapeles!</div>
+            </div>
+
             <div class="form-group" style="margin-bottom: 10px;">
                 <label style="font-size: 12px;">Banco Orig / Destino:</label>
                 <select id="pmBanco" style="padding: 8px; font-size: 14px;">
@@ -298,7 +309,7 @@
         </div>
 
         <div id="alertaGanadorPanel" class="alerta-ganador-animada">
-            <h3 style="margin-bottom: 4px;">🎉 ¡TICKET(S) GANADOR(ES) PROPIO(S)![cite: 10] 🎉</h3>
+            <h3 style="margin-bottom: 4px;">🎉 ¡TICKET(S) GANADOR(ES) PROPIO(S)! 🎉</h3>
             <p id="textoDetalleGanador" style="font-size: 12px; margin-top: 4px;"></p>
         </div>
 
@@ -825,7 +836,7 @@
                             let idT = g.idTicket || g.IdTicket || g.IDTICKET || g.ticket || g.Ticket || '';
                             textoInfo += `Sorteo: <strong>${sName}</strong> | Vendedor: <strong>${vNom}</strong> | Ticket: <span style="text-decoration:underline; cursor:pointer;" onclick="abrirModalTicketPorId('${idT}')">${idT}</span> (${modalGana}) | Premio: <strong style="color: #f1c40f;">Bs. ${montoPremio}</strong><br>`;
                         });
-                        document.getElementById("textoInformativoSorteo").innerHTML = `🏆 ¡Ya hubo ganador(es) en este sorteo![cite: 10, 11]<br>` + textoInfo;
+                        document.getElementById("textoInformativoSorteo").innerHTML = `🏆 ¡Ya hubo ganador(es) en este sorteo!<br>` + textoInfo;
                         alertaInformativa.style.display = "block";
                     } else {
                         alertaInformativa.style.display = "none";
@@ -1324,10 +1335,33 @@
                 return;
             }
 
+            // Calcular el monto total a pagar basado en los cartones seleccionados
+            let cantidadCartones = parseInt(document.getElementById("cantidadCartones").value) || 1;
+            let montoTotalPagar = cantidadCartones * precioCartonActual;
+            document.getElementById("lblMontoPopupBanca").innerText = `Bs. ${montoTotalPagar.toFixed(2)}`;
+
             document.getElementById("pmBanco").value = "";
             document.getElementById("pmCedula").value = "";
             document.getElementById("pmTelefono").value = "";
+            document.getElementById("alertaCopiado").style.display = "none";
             document.getElementById("modalPagoMovil").style.display = "flex";
+        }
+
+        function copiarDatosBanca() {
+            let cantidadCartones = parseInt(document.getElementById("cantidadCartones").value) || 1;
+            let montoTotalPagar = cantidadCartones * precioCartonActual;
+            
+            let textoCopiar = `Banco: 0134 Banesco\nCédula: 19466062\nTeléfono: 04149443028\nMonto: Bs. ${montoTotalPagar.toFixed(2)}`;
+            
+            navigator.clipboard.writeText(textoCopiar).then(() => {
+                let alerta = document.getElementById("alertaCopiado");
+                alerta.style.display = "block";
+                setTimeout(() => {
+                    alerta.style.display = "none";
+                }, 3000);
+            }).catch(err => {
+                alert("No se pudo copiar automáticamente. Por favor selecciónalos manualmente.");
+            });
         }
 
         function confirmarPagoMovilEImprimir() {
@@ -1442,7 +1476,6 @@
                         tablaHtml += '</tr><tr>';
                     }
                     let numLimpio = num ? num.toString().replace(/\s+/g, ' ').trim() : '';
-                    // Aplicando negrita directamente en la impresión de celdas del cartón
                     tablaHtml += `<td style="font-weight: 900 !important;"><b>${numLimpio}</b></td>`;
                 });
                 tablaHtml += '</tr></table>';

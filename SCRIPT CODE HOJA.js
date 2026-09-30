@@ -10,6 +10,7 @@ const HOJA_VENDEDORES = "VENDEDORES";
 const HOJA_HISTORIAL = "HISTORIAL_SORTEOS";
 const HOJA_PAGOS_MOVIL = "PagosMovil";
 const HOJA_ADMINISTRADORES = "ADMINISTRADORES";
+const HOJA_HISTORIAL_CAJAS = "HISTORIAL_CAJAS"; // <-- Nueva pestaña agregada
 const PRECIO_TICKET_DEFECTO = 100;
 const DOMINIO_PERMITIDO = "https://bingoanimalitos.github.io";
 
@@ -1120,6 +1121,41 @@ function obtenerHistorialSorteos() {
     }
 
     return { exito: true, historial: historial.reverse() };
+  } catch (err) {
+    return { exito: false, mensaje: err.toString() };
+  }
+}
+
+// ==========================================
+// NUEVA FUNCIÓN PARA GESTIONAR HISTORIAL_CAJAS
+// ==========================================
+function obtenerHistorialCajasAdmin() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    let hojaCajas = ss.getSheetByName(HOJA_HISTORIAL_CAJAS);
+    if (!hojaCajas) {
+      hojaCajas = ss.insertSheet(HOJA_HISTORIAL_CAJAS);
+      hojaCajas.appendRow(["Fecha_Hora", "ID_Vendedor", "Nombre", "Total_Vendido", "Comision", "Neto_Entregado", "Estatus"]);
+    }
+
+    const datos = hojaCajas.getDataRange().getDisplayValues();
+    let registrosCajas = [];
+
+    for (let i = 1; i < datos.length; i++) {
+      if (datos[i][0]) {
+        registrosCajas.push({
+          fechaHora: String(datos[i][0]),
+          idVendedor: String(datos[i][1]),
+          nombre: String(datos[i][2]),
+          totalVendido: parseFloat(datos[i][3]) || 0,
+          comision: parseFloat(datos[i][4]) || 0,
+          netoEntregado: parseFloat(datos[i][5]) || 0,
+          estatus: String(datos[i][6] || "ACTIVO")
+        });
+      }
+    }
+
+    return { exito: true, historialCajas: registrosCajas.reverse() };
   } catch (err) {
     return { exito: false, mensaje: err.toString() };
   }
