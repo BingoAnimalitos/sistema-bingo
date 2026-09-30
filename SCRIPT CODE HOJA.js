@@ -111,16 +111,38 @@ function consultarTicketPublico(data) {
         let montoTicket = parseFloat(datosTickets[i][8]) || PRECIO_TICKET_DEFECTO;
         
         let premioAsignado = 0;
-        if (estadoTicket.includes("GANADOR")) {
-          const sheetSorteos = ss.getSheetByName(HOJA_SORTEOS);
-          if (sheetSorteos) {
-            let datosSorteos = sheetSorteos.getDataRange().getDisplayValues();
-            for (let s = 1; s < datosSorteos.length; s++) {
-              if (String(datosSorteos[s][4]).trim() === idFila) {
-                premioAsignado = parseFloat(datosSorteos[s][5]) || 0;
+        
+        // 1. Buscar en la hoja RESULTADOS si el ticket ganó
+        const sheetSorteos = ss.getSheetByName(HOJA_SORTEOS);
+        if (sheetSorteos) {
+          let datosSorteos = sheetSorteos.getDataRange().getDisplayValues();
+          for (let s = 1; s < datosSorteos.length; s++) {
+            if (String(datosSorteos[s][4]).trim() === idFila) {
+              premioAsignado = parseFloat(datosSorteos[s][5]) || 0;
+              break;
+            }
+          }
+        }
+
+        // 2. Si no se encontró en resultados, buscar en PagosMovil por si ya está registrado
+        if (premioAsignado === 0) {
+          const sheetPagos = ss.getSheetByName(HOJA_PAGOS_MOVIL);
+          if (sheetPagos && sheetPagos.getLastRow() > 1) {
+            let datosPagos = sheetPagos.getDataRange().getDisplayValues();
+            for (let p = 1; p < datosPagos.length; p++) {
+              if (String(datosPagos[p][2]).trim() === idFila) {
+                premioAsignado = parseFloat(datosPagos[p][6]) || 0;
                 break;
               }
             }
+          }
+        }
+
+        // Si el estado indica ganador pero el premio seguía en 0, tomar el premio por ganador global del control de juego
+        if (estadoTicket.includes("GANADOR") && premioAsignado === 0) {
+          const sheetControl = ss.getSheetByName(HOJA_CONTROL);
+          if (sheetControl && sheetControl.getLastRow() > 1) {
+            premioAsignado = parseFloat(sheetControl.getRange(2, 4).getValue()) || 0;
           }
         }
 
@@ -1462,6 +1484,8 @@ function obtenerHistorialVentasFechas(data) {
     const comisionAdminPorc = obtenerComisionAdmin();
     let comisionAdminCalculada = totalVendido * comisionAdminPorc; 
     let neto = totalVendido - totalComisionVendedor - comisionAdminCalculada;
+
+    let animalesSorteoActual = obtenerAnimalitosSorteoActual();
 
     return {
       exito: true,
