@@ -65,6 +65,10 @@ function doPost(e) {
     if (accion === "obtenerPagosMoviles") return responderJSON(obtenerPagosMovilesAdmin());
     if (accion === "aprobarPagoMovil") return responderJSON(aprobarPagoMovilAdmin(data));
 
+    // --- ACCIONES DE HISTORIAL DE CAJAS ---
+    if (accion === "obtenerHistorialCajas") return responderJSON(obtenerHistorialCajasAdmin());
+    if (accion === "aprobarCuadreCaja") return responderJSON(aprobarCuadreCajaAdmin(data));
+
     // --- ACCIÓN: REGISTRAR CUADRE DE CAJA (CORREGIDA) ---
     if (accion === "registrarCuadre") {
         var ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -1194,6 +1198,28 @@ function obtenerHistorialCajasAdmin() {
     }
 
     return { exito: true, historialCajas: registrosCajas.reverse() };
+  } catch (err) {
+    return { exito: false, mensaje: err.toString() };
+  }
+}
+
+function aprobarCuadreCajaAdmin(data) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const hojaCajas = ss.getSheetByName(HOJA_HISTORIAL_CAJAS);
+    if (!hojaCajas) return { exito: false, mensaje: "Hoja HISTORIAL_CAJAS no encontrada." };
+
+    const refBuscada = String(data.referencia || "").trim();
+    const datos = hojaCajas.getDataRange().getDisplayValues();
+
+    for (let i = 1; i < datos.length; i++) {
+      let refFila = String(datos[i][6] || "").trim();
+      if (refFila === refBuscada) {
+        hojaCajas.getRange(i + 1, 8).setValue("Aprobado");
+        return { exito: true, mensaje: "Cuadre aprobado con éxito." };
+      }
+    }
+    return { exito: false, mensaje: "No se encontró el registro con esa referencia." };
   } catch (err) {
     return { exito: false, mensaje: err.toString() };
   }
