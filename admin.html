@@ -79,20 +79,33 @@
         .btn-animal.cantado { background: #e67e22 !important; border-color: #d35400; color: white; box-shadow: 0 0 12px rgba(230,126,34,0.5); }
         .btn-animal:disabled { background: #182228; border-color: #182228; opacity: 0.5; cursor: not-allowed; transform: none; }
         
-        .panel-control { background: #1b262c; padding: 15px; border-radius: 12px; display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
-        @media (min-width: 768px) { .panel-control { padding: 20px; gap: 15px; margin-bottom: 25px; } }
+        /* PANEL DE CONTROL REDISEÑADO Y ORDENADO */
+        .panel-control { background: #1b262c; padding: 16px; border-radius: 12px; display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        @media (min-width: 768px) { 
+            .panel-control { padding: 22px; gap: 15px; margin-bottom: 25px; grid-template-columns: repeat(2, 1fr); align-items: center; } 
+        }
 
-        .panel-control > * { width: 100%; }
-        @media (min-width: 768px) { .panel-control > * { width: auto; } }
+        .control-item { width: 100%; display: flex; flex-direction: column; gap: 6px; }
+        .control-item.full-width { grid-column: 1 / -1; }
+        
+        .control-item label { font-size: 13px; color: #a4b0be; font-weight: 600; }
+        
+        .pote-input-wrapper { display: flex; gap: 8px; align-items: center; width: 100%; }
+        .pote-input-wrapper input { flex: 1; }
 
-        .btn-action { width: 100%; padding: 12px 18px; background: #27ae60; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; transition: all 0.2s; box-shadow: 0 3px 8px rgba(39,174,96,0.3); text-align: center; }
-        @media (min-width: 768px) { .btn-action { width: auto; padding: 12px 22px; } }
-        .btn-action:hover { background: #219150; transform: translateY(-1px); }
-        .btn-action:disabled { background: #4b6584; cursor: not-allowed; opacity: 0.6; transform: none; box-shadow: none; }
-        .btn-guardar { background: #f39c12; box-shadow: 0 3px 8px rgba(243,156,18,0.3); }
-        .btn-guardar:hover { background: #d68910; }
+        .btn-action { width: 100%; padding: 12px 18px; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; transition: all 0.2s; box-shadow: 0 3px 8px rgba(0,0,0,0.2); text-align: center; }
+        .btn-action:hover { transform: translateY(-1px); }
+        .btn-action:disabled { background: #4b6584 !important; cursor: not-allowed; opacity: 0.6; transform: none; box-shadow: none; }
+        
+        .btn-guardar { background: #27ae60; box-shadow: 0 3px 8px rgba(39,174,96,0.3); }
+        .btn-guardar:hover { background: #219150; }
+        
         .btn-corregir { background: #c0392b; box-shadow: 0 3px 8px rgba(192,57,43,0.3); }
         .btn-corregir:hover { background: #962d22; }
+
+        .btn-reiniciar { background: #e67e22; box-shadow: 0 3px 8px rgba(230,126,34,0.3); }
+        .btn-reiniciar:hover { background: #d35400; }
+
         .btn-danger { background: #e74c3c; color: white; padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; font-size: 12px; transition: background 0.2s; }
         .btn-danger:hover { background: #c0392b; }
         .btn-success-sm { background: #27ae60; color: white; padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; font-size: 12px; transition: background 0.2s; }
@@ -100,8 +113,6 @@
 
         input[type="number"], input[type="text"], input[type="password"], input[type="date"], select { padding: 10px 14px; border-radius: 8px; border: 1px solid #324553; font-size: 14px; background: #22303c; color: white; width: 100%; outline: none; transition: border-color 0.2s; -webkit-user-select: text; user-select: text; }
         input[type="number"]:focus, input[type="text"]:focus, input[type="password"]:focus, input[type="date"]:focus, select:focus { border-color: #00d2d3; }
-        input[type="number"].input-pote { width: 100%; }
-        @media (min-width: 768px) { input[type="number"].input-pote { width: 110px; } }
 
         .banner-ganadores { display: none; background: #f1c40f; color: #1e272e; padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 20px; font-size: 15px; font-weight: bold; box-shadow: 0 4px 15px rgba(241,196,15,0.3); word-break: break-word; }
         @media (min-width: 768px) { .banner-ganadores { padding: 20px; font-size: 17px; margin-bottom: 25px; } }
@@ -228,7 +239,7 @@
         <button class="tab-btn" onclick="cambiarPestaña('tabPagoMovil', this)">📱 Pago Móvil</button>
         <button class="tab-btn" onclick="cambiarPestaña('tabCuadresCaja', this)">💼 Cuadres de Caja</button>
         <button class="tab-btn" onclick="cambiarPestaña('tabVendedores', this)">👥 Vendedores</button>
-        <button class="tab-btn" onclick="cambiarPestaña('tabAdministradores', this)">🛡️️ Admins</button>
+        <button class="tab-btn" onclick="cambiarPestaña('tabAdministradores', this)">🛡 Admins</button>
         <button class="tab-btn" onclick="cambiarPestaña('tabParametros', this)">⚙️ Parámetros</button>
     </div>
 
@@ -268,14 +279,24 @@
         <h3 style="margin-bottom: 12px; color: #00d2d3; font-size: 15px;">Seleccionar Animalito Cantado:</h3>
         <div class="grid-animalitos" id="gridAnimalitos"></div>
 
+        <!-- PANEL DE CONTROL ORGANIZADO Y RESPONSIVO -->
         <div class="panel-control">
-            <button id="btnGuardarSorteo" class="btn-action btn-guardar" onclick="guardarSorteoManual()">💾 Guardar / Registrar Sorteo</button>
-            <button class="btn-action btn-corregir" onclick="pedirDatosCorreccion()">✏ Corregir Sorteo</button>
-            <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
-                <label style="font-size: 13px; color: #a4b0be; white-space: nowrap;">Nuevo Pote (Vivo):</label>
-                <input type="number" id="inputNuevoPote" class="input-pote" value="0" oninput="this.dataset.userEdited = 'true'">
+            <div class="control-item">
+                <button id="btnGuardarSorteo" class="btn-action btn-guardar" onclick="guardarSorteoManual()">💾 Guardar / Registrar Sorteo</button>
             </div>
-            <button class="btn-action" onclick="reiniciarSorteo()">🔄 Reiniciar Pote</button>
+            <div class="control-item">
+                <button class="btn-action btn-corregir" onclick="pedirDatosCorreccion()">✏ Corregir Sorteo</button>
+            </div>
+            <div class="control-item">
+                <label>Nuevo Pote (Vivo):</label>
+                <div class="pote-input-wrapper">
+                    <input type="number" id="inputNuevoPote" value="0" oninput="this.dataset.userEdited = 'true'">
+                </div>
+            </div>
+            <div class="control-item">
+                <label>&nbsp;</label>
+                <button class="btn-action btn-reiniciar" onclick="reiniciarSorteo()">🔄 Reiniciar Pote</button>
+            </div>
         </div>
 
         <div class="tablas-historial-wrapper">
@@ -1985,7 +2006,6 @@
         } catch(e) { console.error(e); }
     }
 
-    // --- FUNCIÓN DE REINICIO ACTUALIZADA Y CORREGIDA ---
     async function reiniciarSorteo() {
         const inputPoteEl = document.getElementById("inputNuevoPote");
         const nuevoPote = inputPoteEl ? inputPoteEl.value : "0";
@@ -1993,7 +2013,6 @@
         if(!confirm(`¿Estás seguro de reiniciar el juego, limpiar los sorteos del día y establecer el pote en Bs. ${nuevoPote}?`)) return;
 
         try {
-            // Importante: La acción enviada ahora es exactamente "reiniciarSorteo" tal cual la espera tu Apps Script
             const payload = {
                 accion: "reiniciarSorteo",
                 nuevoPote: nuevoPote
@@ -2020,7 +2039,7 @@
                 await cargarParametrosSistemaAdmin();
                 cargarPagosMoviles();
             } else {
-                alert("⚠️️ Error del servidor: " + (data.mensaje || "No se pudo reiniciar"));
+                alert("⚠ Error del servidor: " + (data.mensaje || "No se pudo reiniciar"));
             }
         } catch(e) {
             console.error(e);
