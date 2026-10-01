@@ -43,9 +43,9 @@
         .btn-logout:hover { background: #962d22; }
 
         .admin-tabs { display: flex; gap: 8px; margin-bottom: 20px; background: #1b262c; padding: 10px; border-radius: 12px; flex-wrap: wrap; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-        .tab-btn { background: #22303c; color: #a4b0be; border: none; padding: 10px 14px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px; transition: all 0.3s ease; display: flex; align-items: center; gap: 6px; flex: 1 1 auto; justify-content: center; min-width: 130px; }
+        .tab-btn { background: #22303c; color: #a4b0be; border: none; padding: 10px 14px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px; transition: all 0.3s ease; display: flex; align-items: center; gap: 6px; flex: 1 1 auto; justify-content: center; min-width: 120px; }
         @media (min-width: 768px) {
-            .tab-btn { padding: 12px 20px; font-size: 14px; flex: unset; }
+            .tab-btn { padding: 12px 16px; font-size: 13px; flex: unset; }
         }
         .tab-btn:hover { background: #2c3e50; color: #fff; transform: translateY(-2px); }
         .tab-btn.active { background: #0097e6; color: white; box-shadow: 0 4px 12px rgba(0,151,230,0.4); }
@@ -226,6 +226,7 @@
         <button class="tab-btn active" onclick="cambiarPestaña('tabMarcaje', this)">🎯 Marcaje y Sorteos</button>
         <button class="tab-btn" onclick="cambiarPestaña('tabControlVentas', this)">📊 Historial y Ventas</button>
         <button class="tab-btn" onclick="cambiarPestaña('tabPagoMovil', this)">📱 Pago Móvil</button>
+        <button class="tab-btn" onclick="cambiarPestaña('tabCuadresCaja', this)">💼 Cuadres de Caja</button>
         <button class="tab-btn" onclick="cambiarPestaña('tabVendedores', this)">👥 Vendedores</button>
         <button class="tab-btn" onclick="cambiarPestaña('tabAdministradores', this)">🛡️ Admins</button>
         <button class="tab-btn" onclick="cambiarPestaña('tabParametros', this)">⚙️ Parámetros</button>
@@ -447,6 +448,34 @@
                     </tbody>
                 </table>
             </div>
+        </div>
+    </div>
+
+    <!-- PESTAÑA: CUADRES DE CAJA DE VENDEDORES -->
+    <div id="tabCuadresCaja" class="tab-content">
+        <div class="card-seccion">
+            <h3>💼 Solicitudes de Cuadre de Caja de Vendedores</h3>
+            <p style="margin-bottom: 20px; color: #a4b0be; font-size: 14px;">Revisa los cierres de caja y transferencias netas enviadas por cada vendedor para su respectiva aprobación.</p>
+            
+            <div style="max-height: 400px; overflow-y: auto;">
+                <table style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th>Fecha / Hora</th>
+                            <th>Vendedor</th>
+                            <th>Vendido (Bs)</th>
+                            <th>Neto (Bs)</th>
+                            <th>Referencia</th>
+                            <th>Estatus</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cuerpoTablaCajasAdmin">
+                        <tr><td colspan="7" style="text-align: center; color: #94a3b8;">Cargando solicitudes...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <button onclick="cargarHistorialCajasAdmin()" style="background: #2c3e50; color: white; margin-top: 15px; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">Actualizar Solicitudes</button>
         </div>
     </div>
 
@@ -702,6 +731,7 @@
         cargarParametrosSistemaAdmin();
         cargarPagosMoviles();
         cargarAdministradores();
+        cargarHistorialCajasAdmin();
 
         setInterval(() => {
             consultarEstado();
@@ -709,6 +739,7 @@
             cargarDatosAdicionalesAdmin();
             cargarPagosMoviles();
             cargarAdministradores();
+            cargarHistorialCajasAdmin();
         }, 3000);
     }
 
@@ -718,6 +749,74 @@
 
         document.getElementById(idTab).classList.add('active');
         elementoBtn.classList.add('active');
+
+        if (idTab === 'tabCuadresCaja') {
+            cargarHistorialCajasAdmin();
+        }
+    }
+
+    // --- FUNCIONES NUEVAS PARA GESTIÓN DE CUADRES DE CAJA ---
+    async function cargarHistorialCajasAdmin() {
+        const cuerpo = document.getElementById('cuerpoTablaCajasAdmin');
+        if (!cuerpo) return;
+
+        try {
+            const response = await fetch(API_URL, {
+                method: "POST",
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify({ accion: "obtenerHistorialCajas" })
+            });
+            const data = await response.json();
+
+            if (data && data.exito && data.historialCajas && data.historialCajas.length > 0) {
+                cuerpo.innerHTML = data.historialCajas.map(c => {
+                    let estatusStr = (c.estatus || "").toLowerCase();
+                    let esPendiente = estatusStr.includes('pendiente');
+                    let badgeStyle = esPendiente ? 'background: #f39c12; color: white; padding: 4px 8px; border-radius: 4px;' : 'background: #27ae60; color: white; padding: 4px 8px; border-radius: 4px;';
+                    
+                    return `
+                        <tr>
+                            <td style="font-size: 11px;">${c.fechaHora}</td>
+                            <td><strong>${c.nombre}</strong> (${c.idVendedor})</td>
+                            <td>Bs. ${Number(c.totalVendido || 0).toFixed(2)}</td>
+                            <td><strong style="color: #e74c3c;">Bs. ${Number(c.netoEntregado || 0).toFixed(2)}</strong></td>
+                            <td><code>${c.referencia}</code></td>
+                            <td><span style="${badgeStyle}">${c.estatus}</span></td>
+                            <td>
+                                ${esPendiente ? `<button onclick="aprobarCuadre('${c.referencia}')" style="background: #27ae60; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 11px;">Aprobar</button>` : '✅ Aprobado'}
+                            </td>
+                        </tr>
+                    `;
+                }).join("");
+            } else {
+                cuerpo.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #94a3b8; padding: 15px;">No hay solicitudes de cuadre registradas.</td></tr>`;
+            }
+        } catch (e) {
+            console.error("Error al cargar cuadres:", e);
+            cuerpo.innerHTML = `<tr><td colspan="7" style="text-align: center; color: red;">Error de conexión.</td></tr>`;
+        }
+    }
+
+    async function aprobarCuadre(referencia) {
+        if (!confirm(`¿Estás seguro de aprobar el pago con referencia ${referencia}?`)) return;
+
+        try {
+            const response = await fetch(API_URL, {
+                method: "POST",
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify({ accion: "aprobarCuadreCaja", referencia })
+            });
+            const data = await response.json();
+
+            if (data.exito) {
+                alert("¡Cuadre aprobado con éxito!");
+                cargarHistorialCajasAdmin();
+            } else {
+                alert("Error: " + data.mensaje);
+            }
+        } catch (e) {
+            alert("Error de conexión al aprobar.");
+        }
     }
 
     function renderGrid() {
@@ -1002,7 +1101,7 @@
                 document.getElementById('nuevoAdminClave').value = '';
                 cargarAdministradores();
             } else {
-                alert("⚠️️ Error al crear administrador: " + (data.mensaje || "Desconocido"));
+                alert("⚠ Error al crear administrador: " + (data.mensaje || "Desconocido"));
             }
         } catch (e) {
             console.error(e);
@@ -1171,7 +1270,7 @@
                 alert("✅ ¡Comisión actualizada y guardada exitosamente!");
                 cargarDatosAdicionalesAdmin();
             } else {
-                alert("⚠️ Error al guardar: " + (data.mensaje || "Acción no reconocida en el servidor."));
+                alert("⚠️️ Error al guardar: " + (data.mensaje || "Acción no reconocida en el servidor."));
             }
         } catch(e) {
             console.error(e);
