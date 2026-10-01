@@ -242,21 +242,12 @@
         </div>
     </div>
 
-    <!-- MODAL PAGO MÓVIL Y DATOS BANCARIOS DE LA BANCA (VENTA) -->
+    <!-- MODAL PAGO MÓVIL (VENTA) - SE ELIMINÓ EL PRIMER RECUADRO SUPERIOR -->
     <div id="modalPagoMovil" class="no-print">
         <div class="modal-pagomovil-contenido">
-            <h3>📱 Datos de Pago Móvil</h3>
-            <p style="font-size: 12px; color: #666; margin-bottom: 12px; text-align: center;">Realice el pago a los siguientes datos de la banca y luego complete el registro:</p>
+            <h3>📱 Registrar Pago Móvil</h3>
+            <p style="font-size: 12px; color: #666; margin-bottom: 15px; text-align: center;">Por favor ingrese los datos del pago móvil realizado por el cliente:</p>
             
-            <div style="background: #f8f9fa; border: 1px solid #cbd5e1; padding: 10px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; position: relative;">
-                <div style="margin-bottom: 3px;"><strong>Banco:</strong> (0134) Banesco</div>
-                <div style="margin-bottom: 3px;"><strong>Cédula:</strong> 19466062</div>
-                <div style="margin-bottom: 3px;"><strong>Teléfono:</strong> 04149443028</div>
-                <div style="margin-bottom: 5px;"><strong>Monto a Pagar:</strong> <span id="lblMontoPopupBanca" style="color: #27ae60; font-weight: bold;">Bs. 0.00</span></div>
-                <button onclick="copiarDatosBanca()" style="background: #2980b9; padding: 6px 10px; font-size: 11px; margin-top: 5px; width: 100%; border-radius: 4px;">📋 Copiar Datos Bancarios</button>
-                <div id="alertaCopiado" style="display:none; text-align:center; color: #27ae60; font-size: 11px; font-weight: bold; margin-top: 4px;">¡Datos copiados al portapapeles!</div>
-            </div>
-
             <div class="form-group" style="margin-bottom: 10px;">
                 <label style="font-size: 12px;">Banco Orig / Destino:</label>
                 <select id="pmBanco" style="padding: 8px; font-size: 14px;">
@@ -871,13 +862,11 @@
             }).catch(err => console.error("Error cargando estadísticas", err));
         }
 
-        // --- FUNCIÓN DE CUADRE DE CAJA Y WHATSAPP INTEGRADA (CORREGIDA Y SEGURA) ---
         async function enviarCuadreWhatsApp() {
             const sesionGuardada = localStorage.getItem("sesionVendedor");
             if (!sesionGuardada) return;
             const vendedorData = JSON.parse(sesionGuardada);
             
-            // Función auxiliar robusta para extraer puramente el valor numérico (remueve textos, símbolos y normaliza comas/puntos)
             const limpiarNumero = (texto) => {
                 if (!texto) return 0;
                 let limpio = texto.replace("Bs.", "").trim();
@@ -889,12 +878,10 @@
                 return parseFloat(limpio) || 0;
             };
 
-            // Capturar los valores reales de la interfaz
             const totalVendidoTxt = document.getElementById('total-vendido')?.innerText || "0";
             const comisionTxt = document.getElementById('monto-comision')?.innerText || "0";
             const netoEntregarTxt = document.getElementById('neto-entregar')?.innerText || "0";
             
-            // Convertir a valores numéricos puros para enviarlos al backend sin errores de ceros
             const totalVendidoNum = limpiarNumero(totalVendidoTxt);
             const comisionNum = limpiarNumero(comisionTxt);
             const netoEntregarNum = Number((totalVendidoNum - comisionNum).toFixed(2));
@@ -902,7 +889,6 @@
             const sorteoActualTxt = document.getElementById('lblSorteoActualVentas')?.innerText || "Sorteo actual";
             const referenciaPago = document.getElementById('txtReferenciaCuadre')?.value.trim() || "No especificada";
 
-            // 1. Enviar los datos numéricos limpios al backend (HISTORIAL_CAJAS)
             try {
                 await fetch(API_URL, {
                     method: "POST",
@@ -921,7 +907,6 @@
                 console.error("Error al registrar el cuadre en la hoja:", error);
             }
 
-            // 2. Abrir WhatsApp con el mensaje estructurado para el administrador
             let mensajeWhatsAppAdmin = encodeURIComponent(
                 `💼 *SOLICITUD DE CUADRE DE CAJA* 💼\n\n` +
                 `👤 *Vendedor:* ${vendedorData.nombre}\n` +
@@ -1220,8 +1205,9 @@
 
                 let filasHtml = Object.keys(tandasMap).map(fechaT => {
                     let itemsTanda = tandasMap[fechaT];
+                    // AJUSTE 2: Se unen los IDs con coma SIN ESPACIO usando .join(',')
                     let listaIdsTanda = itemsTanda.map(item => item.idTicket || item.IdTicket || item.IDTICKET || item.ticket || item.Ticket || '').filter(Boolean);
-                    let idsUnicosTanda = [...new Set(listaIdsTanda)].join(', ');
+                    let idsUnicosTanda = listaIdsTanda.join(',');
                     let idPrincipal = listaIdsTanda[0] || '';
 
                     let algunGanador = itemsTanda.some(item => {
@@ -1456,32 +1442,10 @@
                 return;
             }
 
-            let cantidadCartones = parseInt(document.getElementById("cantidadCartones").value) || 1;
-            let montoTotalPagar = cantidadCartones * precioCartonActual;
-            document.getElementById("lblMontoPopupBanca").innerText = `Bs. ${montoTotalPagar.toFixed(2)}`;
-
             document.getElementById("pmBanco").value = "";
             document.getElementById("pmCedula").value = "";
             document.getElementById("pmTelefono").value = "";
-            document.getElementById("alertaCopiado").style.display = "none";
             document.getElementById("modalPagoMovil").style.display = "flex";
-        }
-
-        function copiarDatosBanca() {
-            let cantidadCartones = parseInt(document.getElementById("cantidadCartones").value) || 1;
-            let montoTotalPagar = cantidadCartones * precioCartonActual;
-            
-            let textoCopiar = `Banco: (0134) Banesco\nCédula: 19466062\nTeléfono: 04149443028\nMonto: Bs. ${montoTotalPagar.toFixed(2)}`;
-            
-            navigator.clipboard.writeText(textoCopiar).then(() => {
-                let alerta = document.getElementById("alertaCopiado");
-                alerta.style.display = "block";
-                setTimeout(() => {
-                    alerta.style.display = "none";
-                }, 3000);
-            }).catch(err => {
-                alert("No se pudo copiar automáticamente. Por favor selecciónalos manualmente.");
-            });
         }
 
         function confirmarPagoMovilEImprimir() {
@@ -1571,7 +1535,7 @@
             const precioUnitario = data.precioTicket || data.precioCarton || precioCartonActual || 100;
             const precioTotal = precioUnitario * tickets.length;
             const fechaTicket = t0.fecha || t0.Fecha || t0.FECHA || new Date().toLocaleString();
-            const idsText = tickets.map(t => t.idTicket || t.IdTicket || t.IDTICKET || t.ticket || t.Ticket || '').join(", ");
+            const idsText = tickets.map(t => t.idTicket || t.IdTicket || t.IDTICKET || t.ticket || t.Ticket || '').join(",");
             
             let cartonesHtml = "";
             tickets.forEach((ticket, idx) => {
