@@ -270,7 +270,7 @@
 
         <div class="panel-control">
             <button id="btnGuardarSorteo" class="btn-action btn-guardar" onclick="guardarSorteoManual()">💾 Guardar / Registrar Sorteo</button>
-            <button class="btn-action btn-corregir" onclick="pedirDatosCorreccion()">✏️ Corregir Sorteo</button>
+            <button class="btn-action btn-corregir" onclick="pedirDatosCorreccion()">✏️️ Corregir Sorteo</button>
             <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
                 <label style="font-size: 13px; color: #a4b0be; white-space: nowrap;">Nuevo Pote (Vivo):</label>
                 <input type="number" id="inputNuevoPote" class="input-pote" value="0" oninput="this.dataset.userEdited = 'true'">
@@ -1084,7 +1084,7 @@
         const clave = document.getElementById('nuevoAdminClave').value.trim();
 
         if (!nombre || !usuario || !clave) {
-            alert("⚠️ Por favor completa todos los campos para crear el nuevo administrador.");
+            alert("⚠️️ Por favor completa todos los campos para crear el nuevo administrador.");
             return;
         }
 
@@ -1123,7 +1123,7 @@
                 alert("✅ Administrador eliminado exitosamente.");
                 cargarAdministradores();
             } else {
-                alert("⚠️ Error al eliminar: " + (data.mensaje || "Desconocido"));
+                alert("⚠️️ Error al eliminar: " + (data.mensaje || "Desconocido"));
             }
         } catch (e) {
             console.error(e);
@@ -1270,7 +1270,7 @@
                 alert("✅ ¡Comisión actualizada y guardada exitosamente!");
                 cargarDatosAdicionalesAdmin();
             } else {
-                alert("⚠️️ Error al guardar: " + (data.mensaje || "Acción no reconocida en el servidor."));
+                alert("⚠ Error al guardar: " + (data.mensaje || "Acción no reconocida en el servidor."));
             }
         } catch(e) {
             console.error(e);
