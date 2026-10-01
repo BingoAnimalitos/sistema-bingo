@@ -83,7 +83,6 @@ function doPost(e) {
         var idVendedor = data.idVendedor || "";
         var nombre = data.nombre || "";
         
-        // Conversión segura a número flotante para evitar que se guarden como ceros o textos vacíos
         var totalVendido = parseFloat(data.totalVendido) || 0;
         var comision = parseFloat(data.comision) || 0;
         var netoEntregado = parseFloat(data.netoEntregado) || (totalVendido - comision);
@@ -1124,6 +1123,15 @@ function reiniciarSorteo(data) {
   if (hojaPagosMovil && hojaPagosMovil.getLastRow() > 1) {
     hojaPagosMovil.getRange(2, 1, hojaPagosMovil.getLastRow() - 1, hojaPagosMovil.getLastColumn()).clearContent();
   }
+
+  // --- LIMPIEZA DE LA PESTAÑA HISTORIAL_CAJAS (PROTEGIENDO LAS COLUMNAS K, L, M) ---
+  let sheetHistorialCajas = ss.getSheetByName(HOJA_HISTORIAL_CAJAS);
+  if (sheetHistorialCajas && sheetHistorialCajas.getLastRow() > 1) {
+    let ultimaFilaCajas = sheetHistorialCajas.getLastRow();
+    // Limpia únicamente desde la columna A hasta la J (dejando intactas K, L y M que son columnas 11, 12 y 13)
+    sheetHistorialCajas.getRange(2, 1, ultimaFilaCajas - 1, 10).clearContent();
+  }
+  // ----------------------------------------------------------------------------------
 
   let sheetVend = ss.getSheetByName(HOJA_VENDEDORES);
   if (sheetVend) {
