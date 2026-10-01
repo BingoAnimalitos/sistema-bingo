@@ -228,7 +228,7 @@
         <button class="tab-btn" onclick="cambiarPestaña('tabPagoMovil', this)">📱 Pago Móvil</button>
         <button class="tab-btn" onclick="cambiarPestaña('tabCuadresCaja', this)">💼 Cuadres de Caja</button>
         <button class="tab-btn" onclick="cambiarPestaña('tabVendedores', this)">👥 Vendedores</button>
-        <button class="tab-btn" onclick="cambiarPestaña('tabAdministradores', this)">🛡️ Admins</button>
+        <button class="tab-btn" onclick="cambiarPestaña('tabAdministradores', this)">🛡️️ Admins</button>
         <button class="tab-btn" onclick="cambiarPestaña('tabParametros', this)">⚙️ Parámetros</button>
     </div>
 
@@ -270,7 +270,7 @@
 
         <div class="panel-control">
             <button id="btnGuardarSorteo" class="btn-action btn-guardar" onclick="guardarSorteoManual()">💾 Guardar / Registrar Sorteo</button>
-            <button class="btn-action btn-corregir" onclick="pedirDatosCorreccion()">✏️️ Corregir Sorteo</button>
+            <button class="btn-action btn-corregir" onclick="pedirDatosCorreccion()">✏ Corregir Sorteo</button>
             <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
                 <label style="font-size: 13px; color: #a4b0be; white-space: nowrap;">Nuevo Pote (Vivo):</label>
                 <input type="number" id="inputNuevoPote" class="input-pote" value="0" oninput="this.dataset.userEdited = 'true'">
@@ -1084,7 +1084,7 @@
         const clave = document.getElementById('nuevoAdminClave').value.trim();
 
         if (!nombre || !usuario || !clave) {
-            alert("⚠️️ Por favor completa todos los campos para crear el nuevo administrador.");
+            alert("⚠ Por favor completa todos los campos para crear el nuevo administrador.");
             return;
         }
 
@@ -1123,7 +1123,7 @@
                 alert("✅ Administrador eliminado exitosamente.");
                 cargarAdministradores();
             } else {
-                alert("⚠️️ Error al eliminar: " + (data.mensaje || "Desconocido"));
+                alert("⚠ Error al eliminar: " + (data.mensaje || "Desconocido"));
             }
         } catch (e) {
             console.error(e);
@@ -1985,28 +1985,47 @@
         } catch(e) { console.error(e); }
     }
 
+    // --- FUNCIÓN DE REINICIO ACTUALIZADA Y CORREGIDA ---
     async function reiniciarSorteo() {
-        const nuevoPote = document.getElementById("inputNuevoPote").value;
-        if(!confirm(`¿Reiniciar el juego, limpiar registros y establecer el pote en Bs. ${nuevoPote}?`)) return;
+        const inputPoteEl = document.getElementById("inputNuevoPote");
+        const nuevoPote = inputPoteEl ? inputPoteEl.value : "0";
+        
+        if(!confirm(`¿Estás seguro de reiniciar el juego, limpiar los sorteos del día y establecer el pote en Bs. ${nuevoPote}?`)) return;
 
         try {
+            // Importante: La acción enviada ahora es exactamente "reiniciarSorteo" tal cual la espera tu Apps Script
+            const payload = {
+                accion: "reiniciarSorteo",
+                nuevoPote: nuevoPote
+            };
+
             const resp = await fetch(API_URL, {
                 method: "POST",
-                body: JSON.stringify({ accion: "reiniciarJuego", nuevoPote })
+                body: JSON.stringify(payload)
             });
             const data = await resp.json();
+            
             if (data.exito) {
-                alert("Juego reiniciado con éxito.");
+                alert("✅ ¡Juego reiniciado con éxito! " + (data.mensaje || ""));
                 cantados = [];
                 juegoFinalizado = false;
                 document.getElementById("bannerGanadores").style.display = "none";
+                
+                if (inputPoteEl) delete inputPoteEl.dataset.userEdited;
+
                 renderGrid();
                 await consultarEstado();
                 await cargarHistorial();
                 await cargarDatosAdicionalesAdmin();
                 await cargarParametrosSistemaAdmin();
-            } else alert("Error: " + data.mensaje);
-        } catch(e) { console.error(e); }
+                cargarPagosMoviles();
+            } else {
+                alert("⚠️️ Error del servidor: " + (data.mensaje || "No se pudo reiniciar"));
+            }
+        } catch(e) {
+            console.error(e);
+            alert("⚠️ Error de conexión al intentar reiniciar.");
+        }
     }
 </script>
 </body>
